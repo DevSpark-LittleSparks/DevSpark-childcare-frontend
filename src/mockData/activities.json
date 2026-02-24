@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1,
+    "teacherName": "Sarah Jenkins",
+    "activityName": "Morning Circle",
+    "startTime": "09:00",
+    "endTime": "11:00",
+    "status": "pending"
+  },
+  {
+    "id": 2,
+    "teacherName": "David Okonjo",
+    "activityName": "Outdoor Play",
+    "startTime": "09:00",
+    "endTime": "11:00",
+    "status": "completed"
+  },
+  {
+    "id": 3,
+    "teacherName": "Mei Ling",
+    "activityName": "Storytime",
+    "startTime": "09:00",
+    "endTime": "11:00",
+    "status": "pending"
+  },
+  {
+    "id": 4,
+    "teacherName": "Elena Rodriguez",
+    "activityName": "Art & Crafts",
+    "startTime": "09:00",
+    "endTime": "11:00",
+    "status": "pending"
+  }
+]
