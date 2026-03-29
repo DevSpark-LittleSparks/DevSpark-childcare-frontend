@@ -1,0 +1,10 @@
+.parent-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.parent-main {
+  flex: 1;
+  background-color: #f8fafc;
+  overflow-y: auto;
+}
