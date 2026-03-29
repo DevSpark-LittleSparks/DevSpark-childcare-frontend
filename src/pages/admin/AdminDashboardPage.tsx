@@ -2,13 +2,8 @@ import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
 import { StatCard } from "@/shared/ui/stat-card";
-import { 
-  MdSettings as Settings, 
-  MdAdd as Plus, 
-  MdMoreVert as MoreVertical, 
-  MdCalendarMonth as CalendarIcon, 
-  MdChat as MessageSquare 
-} from "react-icons/md";
+import AdminSidebar from "@/widgets/sidebar/AdminSidebar";
+import { MdChat as MessageSquare } from "react-icons/md";
 import "./AdminDashboardPage.css";
 
 interface RequestItem {
@@ -141,7 +136,9 @@ export default function AdminDashboardPage() {
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 
   return (
-    <div className="admin-container">
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      <AdminSidebar />
+      <div className="admin-container" style={{ marginLeft: "260px", flex: 1 }}>
       <header className="admin-header">
         <div className="header-text">
           <h1>Welcome {userName}!</h1>
@@ -271,6 +268,7 @@ export default function AdminDashboardPage() {
           <div className="circle c1"></div>
           <div className="circle c2"></div>
         </div>
+      </div>
       </div>
     </div>
   );
