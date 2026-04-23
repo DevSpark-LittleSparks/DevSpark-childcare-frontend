@@ -1,0 +1,198 @@
+.pd-container {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* HEADER */
+.pd-header {
+  margin-bottom: 8px;
+}
+
+.pd-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 10px 0;
+  letter-spacing: -0.02em;
+}
+
+.pd-subtitle {
+  font-size: 16px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* GRID */
+.pd-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+/* BASE CARD */
+.pd-card {
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.25s ease;
+}
+
+/* TITLE */
+.pd-card-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 0 0 20px 0;
+}
+
+/* ================= CHILD CARD ================= */
+.pd-children-card {
+  background-color: #88c0be;
+  cursor: pointer;
+}
+
+.pd-children-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* CHILD PILL */
+.pd-child-pill {
+  background-color: #ffffff;
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pd-child-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pd-child-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.pd-child-group {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.pd-status-badge {
+  background-color: #d1fae5;
+  color: #059669;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
+/* hint */
+.pd-card-hint {
+  margin-top: 14px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  text-align: right;
+}
+
+/* ================= PAYMENT CARD ================= */
+.pd-payments-card {
+  background-color: #dca4a2;
+}
+
+.pd-payment-info {
+  background-color: #ffffff;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.pd-payment-label {
+  font-size: 13px;
+  color: #4b5563;
+  margin-bottom: 6px;
+}
+
+.pd-payment-amount {
+  font-size: 24px;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 16px;
+}
+
+.pd-pay-btn {
+  width: 100%;
+  background-color: #1a202c;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.pd-pay-btn:hover {
+  background-color: #2d3748;
+}
+
+/* ================= QUICK ACTIONS ================= */
+.pd-quick-actions {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #eef0f3;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
+
+.pd-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #111827;
+}
+
+.pd-actions-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pd-action-btn {
+  flex: 1;
+  min-width: 160px;
+  background-color: #fcfcfd;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pd-action-btn:hover {
+  background-color: #f3f4f6;
+  transform: translateY(-2px);
+}
+
+/* ================= EMPTY STATE ================= */
+.pd-no-data {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #64748b;
+  text-align: center;
+  border: 1px dashed #cbd5e1;
+}

@@ -4,7 +4,12 @@ import LandingPage from "@/pages/landing/LandingPage";
 import LoginPage from "@/pages/auth/LoginPage";
 import SignupRequestForm from "@/pages/auth/SignupRequestForm";
 import AdminDashboard from "@/pages/admin/dashboard/AdminDashboard";
+import ParentDashboard from "@/pages/parent/dashboard/ParentDashboard";
+import ParentLayout from "@/layouts/ParentLayout";
+import TeacherLayout from "@/layouts/TeacherLayout";
+import TeacherDashboard from "@/pages/teacher/dashboard/TeacherDashboard";
 import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage";
+
 
 export const router = createBrowserRouter([
   {
@@ -20,9 +25,29 @@ export const router = createBrowserRouter([
     element: <SignupRequestForm />,
   },
   {
-    path: "/dashboard",
+    path: "/admin/dashboard",
     element: <AdminDashboard />,
   },
+  {
+    path: "/parent",
+    element: <ParentLayout />,
+    children: [
+      {
+        path: "dashboard",
+        element: <ParentDashboard />,
+      },
+    ],
+  },
+  {
+    path: "/teacher",
+    element: <TeacherLayout />,
+    children: [
+      {
+        path: "dashboard",
+        element: <TeacherDashboard />,
+      },
+    ],
+  },  // ✅ IMPORTANT COMMA
   {
     path: "/forgot-password",
     element: <ForgotPasswordPage />,

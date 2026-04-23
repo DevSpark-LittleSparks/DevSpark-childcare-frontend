@@ -1,4 +1,3 @@
-import React from "react";
 import "./StatCard.css";
 
 interface StatCardProps {
@@ -8,7 +7,12 @@ interface StatCardProps {
   colorClass?: string;
 }
 
-export default function StatCard({ title, value, subtitle, colorClass = "" }: StatCardProps) {
+export default function StatCard({
+  title,
+  value,
+  subtitle,
+  colorClass = "cyan",
+}: StatCardProps) {
   return (
     <div className="stat-card">
       <div className="stat-info">
@@ -16,6 +20,7 @@ export default function StatCard({ title, value, subtitle, colorClass = "" }: St
         <h2 className="stat-value">{value}</h2>
         {subtitle && <small className="stat-subtitle">{subtitle}</small>}
       </div>
+
       <div className={`stat-decoration ${colorClass}`}></div>
     </div>
   );
