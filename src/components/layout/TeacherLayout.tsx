@@ -1,10 +1,10 @@
 import { Outlet } from "react-router-dom";
-import ParentSidebar from "@/components/parent/Sidebar";
+import TeacherSidebar from "@/components/teacher/Sidebar";
 
-export default function ParentLayout() {
+export default function TeacherLayout() {
   return (
     <div style={{ display: "flex" }}>
-      <ParentSidebar />
+      <TeacherSidebar />
 
       <main style={{ flex: 1, marginLeft: "18rem" }}>
         <Outlet />

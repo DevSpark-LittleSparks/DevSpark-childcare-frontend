@@ -1,27 +1,87 @@
-/* StatCard.css */
 .stat-card {
-  position: relative;
-  padding: 1.5rem;
-  background-color: #ffffff;
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  border: 1px solid #f1f5f9;
-  transition: box-shadow 0.2s;
+  background: white;
+  padding: 24px;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
+  align-items: flex-start;
+
+  position: relative;
   overflow: hidden;
-  cursor: pointer;
-  min-height: 130px;
+
+  transition: all 0.3s ease;
 }
-.stat-card:hover { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1); }
-.stat-info { position: relative; z-index: 10; display: flex; flex-direction: column; gap: 0.25rem; }
-.stat-title { font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin: 0; }
-.stat-value { font-size: 1.875rem; font-weight: 800; color: #0f172a; margin: 0.5rem 0 0; }
-.stat-subtitle { font-size: 0.75rem; font-weight: 500; color: #94a3b8; margin-top: 0.25rem; }
-.stat-decoration { position: absolute; right: -1.5rem; bottom: -1.5rem; width: 6rem; height: 6rem; border-radius: 50%; opacity: 0.15; filter: blur(12px); transition: transform 0.2s; }
-.stat-card:hover .stat-decoration { transform: scale(1.1); }
-.stat-decoration.green { background-color: #10b981; }
-.stat-decoration.blue { background-color: #3b82f6; }
-.stat-decoration.orange { background-color: #f97316; }
-.stat-decoration.purple { background-color: #a855f7; }
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(13, 171, 144, 0.15);
+}
+
+/* TEXT */
+.stat-title {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+  font-weight: 500;
+}
+
+.stat-value {
+  margin: 8px 0;
+  font-size: 32px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.stat-subtitle {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* DECORATION CIRCLE */
+.stat-decoration {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  position: absolute;
+  right: -15px;
+  top: 10px;
+  opacity: 0.15;
+}
+
+/* 🎨 THEME COLORS (MATCH HERO GRADIENT SYSTEM) */
+.stat-decoration.cyan {
+  background: rgb(13, 171, 144);
+}
+
+.stat-decoration.purple {
+  background: rgb(126, 14, 163);
+}
+
+.stat-decoration.blue {
+  background: rgb(59, 130, 246);
+}
+
+.stat-decoration.orange {
+  background: rgb(245, 158, 11);
+}
+
+/* ===== DARK MODE (optional) ===== */
+body.dark-mode .stat-card {
+  background: rgba(30, 41, 59, 0.8);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .stat-title {
+  color: #cbd5e1;
+}
+
+body.dark-mode .stat-value {
+  color: #ffffff;
+}
+
+body.dark-mode .stat-subtitle {
+  color: #94a3b8;
+}
