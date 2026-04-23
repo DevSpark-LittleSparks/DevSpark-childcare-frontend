@@ -74,7 +74,7 @@ const LandingPage: React.FC = () => {
             </Link>
             <button 
               className="lp-btn bg-cyan-500 text-white px-5 py-2.5 rounded-full hover:bg-cyan-600 transition-all duration-300 font-semibold shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transform"
-              onClick={() => navigate("/get-started")}
+              onClick={() => navigate("/request-form")}
             >
               Get Started
             </button>
@@ -102,7 +102,7 @@ const LandingPage: React.FC = () => {
             <div className="hero-cta">
                 <button 
                   className="btn secondary bg-cyan-500 text-white px-8 py-4 rounded-full font-bold hover:bg-cyan-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95 transform"
-                  onClick={() => navigate("/get-started")}
+                  onClick={() => navigate("/request-form")}
                 >
                   Request Form
                 </button>
@@ -250,7 +250,7 @@ const LandingPage: React.FC = () => {
 
           <button 
             className="btn whitebtn bg-white text-purple-600 px-10 py-5 rounded-full text-xl font-bold hover:bg-gray-50 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1.5 active:scale-95 transform"
-            onClick={() => navigate("/get-started")}
+            onClick={() => navigate("/request-form")}
           >
             Try It Out
           </button>
