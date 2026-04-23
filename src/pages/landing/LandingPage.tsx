@@ -1,6 +1,7 @@
 import React, { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MdLayers, MdFlashOn as Zap, MdFavorite as Heart } from "react-icons/md";
+import { themeColors } from "@/shared/theme/colors";
 
 // Props interface for Card component
 interface CardProps {
@@ -82,45 +83,65 @@ const LandingPage: React.FC = () => {
         </div>
       </header>
 
-      {/* ===== 1) HERO ===== */}
-      <section id="hero" className="hero bg-gradient-to-b from-blue-100 via-purple-100 to-pink-100 py-40 px-4 sm:px-6 lg:px-8">
-        <div className="wrap hero-grid max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-          <div className="hero-left">
-            <p className="badge text-sm text-gray-600 mb-4">✨ An Early Childhood Platform</p>
+ {/* ===== 1) HERO ===== */}
+<section
+  id="hero"
+  className="hero relative py-40 px-4 sm:px-6 lg:px-8 overflow-hidden"
+  style={{
+    background:
+      "linear-gradient(135deg, rgb(231, 58, 226), rgb(13, 171, 144))",
+  }}
+>
+  {/* optional overlay for better readability */}
+  <div className="absolute inset-0 bg-black/10" />
 
-            <h1 className="hero-title text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              Less Paperwork,
-              <br />
-              More Playtime
-            </h1>
+  <div className="relative wrap hero-grid max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
 
-            <p className="hero-text text-lg text-gray-700 mb-8">
-              LittleSparks saves everything for your nursery and childcare service into one online,
-              organized space so you can stay present with every child.
-            </p>
+    {/* ===== LEFT SIDE ===== */}
+    <div className="hero-left">
 
-            <div className="hero-cta">
-                <button 
-                  className="btn secondary bg-cyan-500 text-white px-8 py-4 rounded-full font-bold hover:bg-cyan-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95 transform"
-                  onClick={() => navigate("/get-started")}
-                >
-                  Request Form
-                </button>
-            </div>
-          </div>
+      <p className="text-white/80 text-sm font-semibold mb-4">
+        ✨ An Early Childhood Platform
+      </p>
 
-          <div className="hero-right flex justify-center relative">
-            <div className="hero-img w-full max-w-md h-80 bg-gradient-to-br from-orange-200 to-yellow-200 rounded-3xl flex items-center justify-center shadow-xl">
-              <img
-                src="https://images.unsplash.com/photo-1770096679916-2cd9c720d400?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1200"
-                alt="Teachers and children playing"
-                className="w-full h-full object-cover rounded-3xl"
-              />
-            </div>
-            <div className="dot absolute w-32 h-32 border-2 border-cyan-400 rounded-full opacity-20 -z-10" />
-          </div>
-        </div>
-      </section>
+      <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+        Less Paperwork,
+        <br />
+        More Playtime
+      </h1>
+
+      <p className="text-white/90 text-lg mb-8">
+        LittleSparks saves everything for your nursery and childcare service into one online,
+        organized space so you can stay present with every child.
+      </p>
+
+      <button
+        onClick={() => navigate("/get-started")}
+        className="bg-white text-purple-700 px-8 py-4 rounded-full font-bold hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95"
+      >
+        Request Form
+      </button>
+
+    </div>
+
+    {/* ===== RIGHT SIDE ===== */}
+    <div className="hero-right flex justify-center relative">
+
+      <div className="w-full max-w-md h-80 rounded-3xl overflow-hidden shadow-2xl">
+        <img
+          src="https://images.unsplash.com/photo-1770096679916-2cd9c720d400?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1200"
+          alt="Teachers and children playing"
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      {/* decorative circle */}
+      <div className="absolute w-32 h-32 border-2 border-white/30 rounded-full opacity-30 -z-10" />
+
+    </div>
+
+  </div>
+</section>
 
       {/* ===== 2) WHY ===== */}
       <section id="why" className="why relative min-h-[300px] flex items-center overflow-hidden">

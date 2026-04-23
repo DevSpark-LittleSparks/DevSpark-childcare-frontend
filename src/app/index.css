@@ -13,3 +13,32 @@ body {
   font-family: 'Inter', sans-serif;
   background-color: #f8fafc;
 }
+
+/* ✨ Animations */
+@keyframes zoomSlow {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-zoomSlow {
+  animation: zoomSlow 12s ease-in-out infinite alternate;
+}
+
+.animate-fadeUp {
+  animation: fadeUp 1s ease-out;
+}
