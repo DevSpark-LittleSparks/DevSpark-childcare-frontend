@@ -1,0 +1,12 @@
+import { ReactNode } from 'react';
+
+export function Layout({ children }: { children: ReactNode }) {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* A Navigation Bar or Sidebar can be added here later */}
+
+      {/* Main content area where the pages will be rendered */}
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">{children}</main>
+    </div>
+  );
+}
