@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MdExpandMore as ChevronDown } from "react-icons/md";
-import { AuthHeader } from "@/shared/ui/AuthHeader/AuthHeader";
 
-// Assets
-import heroImg from "@/shared/assets/images/hero.png";
-import tabletImg from "@/shared/assets/images/tablet.png";
-import requestSideImg from "@/shared/assets/images/request-side.png";
+// AuthHeader and Common Components
+import { AuthHeader } from "../../shared/ui/AuthHeader/AuthHeader";
+
+// Assets and Images
+import heroImg from "../../assets/images/hero.png";
+import tabletImg from "../../assets/images/tablet.png";
+import requestSideImg from "../../assets/images/request-side.png";
 
 type UserRole = "director" | "teacher" | "parent";
 
