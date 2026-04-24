@@ -1,45 +1,50 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-body {
-  margin: 0;
-  font-family: 'Inter', sans-serif;
-  background-color: #f8fafc;
-}
-
-/* ✨ Animations */
-@keyframes zoomSlow {
-  0% {
-    transform: scale(1);
-  }
-  100% {
-    transform: scale(1.1);
+/* Base Layer: Global styles for core HTML elements */
+@layer base {
+  body {
+    /* * Rule 13: No hardcoded hex colors. 
+     * We use @apply to fetch the background and text colors directly from tailwind.config.ts.
+     * The 'Inter' font is automatically applied globally via Tailwind's default sans configuration.
+     * 'antialiased' makes the text render smoother.
+     */
+    @apply bg-surface-secondary text-slate-900 antialiased;
   }
 }
 
-@keyframes fadeUp {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
+/* Utilities Layer: Custom, reusable utility classes (like animations) */
+@layer utilities {
+  /* ✨ Custom Animations */
+  @keyframes zoomSlow {
+    0% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(1.1);
+    }
   }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
+
+  @keyframes fadeUp {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
-}
 
-.animate-zoomSlow {
-  animation: zoomSlow 12s ease-in-out infinite alternate;
-}
+  /* Utility classes to trigger the animations */
+  .animate-zoomSlow {
+    animation: zoomSlow 12s ease-in-out infinite alternate;
+  }
 
-.animate-fadeUp {
-  animation: fadeUp 1s ease-out;
+  .animate-fadeUp {
+    animation: fadeUp 1s ease-out;
+  }
 }
