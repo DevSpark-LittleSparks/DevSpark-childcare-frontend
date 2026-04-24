@@ -1,6 +1,7 @@
 import { LoginForm } from "../../features/auth/ui/LoginForm";
 import loginImg from "../../assets/images/login.png";
 
+
 export default function LoginPage() {
   return (
     <div className="min-h-screen flex">

@@ -7,6 +7,7 @@ import { Button } from "../../../components/common/Button";
 import { Input } from "../../../components/common/Input";
 import { Card } from "../../../components/common/Card";
 import { Spinner } from "../../../components/common/Spinner";
+import { Logo } from "../../../components/common/Logo";
 
 // App store and Firebase
 import { useAppDispatch, useAppSelector, RootState } from "../../../store";
@@ -57,6 +58,14 @@ export function LoginForm() {
 
   return (
     <Card className="w-full max-w-md p-8 shadow-2xl border-t-4 border-t-cyan-500 bg-white/80 backdrop-blur-sm">
+      <div className="flex flex-col items-center mb-6">
+  {}
+  <Logo 
+    variant="dark" 
+    iconClassName="w-14 h-14" 
+    textClassName="text-3xl" 
+  />
+</div>
       <div className="text-center mb-8">
         <h2 className="text-3xl font-extrabold text-slate-900">Welcome Back</h2>
         <p className="mt-2 text-sm text-slate-500">
