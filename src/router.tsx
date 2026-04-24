@@ -5,6 +5,8 @@ import AdminLayout from './components/layout/AdminLayout';
 
 // Import Pages (Using direct paths)
 import LandingPage from './pages/LandingPage';
+import LoginPage from './pages/auth/LoginPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import AttendancePage from './pages/AttendancePage';
 import MealsPage from './pages/MealsPage';
@@ -22,6 +24,19 @@ export const router = createBrowserRouter([
     path: '/',
     element: <LandingPage />,
   },
+
+  {
+    // Authentication route for users to log in
+    path: '/login',
+    element: <LoginPage />,
+  },
+
+  {
+    // Forgot Password route
+    path: '/forgot-password',
+    element: <ForgotPasswordPage />,
+  },
+
   {
     // Protected Admin Dashboard Routes wrapped in the AdminLayout
     element: <AdminLayout />,
