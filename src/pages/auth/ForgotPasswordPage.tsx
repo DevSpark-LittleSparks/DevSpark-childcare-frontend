@@ -1,14 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@/shared/ui/Button";
-import { Input } from "@/shared/ui/Input";
-import { Card } from "@/shared/ui/Card";
-import { AuthHeader } from "@/shared/ui/AuthHeader/AuthHeader";
+
+import { Button } from "../../components/common/Button";
+import { Input } from "../../components/common/Input";
+import { Card } from "../../components/common/Card";
+import { AuthHeader } from "../../shared/ui/AuthHeader/AuthHeader";
+
 
 const ForgotPasswordPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
-      <AuthHeader backLink="/login" />
+      { <AuthHeader backLink="/login" /> }
 
       <main className="flex-1 flex flex-col max-w-[1440px] mx-auto w-full items-center justify-center p-4">
         <Card className="w-full max-w-md p-8 shadow-2xl border-t-4 border-t-cyan-500 bg-white/80 backdrop-blur-sm">

@@ -1,5 +1,6 @@
-import { LoginForm } from "@/features/auth/ui/LoginForm";
-import loginImg from "@/shared/assets/images/login.png";
+import { LoginForm } from "../../features/auth/ui/LoginForm";
+import loginImg from "../../assets/images/login.png";
+
 
 export default function LoginPage() {
   return (

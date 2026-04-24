@@ -1,27 +1,31 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import logo from "@/shared/assets/images/logo.png";
+import { ChevronLeft } from "lucide-react"; // Make sure to install lucide-react if you haven't already: npm install lucide-react
+import { Logo } from "../../../components/common/Logo";
 
 interface AuthHeaderProps {
   backLink?: string;
-  backText?: string;
 }
 
-export const AuthHeader: React.FC<AuthHeaderProps> = ({ 
-  backLink = "/", 
-  backText = "← Back" 
-}) => {
+export const AuthHeader: React.FC<AuthHeaderProps> = ({ backLink = "/login" }) => {
   return (
-    <header className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-      <div className="flex items-center gap-2">
-        <img src={logo} alt="LittleSparks Logo" className="w-8 h-8 object-contain" />
-        <span className="text-xl font-bold tracking-tight text-slate-800 uppercase">LittleSparks</span>
-      </div>
+    <header className="w-full flex items-center justify-between px-6 py-4 bg-white/80 backdrop-blur-sm border-b border-slate-100">
+      {/* Logo */}
+      <Link to="/" className="hover:opacity-90 transition-opacity">
+        <Logo 
+          variant="dark" 
+          iconClassName="w-8 h-8" 
+          textClassName="text-xl" 
+        />
+      </Link>
+
+      {/*back button*/}
       <Link 
         to={backLink} 
-        className="text-sm font-medium text-slate-600 hover:text-cyan-600 transition-colors"
+        className="flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
       >
-        {backText}
+        <ChevronLeft className="w-4 h-4 mr-1" />
+        Back
       </Link>
     </header>
   );
