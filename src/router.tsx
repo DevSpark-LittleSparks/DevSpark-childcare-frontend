@@ -5,6 +5,8 @@ import AdminLayout from './components/layout/AdminLayout';
 
 // Import Pages (Using direct paths)
 import LandingPage from './pages/LandingPage';
+import SignupRequestForm from './pages/auth/SignupRequestForm';
+import RequestConfirmedPage from './pages/auth/RequestConfirmedPage';
 import LoginPage from './pages/auth/LoginPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import DashboardPage from './pages/DashboardPage';
@@ -24,6 +26,19 @@ export const router = createBrowserRouter([
     path: '/',
     element: <LandingPage />,
   },
+
+  {
+    // Signup request form
+    path: '/get-started',
+    element: <SignupRequestForm />,
+  },
+
+  {
+    // Confirmation page after a successful request (e.g., password reset)
+    path: '/request-confirmed',
+    element: <RequestConfirmedPage />,
+  },
+
 
   {
     // Authentication route for users to log in
