@@ -1,13 +1,19 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Button } from "@/shared/ui/Button";
-import { Input } from "@/shared/ui/Input";
-import { Card } from "@/shared/ui/Card";
-import { Spinner } from "@/shared/ui/Spinner";
-import { useAppDispatch, useAppSelector, RootState } from "@/app/store";
+
+// Shared components 
+import { Button } from "../../../components/common/Button";
+import { Input } from "../../../components/common/Input";
+import { Card } from "../../../components/common/Card";
+import { Spinner } from "../../../components/common/Spinner";
+
+// App store and Firebase
+import { useAppDispatch, useAppSelector, RootState } from "../../../store";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { firebaseAuth } from "@/shared/auth/firebase";
+import { firebaseAuth } from "../../../lib/firebase";
+
+// Local model and Routing
 import { setUser, setError, setLoading } from "../model/authSlice";
 import { useNavigate, Link } from "react-router-dom";
 
