@@ -1,12 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { AuthHeader } from "@/shared/ui/AuthHeader/AuthHeader";
-import ConfirmImg from "@/shared/assets/images/request-confirm.png";
+import { AuthHeader } from "../../shared/ui/AuthHeader/AuthHeader";
+import ConfirmImg from "@/assets/images/request-confirm.png";
 
 const RequestConfirmedPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <AuthHeader />
+    
 
       <main className="flex-1 flex flex-col lg:flex-row max-w-[1440px] mx-auto w-full">
         {/* LEFT: CONTENT */}
