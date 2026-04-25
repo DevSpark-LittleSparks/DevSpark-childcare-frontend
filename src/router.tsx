@@ -1,71 +1,75 @@
 import { createBrowserRouter } from 'react-router-dom';
 
-// Import Layouts (Using direct paths)
-import AdminLayout from './components/layout/AdminLayout';
+// new Layouts Import 
+import AdminLayout from './components/layout/AdminLayout'; 
+import ParentLayout from './components/layout/ParentLayout';
+import TeacherLayout from './components/layout/TeacherLayout';
 
-// Import Pages (Using direct paths)
+// Pages Import 
 import LandingPage from './pages/LandingPage';
 import SignupRequestForm from './pages/auth/SignupRequestForm';
 import RequestConfirmedPage from './pages/auth/RequestConfirmedPage';
 import LoginPage from './pages/auth/LoginPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
-import DashboardPage from './pages/DashboardPage';
+import AdminDashboardPage from './pages/admin/dashboard/AdminDashboard';
 import AttendancePage from './pages/AttendancePage';
 import MealsPage from './pages/MealsPage';
 import ActivityPage from './pages/ActivityPage';
 import StaffPage from './pages/StaffPage';
 import BillingPage from './pages/BillingPage';
 
-/**
- * Application Router Configuration
- * Defines all the paths and their corresponding components.
- */
 export const router = createBrowserRouter([
   {
-    // The main landing page of the application
     path: '/',
     element: <LandingPage />,
   },
-
   {
-    // Signup request form
-    path: '/get-started',
-    element: <SignupRequestForm />,
-  },
-
-  {
-    // Confirmation page after a successful request (e.g., password reset)
-    path: '/request-confirmed',
-    element: <RequestConfirmedPage />,
-  },
-
-
-  {
-    // Authentication route for users to log in
     path: '/login',
     element: <LoginPage />,
   },
-
   {
-    // Forgot Password route
     path: '/forgot-password',
     element: <ForgotPasswordPage />,
   },
-
+  
+  // --- ADMIN SECTION ---
   {
-    // Protected Admin Dashboard Routes wrapped in the AdminLayout
-    element: <AdminLayout />,
+    path: '/admin',
+    element: <AdminLayout />, // AdminLayout
     children: [
-      { path: '/dashboard', element: <DashboardPage /> },
+      { path: 'dashboard', element: <AdminDashboardPage /> },
+      { path: 'admissions', element: <div>Admissions Page</div> },
+      { path: 'students', element: <div>Students Page</div> },
+      { path: 'parents', element: <div>Parents Page</div> },
+      { path: 'staff', element: <StaffPage /> },
+      { path: 'billing', element: <BillingPage /> },
+    ],
+  },
 
-      // Newly added modules for your specific requirements
-      { path: '/attendance', element: <AttendancePage /> },
-      { path: '/meals', element: <MealsPage /> },
-      { path: '/activity', element: <ActivityPage /> },
+  // --- PARENT SECTION ---
+  {
+    path: '/parent',
+    element: <ParentLayout />, // ParentLayout
+    children: [
+      { path: 'dashboard', element: <div>Parent Dashboard</div> },
+      { path: 'children', element: <div>My Children</div> },
+      { path: 'progress', element: <div>Progress</div> },
+      { path: 'payments', element: <div>Payments</div> },
+      { path: 'notifications', element: <div>Notifications</div> },
+      { path: 'messaging', element: <div>Messaging</div> },
+    ],
+  },
 
-      // Other existing modules
-      { path: '/staff', element: <StaffPage /> },
-      { path: '/billing', element: <BillingPage /> },
+  // --- TEACHER SECTION ---
+  {
+    path: '/teacher',
+    element: <TeacherLayout />, // TeacherLayout
+    children: [
+      { path: 'dashboard', element: <div>Teacher Dashboard</div> },
+      { path: 'attendance', element: <div>Daily Attendance</div> },
+      { path: 'activities', element: <div>My Activities</div> },
+      { path: 'meals', element: <div>Meals</div> },
+      { path: 'messages', element: <div>Messaging</div> },
     ],
   },
 ]);
