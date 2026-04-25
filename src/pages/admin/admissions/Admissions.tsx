@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MdSearch, MdFilterList, MdAdd } from "react-icons/md";
-import StatCard from "../../../components/admin/StatCard";
-import Sidebar from "../../../components/admin/Sidebar";
-import "./AdmissionsDashboard.css";
+import StatCard from "../../../components/layout/admin/StatCard";
+import Sidebar from "../../../components/layout/AdminSidebar";
+import "./Admissions.css";
 
 interface Student {
   id: number;

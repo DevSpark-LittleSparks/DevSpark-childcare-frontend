@@ -1,14 +1,15 @@
+import React from "react";
 import { Outlet } from "react-router-dom";
-import TeacherSidebar from "@/components/teacher/Sidebar";
+import TeacherSidebar from "./TeacherSidebar";
 
-export default function TeacherLayout() {
+const TeacherLayout: React.FC = () => {
   return (
-    <div style={{ display: "flex" }}>
+    <div style={{ display: "flex", minHeight: "100vh" }}>
       <TeacherSidebar />
-
-      <main style={{ flex: 1, marginLeft: "18rem" }}>
+      <main style={{ flex: 1, marginLeft: "280px", backgroundColor: "#f8fafc" }}>
         <Outlet />
       </main>
     </div>
   );
-}
+};
+export default TeacherLayout;

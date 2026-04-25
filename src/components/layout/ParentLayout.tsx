@@ -1,14 +1,15 @@
+import React from "react";
 import { Outlet } from "react-router-dom";
-import ParentSidebar from "@/components/parent/Sidebar";
+import ParentSidebar from "./ParentSidebar";
 
-export default function ParentLayout() {
+const ParentLayout: React.FC = () => {
   return (
-    <div style={{ display: "flex" }}>
+    <div style={{ display: "flex", minHeight: "100vh" }}>
       <ParentSidebar />
-
-      <main style={{ flex: 1, marginLeft: "18rem" }}>
+      <main style={{ flex: 1, marginLeft: "280px", backgroundColor: "#f8fafc" }}>
         <Outlet />
       </main>
     </div>
   );
-}
+};
+export default ParentLayout;
