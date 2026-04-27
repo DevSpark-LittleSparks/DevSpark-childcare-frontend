@@ -72,7 +72,7 @@ export function TeacherDashboardPage() {
   const attendanceProgress = Math.min(100, Math.max(0, classStatus.attendance));
 
   return (
-    <div className="relative flex flex-col flex-1 w-auto min-h-screen max-w-full overflow-x-hidden bg-gray-50 dark:bg-slate-900 ml-0 md:ml-20 lg:ml-64 px-4 sm:px-0">
+    <div className={cn("relative flex flex-col flex-1 min-h-screen w-full bg-gray-50 dark:bg-slate-900 overflow-x-hidden")}>
       <main className="flex-1 py-8 px-4 md:px-10 flex flex-col gap-6 w-full max-w-7xl mx-auto">
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2 w-full">
           <div className="greeting">
@@ -145,7 +145,7 @@ export function TeacherDashboardPage() {
             </button>
             <button
               className="bg-cyan-400 text-white border-none px-5 py-2.5 rounded-3xl font-bold text-sm cursor-pointer shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex-1 sm:flex-none text-center"
-              onClick={() => navigate('/teacher/activity-logs')}
+              onClick={() => navigate('/teacher/activities')}
             >
               Quick Log
             </button>
@@ -156,98 +156,160 @@ export function TeacherDashboardPage() {
           {/* Top Row Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Class Status */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-5 flex flex-col">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-base font-bold text-gray-800 dark:text-white">Class Status</h3>
-                <span className="bg-blue-50 text-cyan-500 text-xs font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wide">
-                  LIVE
-                </span>
+            {/* Class Status */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 flex flex-col border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-col">
+                  <h3 className="text-lg font-extrabold text-gray-800 dark:text-white">Class Status</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Live attendance overview</p>
+                </div>
+                <div className="flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1 rounded-full">
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                  <span className="text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest">
+                    LIVE
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-6">
-                <div
-                  className="relative w-20 h-20 rounded-full flex items-center justify-center bg-[conic-gradient(var(--tw-colors-cyan-400)_var(--progress),_var(--tw-colors-slate-200)_0)]"
-                  style={{ '--progress': `${attendanceProgress}%` } as React.CSSProperties}
-                >
-                  <div className="w-16 h-16 bg-white dark:bg-slate-800 rounded-full flex flex-col items-center justify-center">
-                    <span className="text-xl font-extrabold text-cyan-400 leading-none">
+              
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-8 sm:gap-4">
+                <div className="relative w-28 h-28 flex items-center justify-center">
+                  {/* SVG Progress Ring */}
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle
+                      cx="56"
+                      cy="56"
+                      r="48"
+                      stroke="currentColor"
+                      strokeWidth="8"
+                      fill="transparent"
+                      className="text-gray-100 dark:text-slate-700"
+                    />
+                    <circle
+                      cx="56"
+                      cy="56"
+                      r="48"
+                      stroke="currentColor"
+                      strokeWidth="8"
+                      strokeDasharray={301.6}
+                      strokeDashoffset={301.6 * (1 - attendanceProgress / 100)}
+                      strokeLinecap="round"
+                      fill="transparent"
+                      className="text-cyan-400 transition-all duration-1000 ease-out"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-3xl font-black text-gray-800 dark:text-white leading-none">
                       {classStatus.checkedIn}
                     </span>
-                    <span className="text-xs font-bold text-gray-600 dark:text-gray-300 mt-0.5">IN CLASS</span>
+                    <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tighter mt-1">
+                      Present
+                    </span>
                   </div>
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  <div className="text-sm font-semibold flex items-center gap-2">
-                    <span className="w-2 h-2 bg-cyan-400 rounded-full"></span> {classStatus.checkedIn} Checked-in
+
+                <div className="flex flex-col gap-4 flex-1 w-full sm:w-auto">
+                  <div className="flex justify-between items-center group">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 flex items-center justify-center">
+                        <span className="text-cyan-500 text-xs font-bold">{classStatus.checkedIn}</span>
+                      </div>
+                      <span className="text-sm font-bold text-gray-700 dark:text-gray-200">Checked-in</span>
+                    </div>
+                    <span className="text-xs font-black text-cyan-500">{attendanceProgress}%</span>
                   </div>
-                  <div className="text-sm font-semibold text-gray-600 dark:text-gray-300 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-gray-400 rounded-full"></span> {classStatus.expected} Expected
+
+                  <div className="flex justify-between items-center group">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-gray-50 dark:bg-slate-700 flex items-center justify-center text-gray-400">
+                        <span className="text-xs font-bold">{classStatus.expected}</span>
+                      </div>
+                      <span className="text-sm font-bold text-gray-600 dark:text-gray-400">Expected</span>
+                    </div>
+                    <span className="text-xs font-black text-gray-400">100%</span>
                   </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-300 font-semibold mt-1">
-                    {classStatus.attendance}% Attendance
+
+                  <div className="mt-2 h-1.5 w-full bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-right from-cyan-400 to-blue-500 transition-all duration-1000"
+                      style={{ width: `${attendanceProgress}%` }}
+                    />
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Safety Alerts */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-5 flex flex-col">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-base font-bold text-gray-800 dark:text-white">Safety Alerts</h3>
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M12 2L2 21H22L12 2Z"
-                    className="fill-yellow-400 stroke-yellow-400"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                  <path d="M12 9V14" className="stroke-amber-700" strokeWidth="2" strokeLinecap="round" />
-                  <circle cx="12" cy="18" r="1" className="fill-amber-700" />
-                </svg>
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 flex flex-col border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-col">
+                  <h3 className="text-lg font-extrabold text-gray-800 dark:text-white">Safety Alerts</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Critical updates needed</p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="animate-bounce"
+                  >
+                    <path
+                      d="M12 2L2 21H22L12 2Z"
+                      className="fill-yellow-400 stroke-yellow-400"
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                    />
+                    <path d="M12 9V14" className="stroke-amber-700" strokeWidth="2" strokeLinecap="round" />
+                    <circle cx="12" cy="18" r="1" className="fill-amber-700" />
+                  </svg>
+                </div>
               </div>
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-4">
                 {safetyAlerts.map((alert) => (
                   <div
                     key={alert.id}
                     className={cn(
-                      'p-3 rounded-lg text-sm font-bold flex items-center gap-3',
+                      'p-4 rounded-xl text-sm font-bold flex items-start gap-3 transition-all hover:translate-x-1',
                       alert.colorType === 'orange'
-                        ? 'bg-orange-50 text-orange-700'
-                        : 'bg-blue-50 text-blue-900'
+                        ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 border-l-4 border-orange-500'
+                        : 'bg-blue-50 dark:bg-blue-900/20 text-blue-900 dark:text-blue-300 border-l-4 border-cyan-400'
                     )}
                   >
                     <span
                       className={cn(
-                        'w-2 h-2 rounded-full',
+                        'w-2 h-2 rounded-full mt-1.5 shrink-0',
                         alert.colorType === 'orange' ? 'bg-orange-500' : 'bg-cyan-400'
                       )}
                     ></span>
-                    {alert.title}
+                    <span className="leading-tight">{alert.title}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Parent Comms */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-5 flex flex-col">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-base font-bold text-gray-800 dark:text-white">Parent Comms</h3>
+            {/* Parent Comms */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 flex flex-col border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-col">
+                  <h3 className="text-lg font-extrabold text-gray-800 dark:text-white">Parent Comms</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Recent incoming messages</p>
+                </div>
+                <span className="bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 text-[10px] font-black px-2.5 py-1 rounded-md uppercase">
+                  {parentComms.length} NEW
+                </span>
               </div>
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-5">
                 {parentComms.map((comm) => (
-                  <div className="flex gap-3 items-center" key={comm.id}>
+                  <div className="flex gap-4 items-start group cursor-pointer" key={comm.id}>
                     <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm"
+                      className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-sm shadow-sm group-hover:scale-110 transition-transform"
                       style={{ backgroundColor: comm.avatarBg }}
                     >
                       <svg
-                        width="32"
-                        height="32"
+                        width="24"
+                        height="24"
                         viewBox="0 0 32 32"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
@@ -260,13 +322,13 @@ export function TeacherDashboardPage() {
                         />
                       </svg>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs font-extrabold text-gray-600 dark:text-gray-300 uppercase tracking-wide">
+                    <div className="flex flex-col overflow-hidden">
+                      <div className="text-xs font-black text-gray-800 dark:text-white uppercase tracking-wider mb-1 truncate">
                         {comm.parentName}
-                      </span>
-                      <span className="text-sm font-semibold text-gray-800 dark:text-white">
+                      </div>
+                      <div className="text-sm font-semibold text-gray-600 dark:text-gray-400 line-clamp-2 leading-snug group-hover:text-cyan-500 transition-colors">
                         {comm.message}
-                      </span>
+                      </div>
                     </div>
                   </div>
                 ))}

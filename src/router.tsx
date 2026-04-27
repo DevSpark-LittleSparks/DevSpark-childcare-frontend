@@ -50,7 +50,7 @@ export const router = createBrowserRouter([
     element: <AdminLayout />, // AdminLayout
     children: [
       { path: 'dashboard', element: <AdminDashboardPage /> },
-      { path: 'progress', element: <AdminProgressPage /> },
+      { path: 'learning', element: <AdminProgressPage /> },
       { path: 'admissions', element: <div>Admissions Page</div> },
       { path: 'students', element: <div>Students Page</div> },
       { path: 'parents', element: <div>Parents Page</div> },

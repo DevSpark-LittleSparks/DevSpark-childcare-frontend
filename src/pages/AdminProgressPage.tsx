@@ -7,6 +7,7 @@
 import React, { useEffect, useState } from 'react';
 import { ProgressBarChart, ProgressPieChart, DailyProgressStackedBarChart } from '@/components/progress';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { cn } from '@/utils/cn';
 import {
   fetchProgressData,
   fetchDailyActivities,
@@ -150,7 +151,7 @@ export function AdminProgressPage() {
     : [];
 
   return (
-    <div className="relative flex flex-col flex-1 w-auto min-h-screen max-w-full overflow-x-hidden bg-gray-100 dark:bg-slate-900 ml-0 md:ml-20 lg:ml-64 px-4 sm:px-0">
+    <div className={cn("relative flex flex-col flex-1 min-h-screen w-full bg-gray-100 dark:bg-slate-900 overflow-x-hidden")}>
       <div className="flex-1 overflow-y-auto w-full flex justify-center">
         <div className="w-full max-w-7xl py-8 px-6 md:px-12 flex flex-col">
           <header className="mb-8">

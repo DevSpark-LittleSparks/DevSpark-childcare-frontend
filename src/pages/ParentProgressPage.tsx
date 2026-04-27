@@ -91,6 +91,10 @@ export function ParentProgressPage() {
       : [];
 
   const handleUpdateView = () => {
+    if (!progressState.selectedChildId) {
+      alert('Please select a child first!');
+      return;
+    }
     if (!progressState.dateRange.from || !progressState.dateRange.to) {
       alert('Please select both Start and End dates first!');
       return;
@@ -136,7 +140,7 @@ export function ParentProgressPage() {
   };
 
   return (
-    <div className="relative flex flex-col flex-1 w-auto min-h-screen max-w-full overflow-x-hidden bg-gray-50 dark:bg-slate-900 ml-0 md:ml-20 lg:ml-64 px-4 sm:px-0">
+    <div className={cn("relative flex flex-col flex-1 min-h-screen w-full bg-gray-50 dark:bg-slate-900 overflow-x-hidden")}>
       <main className="flex-1 p-4 md:p-8 text-left max-w-full">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
           <div className="greeting">
@@ -192,7 +196,14 @@ export function ParentProgressPage() {
           </div>
         </section>
 
-        {!progressState.showReport ? (
+        {!progressState.selectedChildId ? (
+          <div className="py-24 text-center text-teal-600 border-2 border-dashed border-teal-600 rounded-3xl bg-white dark:bg-slate-800 mt-5">
+            <div className="text-5xl mb-3">👶</div>
+            <p className="text-gray-700 dark:text-gray-300 font-semibold">
+              Please select a child to view their progress report.
+            </p>
+          </div>
+        ) : !progressState.showReport ? (
           <div className="py-24 text-center text-teal-600 border-2 border-dashed border-teal-600 rounded-3xl bg-white dark:bg-slate-800 mt-5">
             <div className="text-5xl mb-3">📊</div>
             <p className="text-gray-700 dark:text-gray-300 font-semibold">
@@ -201,23 +212,25 @@ export function ParentProgressPage() {
           </div>
         ) : (
           <div className="mt-12">
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-row gap-4 mb-6">
-              <div className="flex-1 bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                <p className="text-gray-900 dark:text-white font-bold text-sm mb-2">Days Present</p>
-                <h2 className="text-teal-600 text-3xl font-extrabold">{currentChild?.attendance || 0}</h2>
-              </div>
-              <div className="flex-1 bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                <p className="text-gray-900 dark:text-white font-bold text-sm mb-2">Activities Completed</p>
-                <h2 className="text-teal-600 text-3xl font-extrabold">{currentChild?.activities || 0}</h2>
-              </div>
-              <div className="flex-1 bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                <p className="text-gray-900 dark:text-white font-bold text-sm mb-2">Avg Mood</p>
-                <h2 className="text-teal-600 text-3xl font-extrabold">{currentChild?.mood || '😊'}</h2>
-              </div>
-              <div className="flex-1 bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-                <p className="text-gray-900 dark:text-white font-bold text-sm mb-2">Meals Provided</p>
-                <h2 className="text-teal-600 text-3xl font-extrabold">{currentChild?.meals || 0}</h2>
-              </div>
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-row gap-5 mb-8">
+              {[
+                { label: 'Days Present', value: currentChild?.attendance || 0, icon: '📅' },
+                { label: 'Activities Completed', value: currentChild?.activities || 0, icon: '🎨' },
+                { label: 'Avg Mood', value: currentChild?.mood || '😊', icon: '✨' },
+                { label: 'Meals Provided', value: currentChild?.meals || 0, icon: '🍎' },
+              ].map((stat, idx) => (
+                <div 
+                  key={idx}
+                  className="flex-1 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <p className="text-gray-500 dark:text-gray-400 font-black text-[10px] uppercase tracking-widest">{stat.label}</p>
+                    <span className="text-lg opacity-0 group-hover:opacity-100 transition-opacity">{stat.icon}</span>
+                  </div>
+                  <h2 className="text-teal-600 dark:text-teal-400 text-4xl font-black tracking-tight">{stat.value}</h2>
+                  <div className="mt-4 h-1 w-8 bg-teal-600/20 dark:bg-teal-400/20 rounded-full group-hover:w-full transition-all duration-500"></div>
+                </div>
+              ))}
             </section>
 
             <section className="flex flex-col lg:flex-row gap-5">
