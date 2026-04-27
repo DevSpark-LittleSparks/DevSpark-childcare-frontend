@@ -19,7 +19,7 @@ import StaffPage from './pages/StaffPage';
 import BillingPage from './pages/BillingPage';
 import { AdminProgressPage } from './pages/AdminProgressPage';
 import { ParentProgressPage } from './pages/ParentProgressPage';
-import { TeacherDashboardPage } from './pages/teacher/dashboard/TeacherDashboardPage';
+import { TeacherDashboardPage } from './pages/TeacherDashboardPage';
 
 export const router = createBrowserRouter([
   {

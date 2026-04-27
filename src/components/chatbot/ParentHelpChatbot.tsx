@@ -5,7 +5,7 @@
  */
 
 import { useRef, useEffect } from 'react';
-import { cn } from '@/shared/lib/cn';
+import { cn } from '@/utils/cn';
 import type { BotMessage, FaqItem } from '@/types/chatbot.types';
 
 interface ParentHelpChatbotProps {

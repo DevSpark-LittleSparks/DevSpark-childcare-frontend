@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { cn } from '@/shared/lib/cn';
+import { cn } from '@/utils/cn';
 import { ProgressBarChart, ProgressPieChart } from '@/components/progress';
 import { ParentHelpChatbot } from '@/components/chatbot/ParentHelpChatbot';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';

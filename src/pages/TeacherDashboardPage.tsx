@@ -5,7 +5,7 @@
 
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { cn } from '@/shared/lib/cn';
+import { cn } from '@/utils/cn';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   fetchTeacherDashboard,
