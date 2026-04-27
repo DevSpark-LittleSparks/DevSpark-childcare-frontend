@@ -4,7 +4,7 @@
  * All state management is handled by Redux in the parent component
  */
 
-import { useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { cn } from '@/utils/cn';
 import type { BotMessage, FaqItem } from '@/types/chatbot.types';
 

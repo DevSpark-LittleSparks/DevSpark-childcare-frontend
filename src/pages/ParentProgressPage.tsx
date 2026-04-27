@@ -4,7 +4,7 @@
  * Uses dumb components for chart rendering and chatbot
  */
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { cn } from '@/utils/cn';
 import { ProgressBarChart, ProgressPieChart } from '@/components/progress';
 import { ParentHelpChatbot } from '@/components/chatbot/ParentHelpChatbot';

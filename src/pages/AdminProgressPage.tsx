@@ -4,7 +4,7 @@
  * Uses dumb components for chart rendering
  */
 
-import { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ProgressBarChart, ProgressPieChart, DailyProgressStackedBarChart } from '@/components/progress';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
