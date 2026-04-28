@@ -19,6 +19,7 @@ export interface DailyActivity {
   teacher: string;
   role: string;
   studentsParticipated: number;
+  date: string;
 }
 
 export interface FaqItem {
@@ -340,6 +341,7 @@ export const adminDailyActivities: DailyActivity[] = [
     teacher: 'Sarah',
     role: 'Teacher',
     studentsParticipated: 5,
+    date: '2026-04-28',
   },
   {
     id: 'a2',
@@ -348,6 +350,7 @@ export const adminDailyActivities: DailyActivity[] = [
     teacher: 'Mike',
     role: 'Instructor',
     studentsParticipated: 5,
+    date: '2026-04-28',
   },
   {
     id: 'a3',
@@ -356,14 +359,54 @@ export const adminDailyActivities: DailyActivity[] = [
     teacher: 'Sarah',
     role: 'Teacher',
     studentsParticipated: 5,
+    date: '2026-04-28',
+  },
+  {
+    id: 'a4',
+    title: 'Art Class',
+    time: '09:00 AM',
+    teacher: 'Elena',
+    role: 'Teacher',
+    studentsParticipated: 8,
+    date: '2026-04-27',
   },
 ];
+
+export const MOCK_DAILY_PROGRESS_BY_DATE: Record<string, any> = {
+  '2026-04-28': {
+    Excellent: 40,
+    VeryGood: 30,
+    Good: 15,
+    Weak: 5,
+  },
+  '2026-04-27': {
+    Excellent: 25,
+    VeryGood: 45,
+    Good: 20,
+    Weak: 10,
+  },
+};
 
 export const MOCK_DAILY_PROGRESS = {
   Excellent: 40,
   VeryGood: 30,
   Good: 15,
   Weak: 5,
+};
+
+export const MOCK_ACTIVITY_ENGAGEMENT = [
+  { name: '03/04', value: 12 },
+  { name: '05/04', value: 19 },
+  { name: '07/04', value: 15 },
+  { name: '09/04', value: 17 },
+  { name: '11/04', value: 14 },
+  { name: '13/04', value: 13 },
+  { name: '15/04', value: 14 },
+];
+
+export const MOCK_ATTENDANCE_RATE = {
+  present: 18,
+  total: 20,
 };
 
 export interface TeacherProfile {

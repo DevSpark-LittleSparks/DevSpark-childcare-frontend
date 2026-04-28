@@ -18,6 +18,7 @@ import {
   setCurrentPage,
   setErrorMessage,
 } from '@/store/slices/progressSlice';
+import { MOCK_ACTIVITY_ENGAGEMENT, MOCK_ATTENDANCE_RATE } from '@/shared/mock/progressMockData';
 
 const getLocalDateStr = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -42,25 +43,30 @@ export function AdminProgressPage() {
     loading,
   } = useAppSelector((state: any) => state.progress);
 
+  const [selectedDate, setSelectedDate] = useState(todayStr);
+
   const daysPerPage = 7;
 
   // Fetch children data on mount
   useEffect(() => {
     dispatch(fetchProgressData());
-    dispatch(fetchDailyProgress(todayStr));
   }, [dispatch]);
 
+  // Fetch daily data whenever selectedDate changes
+  useEffect(() => {
+    dispatch(fetchDailyProgress(selectedDate));
+    dispatch(fetchDailyActivities({ childId: selectedChildId || '', date: selectedDate }));
+  }, [selectedDate, dispatch, selectedChildId]);
+
   const handleDailyDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedDate = e.target.value;
-    if (!selectedDate) {
-      return;
-    }
-    if (selectedDate > todayStr) {
+    const date = e.target.value;
+    if (!date) return;
+
+    if (date > todayStr) {
       alert('Invalid Date Selected. Please choose today or a previous date to view progress.');
       return;
     }
-    dispatch(fetchDailyActivities({ childId: selectedChildId || '', date: selectedDate }));
-    dispatch(fetchDailyProgress(selectedDate));
+    setSelectedDate(date);
   };
 
   const handleDateRangeChange = (field: 'from' | 'to', maxDate: string) =>
@@ -112,26 +118,26 @@ export function AdminProgressPage() {
   const visibleData =
     currentChild && visibleLabels.length > 0
       ? visibleLabels.map((_, idx) => {
-          const seedValue = currentChild.engagement[idx % currentChild.engagement.length] || 0;
-          return seedValue > 0 ? seedValue : 8 + (idx % 12);
-        })
+        const seedValue = currentChild.engagement[idx % currentChild.engagement.length] || 0;
+        return seedValue > 0 ? seedValue : 8 + (idx % 12);
+      })
       : [];
 
 
   const engagementData =
     currentChild && visibleLabels.length > 0
       ? visibleLabels.map((label, i) => ({ name: label, value: visibleData[i] }))
-      : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((label, i) => ({
-          name: label,
-          value: currentChild?.engagement[i] || 0,
-        }));
+      : MOCK_ACTIVITY_ENGAGEMENT;
 
   const pieChartData = currentChild
     ? [
-        { name: 'Present', value: currentChild.attendance },
-        { name: 'Absent', value: currentChild.totalDays - currentChild.attendance },
-      ]
-    : [];
+      { name: 'Present', value: currentChild.attendance },
+      { name: 'Absent', value: currentChild.totalDays - currentChild.attendance },
+    ]
+    : [
+      { name: 'Present', value: MOCK_ATTENDANCE_RATE.present },
+      { name: 'Absent', value: MOCK_ATTENDANCE_RATE.total - MOCK_ATTENDANCE_RATE.present },
+    ];
 
   return (
     <div className={cn("relative flex flex-col flex-1 min-h-screen w-full bg-gray-100 dark:bg-slate-900 overflow-x-hidden")}>
@@ -154,6 +160,7 @@ export function AdminProgressPage() {
                 <input
                   type="date"
                   max={todayStr}
+                  value={selectedDate}
                   onChange={handleDailyDateChange}
                   className="px-3 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-slate-800 dark:text-white rounded-md text-xs outline-none min-w-32"
                 />
@@ -163,52 +170,59 @@ export function AdminProgressPage() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 md:p-8 shadow-sm flex flex-col justify-center items-center min-h-[400px] h-full w-full">
+            <div className={cn("bg-white dark:bg-slate-800 rounded-lg p-6 md:p-8 pt-8 shadow-sm flex flex-col justify-start items-start min-h-[400px] h-full w-full")}>
               <div className="mb-3 w-full">
                 <h2 className="text-base font-semibold text-gray-800 dark:text-white mb-1">Daily Activity List</h2>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Activities for {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  Activities for {new Date(selectedDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                 </p>
               </div>
-              <div className="flex flex-col w-full">
-                {dailyActivities.map((activity, index) => (
-                  <div
-                    key={activity.id}
-                    className={`p-4 ${index < dailyActivities.length - 1 ? 'border-b border-gray-200 dark:border-gray-700' : ''}`}
-                  >
-                    <div className="font-bold text-sm text-gray-800 dark:text-white mb-3 truncate">{activity.title}</div>
-                    <div className="grid grid-cols-3 gap-4 items-start">
-                      <div className="flex flex-col text-sm text-gray-700 dark:text-gray-300 gap-1">
-                        <div className="flex items-center gap-1">
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                            <line x1="16" y1="2" x2="16" y2="6"></line>
-                            <line x1="8" y1="2" x2="8" y2="6"></line>
-                            <line x1="3" y1="10" x2="21" y2="10"></line>
-                          </svg>{' '}
-                          {activity.time}
+              <div className="flex flex-col w-full flex-1">
+                {dailyActivities.length > 0 ? (
+                  dailyActivities.map((activity, index) => (
+                    <div
+                      key={activity.id}
+                      className={`p-4 ${index < dailyActivities.length - 1 ? 'border-b border-gray-200 dark:border-gray-700' : ''}`}
+                    >
+                      <div className="font-bold text-sm text-gray-800 dark:text-white mb-3 truncate">{activity.title}</div>
+                      <div className="grid grid-cols-3 gap-4 items-start">
+                        <div className="flex flex-col text-sm text-gray-700 dark:text-gray-300 gap-1">
+                          <div className="flex items-center gap-1">
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                              <line x1="16" y1="2" x2="16" y2="6"></line>
+                              <line x1="8" y1="2" x2="8" y2="6"></line>
+                              <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>{' '}
+                            {activity.time}
+                          </div>
+                        </div>
+                        <div className="flex flex-col text-sm text-gray-700 dark:text-gray-300 gap-1">
+                          <span className="truncate max-w-[150px]">Teacher: {activity.teacher}</span>
+                          <span className="text-gray-500">{activity.role}</span>
+                        </div>
+                        <div className="flex flex-col text-sm text-gray-700 dark:text-gray-300 gap-1">
+                          <span>{activity.studentsParticipated} Students</span>
+                          <span className="text-gray-500">Participated</span>
                         </div>
                       </div>
-                      <div className="flex flex-col text-sm text-gray-700 dark:text-gray-300 gap-1">
-                        <span className="truncate max-w-[150px]">Teacher: {activity.teacher}</span>
-                        <span className="text-gray-500">{activity.role}</span>
-                      </div>
-                      <div className="flex flex-col text-sm text-gray-700 dark:text-gray-300 gap-1">
-                        <span>{activity.studentsParticipated} Students</span>
-                        <span className="text-gray-500">Participated</span>
-                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center flex-1 py-10 text-gray-500 dark:text-gray-400">
+                    <span className="text-3xl mb-2">📅</span>
+                    <p className="text-sm font-semibold">No activities recorded for this date</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>
@@ -333,11 +347,13 @@ export function AdminProgressPage() {
                 </h2>
                 <div className="min-h-[400px] h-auto flex flex-1 justify-center items-center relative w-full">
                   <ProgressPieChart data={pieChartData} />
-                  <div className="absolute flex flex-col items-center">
-                    <span className="text-2xl font-bold text-gray-800 dark:text-white">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-xl font-black text-gray-800 dark:text-white leading-tight">
                       {getAttendancePercentage()}%
                     </span>
-                    <span className="text-sm text-gray-600 dark:text-gray-300">Present</span>
+                    <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tighter">
+                      Present
+                    </span>
                   </div>
                 </div>
               </div>

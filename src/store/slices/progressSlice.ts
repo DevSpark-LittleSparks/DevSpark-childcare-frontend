@@ -45,14 +45,7 @@ export const fetchDailyProgress = createAsyncThunk(
   'progress/fetchDailyProgress',
   async (date: string, { rejectWithValue }) => {
     try {
-      // For now, we simulate this or fetch from a service if available
-      // Since the user provided MOCK_DAILY_PROGRESS_DATA logic, we can return it here
-      const data: DailyProgressData[] = [
-        {
-          name: date,
-          ...MOCK_DAILY_PROGRESS,
-        },
-      ];
+      const data = await progressService.getDailyProgress(date);
       return data;
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch daily progress');

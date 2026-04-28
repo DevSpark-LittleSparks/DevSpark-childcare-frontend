@@ -6,7 +6,8 @@
 
 import axiosInstance from './axiosInstance';
 import type { ChildrenData, Activity, EngagementData } from '@/types/progress.types';
-import { childrenData, adminDailyActivities } from '@/shared/mock/progressMockData';
+import { childrenData, adminDailyActivities, MOCK_DAILY_PROGRESS_BY_DATE } from '@/shared/mock/progressMockData';
+import type { DailyProgressData } from '@/types/progress.types';
 
 // Mock data will be fetched from progressMockData
 
@@ -82,7 +83,8 @@ class ProgressService {
       // });
       // return response.data;
 
-      return adminDailyActivities.map(a => ({
+      const activities = adminDailyActivities.filter((a) => a.date === date);
+      return activities.map((a) => ({
         ...a,
         role: a.role as string,
       })) as Activity[];
@@ -120,6 +122,25 @@ class ProgressService {
       }));
     } catch (error) {
       console.error('Error fetching engagement data:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get daily progress stats for a specific date
+   */
+  async getDailyProgress(date: string): Promise<DailyProgressData[]> {
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const progress = MOCK_DAILY_PROGRESS_BY_DATE[date] || { Excellent: 0, VeryGood: 0, Good: 0, Weak: 0 };
+      return [
+        {
+          name: date,
+          ...progress,
+        },
+      ];
+    } catch (error) {
+      console.error('Error fetching daily progress:', error);
       throw error;
     }
   }
