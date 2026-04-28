@@ -176,7 +176,7 @@ export function AdminProgressPage() {
                     key={activity.id}
                     className={`p-4 ${index < dailyActivities.length - 1 ? 'border-b border-gray-200 dark:border-gray-700' : ''}`}
                   >
-                    <div className="font-bold text-sm text-gray-800 dark:text-white mb-3">{activity.title}</div>
+                    <div className="font-bold text-sm text-gray-800 dark:text-white mb-3 truncate">{activity.title}</div>
                     <div className="grid grid-cols-3 gap-4 items-start">
                       <div className="flex flex-col text-sm text-gray-700 dark:text-gray-300 gap-1">
                         <div className="flex items-center gap-1">
@@ -199,7 +199,7 @@ export function AdminProgressPage() {
                         </div>
                       </div>
                       <div className="flex flex-col text-sm text-gray-700 dark:text-gray-300 gap-1">
-                        <span>Teacher: {activity.teacher}</span>
+                        <span className="truncate max-w-[150px]">Teacher: {activity.teacher}</span>
                         <span className="text-gray-500">{activity.role}</span>
                       </div>
                       <div className="flex flex-col text-sm text-gray-700 dark:text-gray-300 gap-1">

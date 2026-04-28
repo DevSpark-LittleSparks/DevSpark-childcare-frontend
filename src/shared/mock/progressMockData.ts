@@ -125,7 +125,7 @@ export const SCHEDULE_DATA: ScheduleItem[] = [
     time: '08:30 AM - 09:00 AM',
     title: 'Morning Arrival',
     desc: 'Greeting parents and students',
-    icon: '🏫',
+    icon: 'SCHOOL',
     colorType: 'blue',
   },
   {
@@ -133,7 +133,7 @@ export const SCHEDULE_DATA: ScheduleItem[] = [
     time: '09:00 AM - 09:30 AM',
     title: 'Breakfast',
     desc: 'Oatmeal and fresh fruits',
-    icon: '🥞',
+    icon: 'BREAKFAST',
     colorType: 'orange',
   },
   {
@@ -141,7 +141,7 @@ export const SCHEDULE_DATA: ScheduleItem[] = [
     time: '09:30 AM - 10:00 AM',
     title: 'Morning Circle',
     desc: 'Singing songs and weather check',
-    icon: '🧸',
+    icon: 'CIRCLE',
     colorType: 'blue',
   },
   {
@@ -149,7 +149,7 @@ export const SCHEDULE_DATA: ScheduleItem[] = [
     time: '10:00 AM - 10:45 AM',
     title: 'Story Time',
     desc: 'Reading: "The Very Hungry Caterpillar"',
-    icon: '📘',
+    icon: 'STORY',
     colorType: 'blue',
   },
   {
@@ -157,7 +157,7 @@ export const SCHEDULE_DATA: ScheduleItem[] = [
     time: '11:30 AM - 12:15 PM',
     title: 'Lunch Time',
     desc: 'Menu: Turkey sandwiches & apple slices',
-    icon: '🍕',
+    icon: 'LUNCH',
     colorType: 'orange',
   },
   {
@@ -165,7 +165,7 @@ export const SCHEDULE_DATA: ScheduleItem[] = [
     time: '02:30 PM - 03:00 PM',
     title: 'Afternoon Snack',
     desc: 'Crackers and cheese',
-    icon: '🍎',
+    icon: 'SNACK',
     colorType: 'orange',
   },
   {
@@ -173,7 +173,7 @@ export const SCHEDULE_DATA: ScheduleItem[] = [
     time: '03:00 PM - 03:45 PM',
     title: 'Free Play',
     desc: 'Indoor and outdoor activities',
-    icon: '🎨',
+    icon: 'PLAY',
     colorType: 'blue',
   },
   {
@@ -181,26 +181,26 @@ export const SCHEDULE_DATA: ScheduleItem[] = [
     time: '03:45 PM - 04:00 PM',
     title: 'Parent Pick-up',
     desc: 'Packing bags and goodbyes',
-    icon: '👋',
+    icon: 'PICKUP',
     colorType: 'blue',
   },
 ];
 
 export const LOGS_DATA: LogItem[] = [
-  { id: 18, studentName: 'Mia T.', time: '11:00 AM', timestamp: new Date().setHours(11, 0, 0, 0), tag: 'ACTIVITY', actionText: 'Outdoor Play: Playing with bubbles', icon: '🎨', iconColor: '#10B981' },
-  { id: 17, studentName: 'Lucas H.', time: '10:55 AM', timestamp: new Date().setHours(10, 55, 0, 0), tag: 'ACTIVITY', actionText: 'Story Time: Reading The Very Hungry Caterpillar', icon: '🎨', iconColor: '#10B981' },
-  { id: 16, studentName: 'Sophia C.', time: '10:50 AM', timestamp: new Date().setHours(10, 50, 0, 0), tag: 'ACTIVITY', actionText: 'Art: Finger painting session', icon: '🎨', iconColor: '#10B981' },
-  { id: 15, studentName: 'Jackson W.', time: '10:45 AM', timestamp: new Date().setHours(10, 45, 0, 0), tag: 'ACTIVITY', actionText: 'Music Time: Singing songs', icon: '🎨', iconColor: '#10B981' },
-  { id: 14, studentName: 'Aiden K.', time: '10:42 AM', timestamp: new Date().setHours(10, 42, 0, 0), tag: 'ACTIVITY', actionText: 'Free Play: Building with blocks', icon: '🎨', iconColor: '#10B981' },
-  { id: 13, studentName: 'Isabella G.', time: '10:40 AM', timestamp: new Date().setHours(10, 40, 0, 0), tag: 'MEALS', actionText: 'Lunch: Chicken pasta with steamed broccoli', icon: '🍴', iconColor: '#F97316' },
-  { id: 12, studentName: 'Ethan P.', time: '10:35 AM', timestamp: new Date().setHours(10, 35, 0, 0), tag: 'MEALS', actionText: 'PM Snack: Sliced apples and crackers', icon: '🍴', iconColor: '#F97316' },
-  { id: 11, studentName: 'Chloe M.', time: '10:32 AM', timestamp: new Date().setHours(10, 32, 0, 0), tag: 'MEALS', actionText: 'Lunch: Veggie wrap with fruits', icon: '🍴', iconColor: '#F97316' },
-  { id: 10, studentName: 'Noah R.', time: '10:31 AM', timestamp: new Date().setHours(10, 31, 0, 0), tag: 'MEALS', actionText: 'PM Snack: Yogurt and berries', icon: '🍴', iconColor: '#F97316' },
-  { id: 1, studentName: 'Leo M.', time: '10:30 AM', timestamp: new Date().setHours(10, 30, 0, 0), tag: 'MEALS', actionText: 'Finished 1 bottle (6oz)', icon: '🍴', iconColor: '#F97316' },
-  { id: 2, studentName: 'Maya S.', time: '10:15 AM', timestamp: new Date().setHours(10, 15, 0, 0), tag: 'ACTIVITY', actionText: 'Painted with triangles', icon: '🎨', iconColor: '#10B981' },
-  { id: 6, studentName: 'Olivia H.', time: '09:15 AM', timestamp: new Date().setHours(9, 15, 0, 0), tag: 'MEALS', actionText: 'Ate all her apple slices', icon: '🍴', iconColor: '#F97316' },
-  { id: 7, studentName: 'Elijah K.', time: '09:00 AM', timestamp: new Date().setHours(9, 0, 0, 0), tag: 'ACTIVITY', actionText: 'Built a tall block tower', icon: '🎨', iconColor: '#10B981' },
-  { id: 9, studentName: 'Jameson D.', time: '08:30 AM', timestamp: new Date().setHours(8, 30, 0, 0), tag: 'MEALS', actionText: 'Refused morning snack', icon: '🍴', iconColor: '#F97316' }
+  { id: 18, studentName: 'Mia T.', time: '11:00 AM', timestamp: new Date().setHours(11, 0, 0, 0), tag: 'ACTIVITY', actionText: 'Outdoor Play: Playing with bubbles', icon: 'ACTIVITY', iconColor: '#10B981' },
+  { id: 17, studentName: 'Lucas H.', time: '10:55 AM', timestamp: new Date().setHours(10, 55, 0, 0), tag: 'ACTIVITY', actionText: 'Story Time: Reading The Very Hungry Caterpillar', icon: 'ACTIVITY', iconColor: '#10B981' },
+  { id: 16, studentName: 'Sophia C.', time: '10:50 AM', timestamp: new Date().setHours(10, 50, 0, 0), tag: 'ACTIVITY', actionText: 'Art: Finger painting session', icon: 'ACTIVITY', iconColor: '#10B981' },
+  { id: 15, studentName: 'Jackson W.', time: '10:45 AM', timestamp: new Date().setHours(10, 45, 0, 0), tag: 'ACTIVITY', actionText: 'Music Time: Singing songs', icon: 'ACTIVITY', iconColor: '#10B981' },
+  { id: 14, studentName: 'Aiden K.', time: '10:42 AM', timestamp: new Date().setHours(10, 42, 0, 0), tag: 'ACTIVITY', actionText: 'Free Play: Building with blocks', icon: 'ACTIVITY', iconColor: '#10B981' },
+  { id: 13, studentName: 'Isabella G.', time: '10:40 AM', timestamp: new Date().setHours(10, 40, 0, 0), tag: 'MEALS', actionText: 'Lunch: Chicken pasta with steamed broccoli', icon: 'MEALS', iconColor: '#F97316' },
+  { id: 12, studentName: 'Ethan P.', time: '10:35 AM', timestamp: new Date().setHours(10, 35, 0, 0), tag: 'MEALS', actionText: 'PM Snack: Sliced apples and crackers', icon: 'MEALS', iconColor: '#F97316' },
+  { id: 11, studentName: 'Chloe M.', time: '10:32 AM', timestamp: new Date().setHours(10, 32, 0, 0), tag: 'MEALS', actionText: 'Lunch: Veggie wrap with fruits', icon: 'MEALS', iconColor: '#F97316' },
+  { id: 10, studentName: 'Noah R.', time: '10:31 AM', timestamp: new Date().setHours(10, 31, 0, 0), tag: 'MEALS', actionText: 'PM Snack: Yogurt and berries', icon: 'MEALS', iconColor: '#F97316' },
+  { id: 1, studentName: 'Leo M.', time: '10:30 AM', timestamp: new Date().setHours(10, 30, 0, 0), tag: 'MEALS', actionText: 'Finished 1 bottle (6oz)', icon: 'MEALS', iconColor: '#F97316' },
+  { id: 2, studentName: 'Maya S.', time: '10:15 AM', timestamp: new Date().setHours(10, 15, 0, 0), tag: 'ACTIVITY', actionText: 'Painted with triangles', icon: 'ACTIVITY', iconColor: '#10B981' },
+  { id: 6, studentName: 'Olivia H.', time: '09:15 AM', timestamp: new Date().setHours(9, 15, 0, 0), tag: 'MEALS', actionText: 'Ate all her apple slices', icon: 'MEALS', iconColor: '#F97316' },
+  { id: 7, studentName: 'Elijah K.', time: '09:00 AM', timestamp: new Date().setHours(9, 0, 0, 0), tag: 'ACTIVITY', actionText: 'Built a tall block tower', icon: 'ACTIVITY', iconColor: '#10B981' },
+  { id: 9, studentName: 'Jameson D.', time: '08:30 AM', timestamp: new Date().setHours(8, 30, 0, 0), tag: 'MEALS', actionText: 'Refused morning snack', icon: 'MEALS', iconColor: '#F97316' }
 ];
 
 export const CLASS_STATUS: ClassStatus = {

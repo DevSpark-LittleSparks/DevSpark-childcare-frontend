@@ -20,6 +20,7 @@ import {
   setCurrentPage,
   resetFilters,
 } from '@/store/slices/teacherSlice';
+import { getScheduleIcon, getLogIcon } from '@/utils/iconMapping';
 
 export function TeacherDashboardPage() {
   const navigate = useNavigate();
@@ -326,7 +327,7 @@ export function TeacherDashboardPage() {
                       </svg>
                     </div>
                     <div className="flex flex-col overflow-hidden">
-                      <div className="text-xs font-black text-gray-800 dark:text-white uppercase tracking-wider mb-1 truncate">
+                      <div className="text-xs font-black text-gray-800 dark:text-white uppercase tracking-wider mb-1 truncate max-w-full">
                         {comm.parentName}
                       </div>
                       <div className="text-sm font-semibold text-gray-600 dark:text-gray-400 line-clamp-2 leading-snug group-hover:text-cyan-500 transition-colors">
@@ -368,9 +369,9 @@ export function TeacherDashboardPage() {
                             : 'bg-purple-50'
                       )}
                     >
-                      {item.icon}
+                      {getScheduleIcon(item.icon)}
                     </div>
-                    <div className="flex flex-col pt-1">
+                    <div className="flex flex-col pt-1 min-w-0 flex-1">
                       <span
                         className={cn(
                           'text-xs font-extrabold uppercase tracking-wide',
@@ -383,8 +384,8 @@ export function TeacherDashboardPage() {
                       >
                         {item.time}
                       </span>
-                      <span className="text-base text-gray-800 dark:text-white font-bold mt-1">{item.title}</span>
-                      <span className="text-sm text-gray-600 dark:text-gray-300 font-semibold mt-1">{item.desc}</span>
+                      <span className="text-base text-gray-800 dark:text-white font-bold mt-1 truncate">{item.title}</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-300 font-semibold mt-1 truncate">{item.desc}</span>
                     </div>
                   </div>
                 ))}
@@ -521,7 +522,7 @@ export function TeacherDashboardPage() {
                 </div>
               )}
 
-              <div className={cn('relative flex flex-col gap-4', showAllLogs ? 'max-h-80 overflow-y-auto pr-2' : '')}>
+              <div className={cn('relative flex flex-col gap-4 overflow-x-hidden', showAllLogs ? 'max-h-80 overflow-y-auto pr-2' : '')}>
                 {showAllLogs && logsData.length > 0 && (
                   <div className="absolute top-5 bottom-5 left-5 w-0.5 bg-gray-200 z-0"></div>
                 )}
@@ -542,22 +543,29 @@ export function TeacherDashboardPage() {
                 ) : (
                   displayedLogs.map((log) => (
                     <div
-                      className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-3xl px-4 py-2 flex justify-between items-center relative z-10"
+                      className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-3xl px-4 py-3 flex items-center gap-4 relative z-10 w-full"
                       key={log.id}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 bg-cyan-400 text-white rounded-full flex items-center justify-center text-sm font-extrabold">
-                          ✓
+                      <div className="flex-shrink-0 w-6 h-6 bg-cyan-400 text-white rounded-full flex items-center justify-center text-sm font-extrabold shadow-sm">
+                        ✓
+                      </div>
+                      <div className="flex-shrink-0 text-lg flex items-center justify-center w-5" style={{ color: log.iconColor }}>
+                        {getLogIcon(log.icon)}
+                      </div>
+                      
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <div className="flex justify-between items-center gap-2 w-full">
+                          <span className="font-extrabold text-sm text-gray-800 dark:text-white truncate">
+                            {log.studentName}
+                          </span>
+                          <span className="text-xs font-black text-gray-400 flex-shrink-0">
+                            {log.time}
+                          </span>
                         </div>
-                        <div className="text-lg flex items-center justify-center w-5" style={{ color: log.iconColor }}>
-                          {log.icon}
-                        </div>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="font-extrabold text-sm text-gray-800 dark:text-white">{log.studentName}</span>
-                          <span className="text-sm text-gray-600 dark:text-gray-300 font-semibold">{log.actionText}</span>
+                        <div className="text-sm text-gray-600 dark:text-gray-300 font-semibold truncate leading-relaxed">
+                          {log.actionText}
                         </div>
                       </div>
-                      <span className="text-sm font-extrabold text-gray-600 dark:text-gray-300 opacity-60">{log.time}</span>
                     </div>
                   ))
                 )}
