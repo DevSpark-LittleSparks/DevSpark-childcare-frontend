@@ -14,159 +14,16 @@ import type {
   TeacherProfile,
   FilterOptions,
 } from '@/types/teacher.types';
+import {
+  SCHEDULE_DATA,
+  LOGS_DATA,
+  CLASS_STATUS,
+  SAFETY_ALERTS,
+  PARENT_COMMS,
+  mockTeacherProfile,
+} from '@/shared/mock/progressMockData';
 
-// Mock data - will be replaced with API calls
-const MOCK_SCHEDULE_DATA: Schedule[] = [
-  {
-    id: '1',
-    time: '09:00 - 09:30',
-    title: 'Morning Circle',
-    desc: 'Group gathering and morning activities',
-    colorType: 'blue',
-    icon: '🌅',
-  },
-  {
-    id: '2',
-    time: '10:00 - 11:00',
-    title: 'Arts & Crafts',
-    desc: 'Creative activities and projects',
-    colorType: 'orange',
-    icon: '🎨',
-  },
-  {
-    id: '3',
-    time: '11:30 - 12:00',
-    title: 'Snack Break',
-    desc: 'Nutrition and hydration time',
-    colorType: 'purple',
-    icon: '🥗',
-  },
-  {
-    id: '4',
-    time: '01:00 - 02:00',
-    title: 'Outdoor Play',
-    desc: 'Physical activity in outdoor space',
-    colorType: 'blue',
-    icon: '⚽',
-  },
-  {
-    id: '5',
-    time: '02:30 - 03:00',
-    title: 'Story Time',
-    desc: 'Reading and storytelling session',
-    colorType: 'purple',
-    icon: '📚',
-  },
-  {
-    id: '6',
-    time: '03:30 - 04:00',
-    title: 'Wrap Up',
-    desc: 'End of day activities and dismissal',
-    colorType: 'orange',
-    icon: '👋',
-  },
-];
-
-const MOCK_LOGS_DATA: ActivityLog[] = [
-  {
-    id: '1',
-    studentName: 'Emma Johnson',
-    tag: 'ACTIVITY',
-    actionText: 'participated in art class',
-    time: '10:30 AM',
-    timestamp: Date.now() - 60000,
-    icon: '🎨',
-    iconColor: '#f59e0b',
-  },
-  {
-    id: '2',
-    studentName: 'Lucas Williams',
-    tag: 'MEALS',
-    actionText: 'had lunch',
-    time: '1:00 PM',
-    timestamp: Date.now() - 120000,
-    icon: '🍽️',
-    iconColor: '#20c997',
-  },
-  {
-    id: '3',
-    studentName: 'Sophia Davis',
-    tag: 'ACTIVITY',
-    actionText: 'finished outdoor play',
-    time: '2:00 PM',
-    timestamp: Date.now() - 180000,
-    icon: '⚽',
-    iconColor: '#3b82f6',
-  },
-  {
-    id: '4',
-    studentName: 'Noah Martinez',
-    tag: 'ATTENDANCE',
-    actionText: 'checked in',
-    time: '9:00 AM',
-    timestamp: Date.now() - 240000,
-    icon: '✓',
-    iconColor: '#20c997',
-  },
-  {
-    id: '5',
-    studentName: 'Ava Garcia',
-    tag: 'MEALS',
-    actionText: 'snack break',
-    time: '11:00 AM',
-    timestamp: Date.now() - 300000,
-    icon: '🥗',
-    iconColor: '#8b5cf6',
-  },
-];
-
-const MOCK_CLASS_STATUS: ClassStatus = {
-  checkedIn: 14,
-  expected: 15,
-  attendance: 93,
-};
-
-const MOCK_SAFETY_ALERTS: SafetyAlert[] = [
-  {
-    id: '1',
-    title: 'One child missing from group during outdoor play',
-    colorType: 'orange',
-  },
-  {
-    id: '2',
-    title: 'Temperature check needed for Lucas',
-    colorType: 'blue',
-  },
-];
-
-const MOCK_PARENT_COMMS: ParentComm[] = [
-  {
-    id: '1',
-    parentName: 'Sarah (Emma\'s mom)',
-    message: 'Thank you for the update on Emma\'s progress!',
-    avatarBg: '#dbeafe',
-    avatarFill: '#0284c7',
-  },
-  {
-    id: '2',
-    parentName: 'James (Lucas\'s dad)',
-    message: 'Can Lucas stay for extended hours today?',
-    avatarBg: '#fce7f3',
-    avatarFill: '#ec4899',
-  },
-  {
-    id: '3',
-    parentName: 'Maria (Sophia\'s mom)',
-    message: 'Sophia mentioned the art project today. Great job!',
-    avatarBg: '#f0fdf4',
-    avatarFill: '#22c55e',
-  },
-];
-
-const MOCK_TEACHER_PROFILE: TeacherProfile = {
-  name: 'Mrs. Emily Johnson',
-  classroom: 'Room 3 (Ages 4-5)',
-};
+// Mock data will be fetched from progressMockData
 
 class TeacherService {
   /**
@@ -188,11 +45,11 @@ class TeacherService {
       // return response.data;
 
       return {
-        schedule: MOCK_SCHEDULE_DATA,
-        classStatus: MOCK_CLASS_STATUS,
-        safetyAlerts: MOCK_SAFETY_ALERTS,
-        parentComms: MOCK_PARENT_COMMS,
-        profile: MOCK_TEACHER_PROFILE,
+        schedule: SCHEDULE_DATA.map(s => ({ ...s, id: String(s.id) })) as Schedule[],
+        classStatus: CLASS_STATUS,
+        safetyAlerts: SAFETY_ALERTS.map(a => ({ ...a, id: String(a.id) })) as SafetyAlert[],
+        parentComms: PARENT_COMMS.map(c => ({ ...c, id: String(c.id) })) as ParentComm[],
+        profile: mockTeacherProfile as TeacherProfile,
       };
     } catch (error) {
       console.error('Error fetching teacher dashboard:', error);
@@ -214,7 +71,7 @@ class TeacherService {
       // });
       // return response.data;
 
-      let filtered = [...MOCK_LOGS_DATA];
+      let filtered = LOGS_DATA.map(l => ({ ...l, id: String(l.id) })) as ActivityLog[];
 
       // Apply filters
       if (options?.searchQuery && options.searchQuery.trim() !== '') {
@@ -260,7 +117,7 @@ class TeacherService {
       // const response = await axiosInstance.get('/api/class/status');
       // return response.data;
 
-      return MOCK_CLASS_STATUS;
+      return CLASS_STATUS;
     } catch (error) {
       console.error('Error fetching class status:', error);
       throw error;
@@ -279,7 +136,7 @@ class TeacherService {
       // const response = await axiosInstance.get('/api/safety-alerts');
       // return response.data;
 
-      return MOCK_SAFETY_ALERTS;
+      return SAFETY_ALERTS.map(a => ({ ...a, id: String(a.id) })) as SafetyAlert[];
     } catch (error) {
       console.error('Error fetching safety alerts:', error);
       throw error;
@@ -298,7 +155,7 @@ class TeacherService {
       // const response = await axiosInstance.get('/api/parent-communications');
       // return response.data;
 
-      return MOCK_PARENT_COMMS;
+      return PARENT_COMMS.map(c => ({ ...c, id: String(c.id) })) as ParentComm[];
     } catch (error) {
       console.error('Error fetching parent communications:', error);
       throw error;

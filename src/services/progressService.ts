@@ -6,83 +6,9 @@
 
 import axiosInstance from './axiosInstance';
 import type { ChildrenData, Activity, EngagementData } from '@/types/progress.types';
+import { childrenData, adminDailyActivities } from '@/shared/mock/progressMockData';
 
-// Mock data - will be replaced with API calls
-const MOCK_CHILDREN_DATA: Record<string, ChildrenData> = {
-  C1: {
-    id: 'C1',
-    name: 'Emma Johnson',
-    totalDays: 20,
-    attendance: 18,
-    activities: 45,
-    mood: '😊',
-    meals: 40,
-    engagement: [12, 15, 10, 18, 14, 16, 11, 13, 17, 14, 12, 15, 10, 18, 14],
-  },
-  C2: {
-    id: 'C2',
-    name: 'Lucas Williams',
-    totalDays: 20,
-    attendance: 16,
-    activities: 38,
-    mood: '😊',
-    meals: 35,
-    engagement: [10, 14, 9, 16, 12, 15, 10, 12, 15, 13, 11, 14, 9, 16, 12],
-  },
-  C3: {
-    id: 'C3',
-    name: 'Sophia Davis',
-    totalDays: 20,
-    attendance: 19,
-    activities: 52,
-    mood: '🤩',
-    meals: 42,
-    engagement: [14, 18, 12, 20, 16, 18, 13, 15, 19, 16, 14, 17, 12, 20, 16],
-  },
-};
-
-const MOCK_DAILY_ACTIVITIES: Activity[] = [
-  {
-    id: '1',
-    title: 'Morning Circle',
-    time: '09:00 AM',
-    teacher: 'Ms. Sarah',
-    role: 'Lead Teacher',
-    studentsParticipated: 12,
-  },
-  {
-    id: '2',
-    title: 'Art & Craft',
-    time: '10:30 AM',
-    teacher: 'Mr. James',
-    role: 'Activity Lead',
-    studentsParticipated: 14,
-  },
-  {
-    id: '3',
-    title: 'Snack Time',
-    time: '11:00 AM',
-    teacher: 'Mrs. Linda',
-    role: 'Nutrition Lead',
-    studentsParticipated: 15,
-  },
-  {
-    id: '4',
-    title: 'Outdoor Play',
-    time: '12:00 PM',
-    teacher: 'Mr. Tom',
-    role: 'Sports Lead',
-    studentsParticipated: 13,
-  },
-  {
-    id: '5',
-    title: 'Lunch',
-    time: '01:00 PM',
-    teacher: 'Mrs. Linda',
-    role: 'Nutrition Lead',
-    studentsParticipated: 15,
-  },
-];
+// Mock data will be fetched from progressMockData
 
 class ProgressService {
   /**
@@ -98,7 +24,13 @@ class ProgressService {
       // const response = await axiosInstance.get('/api/children', { params: { filter } });
       // return response.data;
 
-      const childrenArray = Object.values(MOCK_CHILDREN_DATA);
+      const childrenArray = Object.entries(childrenData).map(([id, data]) => ({
+        id,
+        ...data,
+        mood: String(data.mood),
+        meals: data.meals === 'full' ? 100 : data.meals === 'partial' ? 50 : 0, // Mapping string to numeric for existing type
+      })) as ChildrenData[];
+
       return filter
         ? childrenArray.filter((child) =>
             child.name.toLowerCase().includes(filter.toLowerCase())
@@ -122,7 +54,14 @@ class ProgressService {
       // const response = await axiosInstance.get(`/api/children/${childId}`);
       // return response.data;
 
-      return MOCK_CHILDREN_DATA[childId] || null;
+      const data = childrenData[childId];
+      if (!data) return null;
+      return {
+        id: childId,
+        ...data,
+        mood: String(data.mood),
+        meals: data.meals === 'full' ? 100 : data.meals === 'partial' ? 50 : 0,
+      } as ChildrenData;
     } catch (error) {
       console.error('Error fetching child data:', error);
       throw error;
@@ -143,7 +82,10 @@ class ProgressService {
       // });
       // return response.data;
 
-      return MOCK_DAILY_ACTIVITIES;
+      return adminDailyActivities.map(a => ({
+        ...a,
+        role: a.role as string,
+      })) as Activity[];
     } catch (error) {
       console.error('Error fetching daily activities:', error);
       throw error;
@@ -168,7 +110,7 @@ class ProgressService {
       // });
       // return response.data;
 
-      const child = MOCK_CHILDREN_DATA[childId];
+      const child = childrenData[childId];
       if (!child) return [];
 
       const dates = this.getDatesInRange(startDate, endDate);

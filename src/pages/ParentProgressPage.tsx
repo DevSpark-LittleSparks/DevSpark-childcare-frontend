@@ -9,6 +9,7 @@ import { cn } from '@/utils/cn';
 import { ProgressBarChart, ProgressPieChart } from '@/components/progress';
 import { ParentHelpChatbot } from '@/components/chatbot/ParentHelpChatbot';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { mockParentProfile } from '@/shared/mock/progressMockData';
 import {
   fetchProgressData,
   setSelectedChild,
@@ -31,9 +32,6 @@ const yesterdayObj = new Date(todayObj);
 yesterdayObj.setDate(yesterdayObj.getDate() - 1);
 const yesterdayStr = `${yesterdayObj.getFullYear()}-${String(yesterdayObj.getMonth() + 1).padStart(2, '0')}-${String(yesterdayObj.getDate()).padStart(2, '0')}`;
 
-const MOCK_PARENT_PROFILE = {
-  name: 'Sarah Johnson',
-};
 
 export function ParentProgressPage() {
   const dispatch = useAppDispatch();
@@ -145,7 +143,7 @@ export function ParentProgressPage() {
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
           <div className="greeting">
             <h1 className="text-2xl text-gray-800 dark:text-white font-extrabold">
-              Welcome back, {MOCK_PARENT_PROFILE.name}!
+              Welcome back, {mockParentProfile.name}!
             </h1>
           </div>
           <div className="flex flex-wrap gap-2.5 w-full md:w-auto">

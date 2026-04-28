@@ -49,6 +49,7 @@ export interface ParentProfile {
 export interface ProgressState {
   childrenData: Record<string, ChildrenData>;
   dailyActivities: Activity[];
+  dailyProgressData: DailyProgressData[];
   selectedChildId: string;
   dateRange: DateRange;
   showReport: boolean;

@@ -5,11 +5,13 @@
 
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import progressService from '@/services/progressService';
-import type { ProgressState, ChildrenData } from '@/types/progress.types';
+import type { ProgressState, ChildrenData, DailyProgressData } from '@/types/progress.types';
+import { MOCK_DAILY_PROGRESS } from '@/shared/mock/progressMockData';
 
 const initialState: ProgressState = {
   childrenData: {},
   dailyActivities: [],
+  dailyProgressData: [],
   selectedChildId: '',
   dateRange: { from: '', to: '' },
   showReport: false,
@@ -37,8 +39,27 @@ export const fetchProgressData = createAsyncThunk(
 );
 
 /**
- * Async Thunk: Fetch daily activities
+ * Async Thunk: Fetch daily progress stats
  */
+export const fetchDailyProgress = createAsyncThunk(
+  'progress/fetchDailyProgress',
+  async (date: string, { rejectWithValue }) => {
+    try {
+      // For now, we simulate this or fetch from a service if available
+      // Since the user provided MOCK_DAILY_PROGRESS_DATA logic, we can return it here
+      const data: DailyProgressData[] = [
+        {
+          name: date,
+          ...MOCK_DAILY_PROGRESS,
+        },
+      ];
+      return data;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch daily progress');
+    }
+  }
+);
+
 export const fetchDailyActivities = createAsyncThunk(
   'progress/fetchDailyActivities',
   async ({ childId, date }: { childId: string; date: string }, { rejectWithValue }) => {
@@ -121,6 +142,20 @@ const progressSlice = createSlice({
         state.dailyActivities = action.payload;
       })
       .addCase(fetchDailyActivities.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    // Fetch daily progress
+    builder
+      .addCase(fetchDailyProgress.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchDailyProgress.fulfilled, (state, action) => {
+        state.loading = false;
+        state.dailyProgressData = action.payload;
+      })
+      .addCase(fetchDailyProgress.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

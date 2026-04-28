@@ -11,6 +11,7 @@ import { cn } from '@/utils/cn';
 import {
   fetchProgressData,
   fetchDailyActivities,
+  fetchDailyProgress,
   setSelectedChild,
   setDateRange,
   setShowReport,
@@ -32,19 +33,21 @@ export function AdminProgressPage() {
   const {
     childrenData,
     dailyActivities,
+    dailyProgressData,
     selectedChildId,
     dateRange,
     showReport,
     currentPage,
     errorMessage,
     loading,
-  } = useAppSelector((state) => state.progress);
+  } = useAppSelector((state: any) => state.progress);
 
   const daysPerPage = 7;
 
   // Fetch children data on mount
   useEffect(() => {
     dispatch(fetchProgressData());
+    dispatch(fetchDailyProgress(todayStr));
   }, [dispatch]);
 
   const handleDailyDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,6 +60,7 @@ export function AdminProgressPage() {
       return;
     }
     dispatch(fetchDailyActivities({ childId: selectedChildId || '', date: selectedDate }));
+    dispatch(fetchDailyProgress(selectedDate));
   };
 
   const handleDateRangeChange = (field: 'from' | 'to', maxDate: string) =>
@@ -113,27 +117,6 @@ export function AdminProgressPage() {
         })
       : [];
 
-  const selectedDateStr = new Date().toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
-  const daySeed = new Date().getDate() || 1;
-
-  const excellentCount = 30 + (daySeed % 20);
-  const veryGoodCount = 20 + (daySeed % 15);
-  const goodCount = 10 + (daySeed % 10);
-  const weakCount = 2 + (daySeed % 7);
-
-  const dailyProgressData = [
-    {
-      name: selectedDateStr,
-      Excellent: excellentCount,
-      VeryGood: veryGoodCount,
-      Good: goodCount,
-      Weak: weakCount,
-    },
-  ];
 
   const engagementData =
     currentChild && visibleLabels.length > 0

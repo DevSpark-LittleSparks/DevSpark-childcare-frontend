@@ -198,7 +198,10 @@ export function TeacherDashboardPage() {
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-black text-gray-800 dark:text-white leading-none">
+                    <span className={cn(
+                      "text-3xl font-black leading-none",
+                      attendanceProgress >= 80 ? "text-cyan-500" : "text-gray-800 dark:text-white"
+                    )}>
                       {classStatus.checkedIn}
                     </span>
                     <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tighter mt-1">
@@ -225,7 +228,7 @@ export function TeacherDashboardPage() {
                       </div>
                       <span className="text-sm font-bold text-gray-600 dark:text-gray-400">Expected</span>
                     </div>
-                    <span className="text-xs font-black text-gray-400">100%</span>
+                    <span className="text-xs font-black text-gray-400">{100 - attendanceProgress}%</span>
                   </div>
 
                   <div className="mt-2 h-1.5 w-full bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
