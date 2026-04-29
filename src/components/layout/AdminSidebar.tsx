@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { 
   MdDashboard , MdAssignmentInd, MdPeople, MdManageAccounts, 
-  MdCalendarMonth, MdChat, MdCreditCard, MdPayments, 
+  MdCalendarMonth, MdRestaurant, MdChat, MdCreditCard, MdPayments, 
   MdSecurity, MdHistory, MdLogout, MdSettings, MdPerson,
   MdKeyboardArrowUp 
 } from "react-icons/md";
@@ -61,6 +61,7 @@ export default function AdminSidebar({ onOpenSettings }: { onOpenSettings?: () =
           <NavLink to="/admin/schedules" className="nav-link"><MdCreditCard className="nav-icon" /> <span>Schedules</span></NavLink>
           <NavLink to="/admin/learning" className="nav-link"><MdPayments className="nav-icon" /> <span>Learning</span></NavLink>
           <NavLink to="/admin/paperwork" className="nav-link"><MdChat className="nav-icon" /> <span>Paper-Work</span></NavLink>
+          <NavLink to="/admin/meal" className="nav-link"><MdRestaurant className="nav-icon" /> <span> Meal</span></NavLink>
 
 
 

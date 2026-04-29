@@ -11,20 +11,22 @@ import SignupRequestForm from './pages/auth/SignupRequestForm';
 import RequestConfirmedPage from './pages/auth/RequestConfirmedPage';
 import LoginPage from './pages/auth/LoginPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
-import AdminDashboardPage from './pages/admin/dashboard/AdminDashboard';
+
+// Admin Pages
+import AdminDashboardPage from './pages/admin/AdminDashboard'; // Dashboard page එක
 import AdminProfilePage from './pages/admin/ProfilePage';
+import AdmissionsPage from './pages/admin/Admissions'; // Admissions page එක
+
+// Other Pages
 import StaffPage from './pages/StaffPage';
 import BillingPage from './pages/BillingPage';
+import MealsPage from './pages/MealsPage';
 import ParentProfilePage from './pages/parent/ProfilePage';
 import TeacherProfilePage from './pages/teacher/ProfilePage';
 
 // Import Types
 import { UserProfile } from './types/user.types';
 
-/**
- * Temporary Mock User for Profile Testing
- * This should ideally come from your Auth Context later.
- */
 const mockUser: UserProfile = {
   id: '1',
   name: 'John Doe',
@@ -42,26 +44,11 @@ const mockUser: UserProfile = {
 
 export const router = createBrowserRouter([
   // --- PUBLIC ROUTES ---
-  {
-    path: '/',
-    element: <LandingPage />,
-  },
-  {
-    path: '/signup-request',
-    element: <SignupRequestForm />,
-  },
-  {
-    path: '/request-confirmed',
-    element: <RequestConfirmedPage />,
-  },  
-  {
-    path: '/login',
-    element: <LoginPage />,
-  },
-  {
-    path: '/forgot-password',
-    element: <ForgotPasswordPage />,
-  },
+  { path: '/', element: <LandingPage /> },
+  { path: '/signup-request', element: <SignupRequestForm /> },
+  { path: '/request-confirmed', element: <RequestConfirmedPage /> },  
+  { path: '/login', element: <LoginPage /> },
+  { path: '/forgot-password', element: <ForgotPasswordPage /> },
 
   // --- ADMIN SECTION ---
   {
@@ -70,11 +57,12 @@ export const router = createBrowserRouter([
     children: [
       { path: 'dashboard', element: <AdminDashboardPage /> },
       { path: 'profile', element: <AdminProfilePage initialUser={{...mockUser, role: 'ADMIN'}} /> },
-      { path: 'admissions', element: <div>Admissions Page</div> },
+      { path: 'admissions', element: <AdmissionsPage /> }, 
       { path: 'students', element: <div>Students Page</div> },
       { path: 'parents', element: <div>Parents Page</div> },
       { path: 'staff', element: <StaffPage /> },
       { path: 'billing', element: <BillingPage /> },
+      { path: 'meal', element: <MealsPage /> },
     ],
   },
 

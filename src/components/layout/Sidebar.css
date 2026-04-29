@@ -15,12 +15,12 @@
 
 /* Brand Area - Unified look */
 .sidebar-brand {
-  padding: 24px; /* ඉහළ සහ දෙපස ඉඩ ලබා දෙයි */
+  padding: 24px; /* */
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Logo එකට පසුව එන සියුම් ඉර */
-  margin-bottom: 10px; /* Navigation items වලට පෙර සුළු ඉඩක් */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* after the logo */
+  margin-bottom: 10px; /* Navigation items  */
 }
 
 .brand-name {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { MdDashboard, MdPeople, MdTrendingUp, MdPayment, MdNotifications, MdChat, MdLogout, MdSettings, MdPerson, MdKeyboardArrowUp } from "react-icons/md";
+import { MdDashboard, MdPeople,MdRestaurant, MdTrendingUp, MdPayment, MdNotifications, MdChat, MdLogout, MdSettings, MdPerson, MdKeyboardArrowUp } from "react-icons/md";
 import "./Sidebar.css";
 import { useSelector, useDispatch } from "react-redux";
 import { logout, selectUser } from "../../features/auth/model/authSlice";
@@ -40,7 +40,9 @@ export default function ParentSidebar({ onOpenSettings }: { onOpenSettings?: () 
           <p className="nav-group-title">PARENT PORTAL</p>
           <NavLink to="/parent/children" className="nav-link"><MdPeople className="nav-icon" /> <span>My Children</span></NavLink>
           <NavLink to="/parent/progress" className="nav-link"><MdTrendingUp className="nav-icon" /> <span>Progress</span></NavLink>
+          <NavLink to="/parent/meals" className="nav-link"><MdRestaurant className="nav-icon" /> <span>Meal</span></NavLink>
           <NavLink to="/parent/payments" className="nav-link"><MdPayment className="nav-icon" /> <span>Payments</span></NavLink>
+                  
                     <p className="nav-group-title">COMMUNICATION</p>
           <NavLink to="/parent/messages" className="nav-link"><MdChat className="nav-icon" /> <span>Messaging </span></NavLink>
         </div>
