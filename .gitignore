@@ -14,7 +14,7 @@ dist-ssr
 
 # Editor directories and files
 .vscode
-
+#other unwanted files
 .idea
 .DS_Store
 *.suo
