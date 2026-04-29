@@ -1,13 +1,20 @@
+
 import { RouterProvider } from 'react-router-dom';
-import { router } from './router'; // Corrected to root path
+import { router } from './router'; 
 import './index.css';
 
 /**
- * App Component
- * The entry point that wraps the application with the Router.
+ * LittleSpark App Component
+ * * This is the root component that initializes the Routing system.
+ * Global configurations like Auth Providers or Theme Providers 
+ * should wrap the RouterProvider here if added later.
  */
-export default function App() {
+const App: React.FC = () => {
   return (
+    // The RouterProvider handles the rendering of pages based on the URL
+    // defined in your router.tsx file (including the new ProfilePage).
     <RouterProvider router={router} />
   );
-}
+};
+
+export default App;

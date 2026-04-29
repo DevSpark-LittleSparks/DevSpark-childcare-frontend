@@ -1,32 +1,37 @@
 import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
 import {
-  User, Lock, Mail, Phone, MapPin, Eye, EyeOff,
-  Save, X, Edit2, Sparkles, Key, CheckCircle2, AlertCircle, Loader2, Camera, Send
+  User, Mail, Phone, MapPin, Eye, EyeOff, Save, Edit2, 
+  Key, CheckCircle2, AlertCircle, Loader2, Camera, School, Users, ShieldCheck
 } from 'lucide-react';
-import { UserProfile } from '../../types/user.types';
 import { Button } from '../../components/common/Button';
-import { themeColors } from '../../shared/theme/colors';
 
 // Asset import
 import adminAvatar from '../../assets/images/admin-avatar.jpeg';
 
+interface AdminProfileData {
+  name: string;
+  email: string;
+  role: string;
+  phone1: string;
+  phone2: string;
+  address: string;
+  password: string;
+  profileImage?: string;
+  centerName: string;
+  capacity: string;
+}
+
 interface AdminProfilePageProps {
-  initialUser: UserProfile;
+  initialUser: AdminProfileData;
 }
 
 const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [user, setUser] = useState<UserProfile>(initialUser);
+  const [user, setUser] = useState<AdminProfileData>(initialUser);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [newPassword, setNewPassword] = useState<string>("");
-  const [suggestion, setSuggestion] = useState<string>("");
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-
-  // Request form state
-  const [requestType, setRequestType] = useState<string>("");
-  const [requestDescription, setRequestDescription] = useState<string>("");
-  const [isSubmittingRequest, setIsSubmittingRequest] = useState<boolean>(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -37,353 +42,228 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
     }
   }, [statusMessage]);
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setUser(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleImageClick = () => {
-    if (isEditing) fileInputRef.current?.click();
   };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setUser(prev => ({ ...prev, profileImage: reader.result as string }));
-      };
+      reader.onloadend = () => setUser(prev => ({ ...prev, profileImage: reader.result as string }));
       reader.readAsDataURL(file);
     }
   };
 
-  const generateSuggestion = () => {
-    const randomID = Math.floor(1000 + Math.random() * 9000);
-    const suggested = `SPARK-${user.name.split(' ')[0].toUpperCase() || 'ADMIN'}-${randomID}`;
-    setSuggestion(suggested);
-  };
-
-  const applyNewPassword = () => {
-    if (newPassword.trim().length < 6) {
-      setStatusMessage({ type: 'error', text: 'Password must be at least 6 characters.' });
-      return;
-    }
-    setUser(prev => ({ ...prev, password: newPassword }));
-    setNewPassword("");
-    setSuggestion("");
-    setStatusMessage({ type: 'success', text: 'Security key updated locally.' });
-  };
-
-  const handleSaveData = async () => {
+  const handleSaveAllData = async () => {
     setIsSaving(true);
-    // Simulate API call
     setTimeout(() => {
+      localStorage.setItem('admin_profile_data', JSON.stringify(user));
       setIsSaving(false);
       setIsEditing(false);
-      setStatusMessage({ type: 'success', text: 'Admin profile updated successfully!' });
-    }, 1500);
-  };
-
-  const handleSubmitRequest = async () => {
-    if (!requestType || !requestDescription.trim()) {
-      setStatusMessage({ type: 'error', text: 'Please fill in all request fields.' });
-      return;
-    }
-    setIsSubmittingRequest(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmittingRequest(false);
-      setRequestType("");
-      setRequestDescription("");
-      setStatusMessage({ type: 'success', text: 'Request submitted successfully!' });
+      setStatusMessage({ type: 'success', text: 'Administrative profile and center details updated successfully.' });
     }, 1500);
   };
 
   return (
-    <div className="p-4 md:p-8 bg-[#fcfcfd] min-h-screen font-sans">
-      <div className="max-w-4xl mx-auto">
+    /* Strict Scroll Hide: 
+       'overflow-y-auto' සහ 'no-scrollbar' (Tailwind plugin/CSS) භාවිතා කර ඇත.
+    */
+    <div className="h-screen w-full bg-surface-secondary overflow-hidden font-sans">
+      <div className="h-full w-full overflow-y-auto scrollbar-hide md:p-8 p-4">
+        <style>{`
+          .scrollbar-hide::-webkit-scrollbar { display: none; }
+          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        `}</style>
 
-        {/* Status Alerts */}
-        {statusMessage && (
-          <div className={`mb-6 p-4 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 shadow-sm border ${
-            statusMessage.type === 'success' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'
-          }`}>
-            {statusMessage.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
-            <span className="font-bold text-sm">{statusMessage.text}</span>
-          </div>
-        )}
-
-        <div className="bg-white rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden">
-
-          {/* Header Section */}
-          <div className="relative h-48" style={{ background: themeColors.heroGradient }}>
-            {/* Pattern Overlay */}
-            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px]"></div>
-
-            {/* Top Bar Content */}
-            <div className="absolute -bottom-12 left-10 flex items-end gap-6 w-full pr-20">
-              {/* Profile Image Container */}
-              <div className="relative group">
-                <div
-                  onClick={handleImageClick}
-                  className={`h-36 w-36 bg-white p-2 rounded-[2.5rem] shadow-2xl overflow-hidden border-4 border-white ${isEditing ? 'cursor-pointer' : ''}`}
-                >
-                  <div className="h-full w-full bg-slate-50 rounded-[2rem] flex items-center justify-center border border-slate-100 overflow-hidden">
-                    <img
-                      src={user.profileImage || adminAvatar}
-                      alt="Admin Profile"
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=' + user.name;
-                      }}
-                    />
-                  </div>
-                  {isEditing && (
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-all duration-300">
-                      <Camera className="text-white mb-1" size={28} />
-                      <span className="text-[10px] text-white font-black uppercase tracking-tighter">Change</span>
-                    </div>
-                  )}
-                </div>
-                <input type="file" ref={fileInputRef} onChange={handleImageChange} className="hidden" accept="image/*" />
-              </div>
-
-              {/* Name & Role Info */}
-              <div className="mb-8 flex flex-col gap-1">
-                <div className="flex items-center gap-3">
-                  <h1 className="text-4xl font-black text-white tracking-tight drop-shadow-md">
-                    {user.name}
-                  </h1>
-                  {isEditing && <div className="h-2 w-2 rounded-full bg-white animate-ping mt-2"></div>}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <div className="h-[1px] w-8 bg-white/50"></div>
-                  <span className="text-[11px] font-black text-white uppercase tracking-[0.25em] bg-white/10 px-3 py-1 rounded-full border border-white/20 backdrop-blur-md">
-                    {user.role}
-                  </span>
-                </div>
-              </div>
+        <div className="max-w-4xl mx-auto pb-20">
+          
+          {/* Status Alert */}
+          {statusMessage && (
+            <div className={`mb-6 p-4 rounded-2xl flex items-center gap-3 shadow-xl border animate-in slide-in-from-top-4 duration-300 z-50 bg-white ${
+              statusMessage.type === 'success' ? 'text-secondary-500 border-secondary-500/20' : 'text-red-500 border-red-100'
+            }`}>
+              {statusMessage.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
+              <span className="font-bold text-sm">{statusMessage.text}</span>
             </div>
-          </div>
+          )}
 
-          <div className="pt-28 p-10 space-y-12">
+          <div className="bg-white rounded-[3rem] shadow-[0_20px_50px_rgba(10,6,55,0.05)] border border-slate-200 overflow-hidden">
+            
+            {/* Header Section with Config Gradients */}
+            <div className="relative h-72 flex flex-col items-center justify-center text-center px-6 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-hero-blue via-hero-purple to-hero-pink opacity-90"></div>
+              <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, #06C5D4 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
 
-            {/* Control Bar */}
-            <div className="flex justify-between items-center bg-slate-50/50 p-4 rounded-[2rem] border border-slate-100">
-              <div className="flex items-center gap-3 ml-2">
-                <div className="bg-white p-2 rounded-xl shadow-sm">
-                  <Sparkles className="text-cyan-500" size={18} />
-                </div>
-                <h2 className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">Admin Profile Management</h2>
-              </div>
-
-              {!isEditing ? (
-                <Button
-                  onClick={() => setIsEditing(true)}
-                  variant="outline"
-                  size="sm"
-                >
-                  <Edit2 size={16} className="mr-2" />
-                  Modify Profile
-                </Button>
-              ) : (
-                <div className="flex items-center gap-4">
-                  <Button
-                    onClick={() => { setIsEditing(false); setUser(initialUser); }}
-                    variant="ghost"
-                    size="sm"
-                  >
-                    Discard
-                  </Button>
-                  <Button
-                    onClick={handleSaveData}
-                    disabled={isSaving}
-                    size="sm"
-                  >
-                    {isSaving ? <Loader2 className="animate-spin mr-2" size={16} /> : <Save size={16} className="mr-2" />}
-                    {isSaving ? "SAVING..." : "CONFIRM CHANGES"}
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            {/* Form Content */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
-
-              {/* Name Field */}
-              <div className="space-y-3 group">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Identity Name</label>
-                <div className="relative">
-                  <User className={`absolute left-4 top-4 transition-colors ${!isEditing ? 'text-slate-300' : 'text-slate-400 group-focus-within:text-cyan-500'}`} size={18} />
-                  <input
-                    name="name"
-                    value={user.name}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    className={`w-full pl-12 p-4 rounded-2xl border-2 transition-all font-bold text-sm ${
-                      !isEditing
-                      ? 'bg-slate-50 border-slate-50 text-slate-400'
-                      : 'bg-white border-slate-100 text-slate-700 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/5 shadow-sm'
-                    }`}
-                  />
-                </div>
-              </div>
-
-              {[
-                { label: 'Email Address', name: 'email', icon: Mail, value: user.email, disabled: true, locked: true },
-                { label: 'Mobile Number', name: 'phone1', icon: Phone, value: user.phone1, disabled: !isEditing },
-                { label: 'Alternative Contact', name: 'phone2', icon: Phone, value: user.phone2, disabled: !isEditing },
-              ].map((field) => (
-                <div key={field.name} className="space-y-3 group">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
-                    {field.label} {field.locked && <Lock size={10} className="text-primary-500" />}
-                  </label>
-                  <div className="relative">
-                    <field.icon className={`absolute left-4 top-4 transition-colors ${field.disabled ? 'text-slate-300' : 'text-slate-400 group-focus-within:text-cyan-500'}`} size={18} />
-                    <input
-                      name={field.name}
-                      value={field.value as string}
-                      onChange={handleInputChange}
-                      disabled={field.disabled}
-                      className={`w-full pl-12 p-4 rounded-2xl border-2 transition-all font-bold text-sm ${
-                        field.disabled
-                        ? 'bg-slate-50 border-slate-50 text-slate-400'
-                        : 'bg-white border-slate-100 text-slate-700 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/5 shadow-sm'
-                      }`}
-                    />
-                  </div>
-                </div>
-              ))}
-
-              <div className="md:col-span-2 space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current Address</label>
-                <div className="relative">
-                  <MapPin className="absolute left-4 top-4 text-slate-400" size={18} />
-                  <textarea
-                    name="address"
-                    value={user.address}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    className="w-full pl-12 p-5 bg-white border-2 border-slate-100 rounded-[1.8rem] focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/5 transition-all disabled:bg-slate-50 font-bold text-sm shadow-sm"
-                    rows={3}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Request Form Section */}
-            <div className="bg-slate-50/50 rounded-[2.5rem] p-8 border border-slate-100">
-              <h3 className="text-xs font-black text-slate-800 mb-6 flex items-center gap-3 uppercase tracking-[0.2em]">
-                <Send size={16} className="text-cyan-500" />
-                Submit Request
-              </h3>
-              <div className="space-y-6">
-                <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Request Type</label>
-                  <select
-                    value={requestType}
-                    onChange={(e) => setRequestType(e.target.value)}
-                    className="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/5 transition-all font-bold text-sm shadow-sm"
-                  >
-                    <option value="">Select Request Type</option>
-                    <option value="system-update">System Update</option>
-                    <option value="user-management">User Management</option>
-                    <option value="feature-request">Feature Request</option>
-                    <option value="bug-report">Bug Report</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Description</label>
-                  <textarea
-                    value={requestDescription}
-                    onChange={(e) => setRequestDescription(e.target.value)}
-                    placeholder="Describe your request in detail..."
-                    className="w-full p-5 bg-white border-2 border-slate-100 rounded-[1.8rem] focus:border-primary-500 focus:ring-4 focus:ring-primary-500/5 transition-all font-bold text-sm shadow-sm"
-                    rows={4}
-                  />
-                </div>
-                <Button
-                  onClick={handleSubmitRequest}
-                  disabled={isSubmittingRequest}
-                  className="w-full bg-cyan-500 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-cyan-600 transition-all transform hover:-translate-y-0.5"
-                >
-                  {isSubmittingRequest ? <Loader2 className="animate-spin mr-2" size={16} /> : <Send size={16} className="mr-2" />}
-                  {isSubmittingRequest ? "SUBMITTING..." : "SUBMIT REQUEST"}
-                </Button>
-              </div>
-            </div>
-
-            {/* Security Area */}
-            <div className="border-t border-slate-100 pt-14">
-              <div className="flex items-center gap-3 mb-10">
-                <div className="h-1 w-12 bg-cyan-500 rounded-full"></div>
-                <h3 className="text-slate-400 text-[10px] font-black uppercase tracking-[0.4em]">Privacy & Credentials</h3>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <div className="space-y-5">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Active Authentication Key</label>
-                  <div className="relative group">
-                    <input type={showPassword ? "text" : "password"} value={user.password} disabled
-                      className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl text-slate-400 pr-14 font-mono text-xs font-bold" />
-                    <Button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-2 top-2 p-2"
-                    >
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </Button>
-                  </div>
-
-                  <div className="bg-slate-900 p-6 rounded-[2.2rem] shadow-2xl relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-primary-500/10 rounded-full -mr-12 -mt-12 blur-2xl"></div>
-                    <div className="flex items-center justify-between mb-5 relative z-10">
-                      <span className="text-[10px] font-black text-white uppercase tracking-widest flex items-center gap-2">
-                        <Sparkles size={16} className="text-cyan-500" /> AI Suggestion
-                      </span>
-                      <Button onClick={generateSuggestion} size="sm" className="bg-cyan-500 text-white">
-                        NEW KEY
-                      </Button>
-                    </div>
-                    {suggestion && (
-                      <div className="flex items-center justify-between bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10 animate-in slide-in-from-bottom-3 relative z-10">
-                        <span className="font-mono text-sm font-black text-primary-500 tracking-widest">{suggestion}</span>
-                        <Button onClick={() => setNewPassword(suggestion)} variant="ghost" size="sm" className="text-white">
-                          APPLY
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-5">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Establish New Key</label>
-                  <div className="flex flex-col gap-4">
-                    <div className="relative group">
-                      <Key className={`absolute left-4 top-4 transition-colors ${!isEditing ? 'text-slate-200' : 'text-slate-400 group-focus-within:text-primary-500'}`} size={18} />
-                      <input
-                        placeholder="Define your new secret code..."
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        disabled={!isEditing}
-                        className="w-full pl-12 p-4 bg-white border border-slate-100 rounded-2xl focus:border-primary-500 focus:ring-4 focus:ring-primary-500/5 transition-all text-xs font-bold font-mono shadow-sm"
+              <div className="relative z-10 flex flex-col items-center">
+                <div className="relative mb-4 group">
+                  <div className="h-32 w-32 bg-white p-1.5 rounded-[2.2rem] shadow-2xl border border-white/50 overflow-hidden">
+                    <div className="h-full w-full bg-sidebar-bg rounded-[1.8rem] overflow-hidden">
+                      <img 
+                        src={user.profileImage || adminAvatar} 
+                        alt="Admin" 
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" 
                       />
                     </div>
-                    <Button
-                      onClick={applyNewPassword}
-                      disabled={!isEditing || !newPassword}
-                      variant="secondary"
-                      className="w-full"
+                  </div>
+                  {isEditing && (
+                    <button 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute -right-1 -bottom-1 bg-primary-500 text-white p-2.5 rounded-2xl shadow-xl hover:bg-primary-600 transition-all border-4 border-white"
                     >
-                      UPDATE ACCESS KEY
+                      <Camera size={18} />
+                    </button>
+                  )}
+                  <input type="file" ref={fileInputRef} onChange={handleImageChange} className="hidden" />
+                </div>
+
+                <h1 className="text-3xl font-black text-midnight tracking-tight mb-2 uppercase">
+                  {user.name}
+                </h1>
+                
+                <span className="bg-midnight text-white text-[10px] font-black px-6 py-2 rounded-full uppercase tracking-[0.25em] shadow-lg shadow-midnight/20">
+                  {user.role}
+                </span>
+              </div>
+            </div>
+
+            <div className="p-8 md:p-12 space-y-12">
+
+              {/* Action Bar */}
+              <div className="flex justify-between items-center bg-sidebar-bg/40 p-5 rounded-[2.5rem] border border-sidebar-bg">
+                <div className="flex items-center gap-3 ml-2">
+                   <div className="p-2 bg-white rounded-xl shadow-sm">
+                      <ShieldCheck className="text-primary-500" size={20} />
+                   </div>
+                   <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">Management Console</span>
+                </div>
+                {!isEditing ? (
+                  <Button 
+                    onClick={() => setIsEditing(true)} 
+                    className="rounded-2xl px-6 bg-white border-2 border-primary-500 text-primary-500 hover:bg-primary-50 transition-all font-bold text-xs"
+                  >
+                    <Edit2 size={14} className="mr-2" /> Modify Profile
+                  </Button>
+                ) : (
+                  <div className="flex gap-4">
+                    <button 
+                      onClick={() => { setIsEditing(false); setUser(initialUser); }} 
+                      className="text-slate-500 font-bold text-xs hover:text-midnight"
+                    >
+                      Discard
+                    </button>
+                    <Button 
+                      onClick={handleSaveAllData} 
+                      disabled={isSaving} 
+                      className="bg-primary-500 hover:bg-primary-600 text-white px-8 rounded-2xl shadow-lg shadow-primary-500/20 font-bold text-xs py-3"
+                    >
+                      {isSaving ? <Loader2 className="animate-spin mr-2" size={14} /> : <Save size={14} className="mr-2" />} 
+                      Save Changes
                     </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* Form Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12">
+                
+                {/* Personal Info */}
+                <div className="space-y-8">
+                  <h3 className="text-[11px] font-black text-midnight uppercase tracking-[0.4em] flex items-center gap-3">
+                    <div className="w-10 h-[3px] bg-primary-500 rounded-full"></div> Personal Information
+                  </h3>
+                  <div className="space-y-6">
+                    <AdminInput label="Full Name" name="name" icon={User} value={user.name} onChange={handleInputChange} disabled={!isEditing} />
+                    <AdminInput label="Registered Email" name="email" icon={Mail} value={user.email} disabled={true} />
+                    <div className="grid grid-cols-2 gap-4">
+                      <AdminInput label="Primary Phone" name="phone1" icon={Phone} value={user.phone1} onChange={handleInputChange} disabled={!isEditing} />
+                      <AdminInput label="Secondary" name="phone2" icon={Phone} value={user.phone2} onChange={handleInputChange} disabled={!isEditing} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preschool Data */}
+                <div className="space-y-8">
+                  <h3 className="text-[11px] font-black text-midnight uppercase tracking-[0.4em] flex items-center gap-3">
+                    <div className="w-10 h-[3px] bg-secondary-500 rounded-full"></div> Preschool Data
+                  </h3>
+                  <div className="space-y-6 bg-sidebar-bg/20 p-8 rounded-[2.5rem] border border-sidebar-bg/50">
+                    <AdminInput label="Institution Name" name="centerName" icon={School} value={user.centerName} onChange={handleInputChange} disabled={!isEditing} />
+                    <AdminInput label="Max Enrollment" name="capacity" icon={Users} value={user.capacity} onChange={handleInputChange} disabled={!isEditing} />
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Physical Address</label>
+                       <div className="relative">
+                          <MapPin className="absolute left-4 top-4 text-slate-300" size={18} />
+                          <textarea 
+                            name="address"
+                            value={user.address}
+                            onChange={handleInputChange}
+                            disabled={!isEditing}
+                            className="w-full pl-12 p-4 bg-white border-2 border-slate-100 rounded-2xl outline-none text-sm font-bold text-midnight min-h-[90px] focus:border-primary-500 transition-all disabled:bg-slate-50"
+                          />
+                       </div>
+                    </div>
                   </div>
                 </div>
               </div>
+
+              {/* Security Section */}
+              <div className="pt-10 border-t border-slate-100">
+                 <div className="bg-midnight rounded-[3rem] p-8 md:p-12 shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-primary-500/10 rounded-full blur-[100px] -mr-40 -mt-40"></div>
+                    
+                    <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                       <div className="space-y-4">
+                          <div className="inline-block p-3 bg-white/5 border border-white/10 rounded-2xl mb-2">
+                            <Key className="text-primary-500" size={24} />
+                          </div>
+                          <h4 className="text-white font-black text-xl uppercase tracking-tight">Security Credentials</h4>
+                          <p className="text-slate-400 text-xs leading-relaxed max-w-xs">
+                            Keep your administrative access safe. This key is required for all sensitive system updates.
+                          </p>
+                       </div>
+
+                       <div className="space-y-6">
+                          <div className="relative group">
+                             <input 
+                               type={showPassword ? "text" : "password"} 
+                               value={user.password} 
+                               disabled 
+                               className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl text-primary-100 font-mono text-sm tracking-[0.3em] transition-all group-hover:bg-white/10" 
+                             />
+                             <button onClick={() => setShowPassword(!showPassword)} className="absolute right-5 top-5 text-slate-500 hover:text-white transition-colors">
+                               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                             </button>
+                          </div>
+
+                          <div className="flex gap-3">
+                             <input 
+                                type="text" 
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                disabled={!isEditing}
+                                placeholder="New Security Key..."
+                                className="flex-1 p-4 bg-white/10 border border-white/10 rounded-2xl text-white font-mono text-xs focus:border-primary-500 outline-none disabled:opacity-20 placeholder:text-slate-600"
+                             />
+                             <button 
+                               onClick={() => {
+                                 if(newPassword.length < 6) return setStatusMessage({type:'error', text:'Key is too weak.'});
+                                 setUser({...user, password: newPassword});
+                                 setNewPassword("");
+                                 setStatusMessage({type:'success', text:'Security key updated locally.'});
+                               }} 
+                               disabled={!isEditing || !newPassword}
+                               className="bg-primary-500 hover:bg-primary-600 disabled:bg-slate-800 p-4 rounded-2xl text-white transition-all shadow-lg"
+                             >
+                               <CheckCircle2 size={20} />
+                             </button>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+
             </div>
           </div>
         </div>
@@ -391,5 +271,19 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
     </div>
   );
 };
+
+// Reusable Input
+const AdminInput = ({ label, icon: Icon, ...props }: any) => (
+  <div className="space-y-2 group">
+    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{label}</label>
+    <div className="relative">
+      <Icon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary-500 transition-colors" size={18} />
+      <input 
+        {...props} 
+        className="w-full pl-12 p-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-primary-500 focus:bg-white transition-all outline-none text-sm font-bold text-midnight disabled:opacity-60 disabled:bg-slate-50" 
+      />
+    </div>
+  </div>
+);
 
 export default AdminProfilePage;
