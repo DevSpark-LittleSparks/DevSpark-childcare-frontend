@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { 
-  MdHome, MdAssignmentInd, MdPeople, MdManageAccounts, 
+  MdDashboard , MdAssignmentInd, MdPeople, MdManageAccounts, 
   MdCalendarMonth, MdChat, MdCreditCard, MdPayments, 
   MdSecurity, MdHistory, MdLogout, MdSettings, MdPerson,
   MdKeyboardArrowUp 
@@ -43,7 +43,7 @@ export default function AdminSidebar({ onOpenSettings }: { onOpenSettings?: () =
       <nav className="sidebar-nav">
         <div className="nav-group">
           <NavLink to="/admin/dashboard" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
-            <MdHome className="nav-icon" /> <span>Home</span>
+            <MdDashboard className="nav-icon" /> <span>Home</span>
           </NavLink>
           <NavLink to="/admin/admissions" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
             <MdAssignmentInd className="nav-icon" /> <span>Admissions</span>
