@@ -8,7 +8,7 @@ import { AuthHeader } from "../../shared/ui/AuthHeader/AuthHeader";
 // Assets and Images
 import heroImg from "../../assets/images/hero.png";
 import requestSideImg from "../../assets/images/request-side.png";
-import directorDashboardImg from "../../assets/images/image_5.jpg"; 
+import directorDashboardImg from "../../assets/images/image_5.jpg";
 
 type UserRole = "director" | "teacher" | "parent";
 
@@ -37,10 +37,14 @@ const SignupRequestForm: React.FC = () => {
     role: "director",
     message: "",
   });
+  const [emailError, setEmailError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    if (name === "email") {
+      setEmailError("");
+    }
   };
 
   const handleRoleChange = (newRole: UserRole) => {
@@ -51,10 +55,16 @@ const SignupRequestForm: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!emailRegex.test(form.email)) {
+      setEmailError("Please enter a valid email address (e.g., name@example.com).");
+      return;
+    }
+
     if (role === "parent") {
       const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
       const parentExists = admissionsData.some((c: any) => c.parentEmail === form.email);
-      
+
       if (!parentExists) {
         alert("Registration failed! We couldn't find your email in our system. Please make sure the Admin has registered your child first.");
         return;
@@ -102,11 +112,11 @@ const SignupRequestForm: React.FC = () => {
 
       {/* Main Container: Removed max-w-1440 for Full Width */}
       <div className="flex-1 flex flex-col lg:flex-row w-full overflow-hidden">
-        
+
         {/* LEFT: FORM SECTION */}
         <section className="flex-1 p-8 lg:p-12 xl:p-20 bg-white overflow-y-auto flex items-center justify-center lg:justify-end">
           <div className="w-full max-w-md lg:mr-12 xl:mr-24">
-            
+
             <h1 className="text-3xl font-extrabold text-slate-900 mb-2 tracking-tight">
               {content[role].leftTitle}
             </h1>
@@ -121,11 +131,10 @@ const SignupRequestForm: React.FC = () => {
                   key={r}
                   type="button"
                   onClick={() => handleRoleChange(r)}
-                  className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 capitalize ${
-                    role === r 
-                      ? "bg-white text-cyan-600 shadow-md transform scale-[1.02]" 
+                  className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 capitalize ${role === r
+                      ? "bg-white text-cyan-600 shadow-md transform scale-[1.02]"
                       : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
-                  }`}
+                    }`}
                 >
                   {r}
                 </button>
@@ -136,17 +145,26 @@ const SignupRequestForm: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">First Name</label>
-                  <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500 transition-all" type="text" name="firstName" placeholder="Jane" value={form.firstName} onChange={handleChange} required />
+                  <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500 transition-all" type="text" name="firstName" placeholder="Ann" value={form.firstName} onChange={handleChange} required />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Last Name</label>
-                  <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500 transition-all" type="text" name="lastName" placeholder="Doe" value={form.lastName} onChange={handleChange} required />
+                  <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500 transition-all" type="text" name="lastName" placeholder="Fonseka" value={form.lastName} onChange={handleChange} required />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Email Address</label>
-                <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500 transition-all" type="email" name="email" placeholder="jane@example.com" value={form.email} onChange={handleChange} required />
+                <input
+                  className={`w-full px-4 py-3 bg-slate-50 border ${emailError ? 'border-red-500 focus:border-red-500' : 'border-slate-200 focus:border-cyan-500'} rounded-xl outline-none transition-all`}
+                  type="email"
+                  name="email"
+                  placeholder="ann@example.com"
+                  value={form.email}
+                  onChange={handleChange}
+                  required
+                />
+                {emailError && <p className="text-red-500 text-xs mt-1">{emailError}</p>}
               </div>
 
               {/* Dynamic Role Fields */}
@@ -224,7 +242,7 @@ const SignupRequestForm: React.FC = () => {
         <section className="hidden lg:flex flex-1 bg-gradient-to-br from-cyan-600 to-blue-700 p-12 items-center justify-center relative overflow-hidden">
           <div className="absolute top-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
           <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-cyan-400/20 rounded-full blur-3xl translate-x-1/4 translate-y-1/4" />
-          
+
           <div className="relative z-10 w-full flex flex-col items-center">
             <div className="w-full max-w-[540px] mb-12 relative group transition-all duration-700 transform hover:scale-[1.02]">
               <div className="absolute inset-0 bg-black/40 rounded-[3rem] blur-3xl translate-y-12 scale-90 opacity-60" />
