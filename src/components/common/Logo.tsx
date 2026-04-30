@@ -54,7 +54,7 @@ export const Logo = ({
     </div>
   );
 };
-
+export default Logo;
 /**
  * ============================================================
  * LITTLESPARKS LOGO COMPONENT - USAGE GUIDE

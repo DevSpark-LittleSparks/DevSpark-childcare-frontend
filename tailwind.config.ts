@@ -54,7 +54,10 @@ export default {
       },
       fontFamily: {
         // Updated font to Inter
+        logo: ['Nunito', 'sans-serif'], // Specific font for logo if needed
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        nunito: ['Nunito', 'sans-serif'], // Added for consistent use of Nunito across the app
+
       },
     },
   },
