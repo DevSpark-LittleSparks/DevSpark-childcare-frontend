@@ -7,7 +7,6 @@
 import React, { useEffect, useState } from 'react';
 import { cn } from '@/utils/cn';
 import { ProgressBarChart, ProgressPieChart } from '@/components/progress';
-import { ParentHelpChatbot } from '@/components/chatbot/ParentHelpChatbot';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { mockParentProfile } from '@/shared/mock/progressMockData';
 import {
@@ -19,11 +18,7 @@ import {
 } from '@/store/slices/progressSlice';
 import {
   setIsOpen,
-  toggleChatbot,
   setInputValue,
-  addMessage,
-  sendChatbotMessage,
-  fetchFaqData,
 } from '@/store/slices/chatbotSlice';
 
 const todayObj = new Date();
@@ -44,7 +39,6 @@ export function ParentProgressPage() {
   // Fetch data on mount
   useEffect(() => {
     dispatch(fetchProgressData());
-    dispatch(fetchFaqData());
   }, [dispatch]);
 
   const handleDateChange = (setter: string, maxDate: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,22 +114,7 @@ export function ParentProgressPage() {
     return currentChild?.engagement[(startIndex + idx) % currentChild.engagement.length] || 0;
   });
 
-  const handleSendChatbotMessage = (text: string) => {
-    if (!text.trim()) return;
 
-    // Add user message
-    const userMsg = {
-      id: Date.now(),
-      sender: 'user' as const,
-      text: text,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-
-    dispatch(addMessage(userMsg));
-
-    // Dispatch async thunk to get bot response
-    dispatch(sendChatbotMessage(text));
-  };
 
   return (
     <div className={cn("relative flex flex-col flex-1 min-h-screen w-full bg-gray-50 dark:bg-slate-900 overflow-x-hidden")}>
@@ -287,16 +266,6 @@ export function ParentProgressPage() {
         )}
       </main>
 
-      <ParentHelpChatbot
-        isOpen={chatbotState.isOpen}
-        setIsOpen={(open) => dispatch(setIsOpen(open))}
-        messages={chatbotState.messages}
-        onSendMessage={handleSendChatbotMessage}
-        faqData={chatbotState.faqData}
-        inputValue={chatbotState.inputValue}
-        setInputValue={(value) => dispatch(setInputValue(value))}
-        loading={chatbotState.loading}
-      />
     </div>
   );
 }

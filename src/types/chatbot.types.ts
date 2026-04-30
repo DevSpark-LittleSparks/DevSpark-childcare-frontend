@@ -1,6 +1,6 @@
 /**
  * Chatbot Module Types
- * Defines types for ParentHelpChatbot
+ * Defines types for UniversalSproutyAssistant
  */
 
 export interface BotMessage {

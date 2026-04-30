@@ -1,6 +1,6 @@
 /**
  * Chatbot Redux Slice
- * Manages state for ParentHelpChatbot
+ * Manages state for UniversalSproutyAssistant
  */
 
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
