@@ -1,5 +1,7 @@
 import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { selectUser } from '../../features/auth/model/authSlice';
 import {
   User, Mail, Phone, MapPin, Baby, Eye, EyeOff, Lock, Heart,
   Save, Edit2, Sparkles, Key, CheckCircle2, AlertCircle, Loader2, Camera, Send, ShieldCheck
@@ -16,6 +18,7 @@ interface ParentProfilePageProps {
 
 const ParentProfilePage: React.FC<ParentProfilePageProps> = ({ initialUser }) => {
   const navigate = useNavigate();
+  const reduxUser = useSelector(selectUser);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [user, setUser] = useState<UserProfile>(initialUser);
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -36,6 +39,31 @@ const ParentProfilePage: React.FC<ParentProfilePageProps> = ({ initialUser }) =>
       return () => clearTimeout(timer);
     }
   }, [statusMessage]);
+
+  useEffect(() => {
+    if (reduxUser?.email) {
+      const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
+      const parentChildren = admissionsData.filter((c: any) => c.parentEmail === reduxUser.email);
+      
+      if (parentChildren.length > 0) {
+        const info = parentChildren[0];
+        setUser(prev => ({
+          ...prev,
+          name: info.parentFullName || reduxUser.displayName || prev.name,
+          email: info.parentEmail,
+          relationship: info.relationship || prev.relationship,
+          phone1: info.parentContact || prev.phone1,
+          address: info.address || prev.address,
+          role: 'PARENT',
+          children: parentChildren.map((c: any) => ({
+            id: c.id,
+            name: c.fullName || c.nameWithInitials,
+            profileImage: c.profileImage,
+          }))
+        }));
+      }
+    }
+  }, [reduxUser]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

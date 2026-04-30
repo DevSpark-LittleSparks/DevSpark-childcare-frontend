@@ -18,6 +18,7 @@ import AdminProfilePage from './pages/admin/ProfilePage';
 import AdmissionsPage from './pages/admin/Admissions';
 import Student from './pages/admin/Student';
 import ChildProfilePage from './pages/admin/ChildProfilePage'; // Admin Edit/Manage Page
+import ParentManagement from './pages/admin/ParentManagement';
 
 // Parent Pages
 import ParentProfilePage from './pages/parent/ProfilePage';
@@ -69,6 +70,7 @@ export const router = createBrowserRouter([
       { path: 'students', element: <Student /> },
       // Admin route for full management/editing
       { path: 'students/:studentId', element: <ChildProfilePage /> }, 
+      { path: 'parents', element: <ParentManagement /> },
       { path: 'billing', element: <BillingPage /> },
       { path: 'meal', element: <MealsPage /> },
     ],

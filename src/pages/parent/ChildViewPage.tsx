@@ -13,8 +13,8 @@ const ChildViewPage = () => {
   const { studentId } = useParams();
   const [age, setAge] = useState<string>("");
 
-  // Sample data: In production, this would be fetched via studentId
-  const [child] = useState({
+  // Sample data as fallback
+  const [child, setChild] = useState({
     name: 'Amaya Perera',
     fullName: 'Amaya Sudeshini Perera',
     profileImage: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80', // Placeholder
@@ -27,6 +27,27 @@ const ChildViewPage = () => {
     specialNote: 'Nut allergy, requires inhaler for dust.',
     enrolledDate: '2026-01-10'
   });
+
+  useEffect(() => {
+    const allAdmissions = JSON.parse(localStorage.getItem('admissionsData') || '[]');
+    const foundChild = allAdmissions.find((c: any) => c.id === studentId);
+    
+    if (foundChild) {
+      setChild({
+        name: foundChild.fullName || foundChild.nameWithInitials || 'Unknown',
+        fullName: foundChild.fullName || 'Unknown',
+        profileImage: foundChild.profileImage || 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80',
+        dob: foundChild.dob || '2020-01-01',
+        gender: foundChild.gender || 'Not specified',
+        bloodGroup: foundChild.bloodGroup || 'Not specified',
+        height: foundChild.height || 'N/A',
+        weight: foundChild.weight || 'N/A',
+        address: foundChild.address || 'N/A',
+        specialNote: foundChild.specialNote || 'No special notes.',
+        enrolledDate: foundChild.enrolledDate || new Date().toISOString().split('T')[0]
+      });
+    }
+  }, [studentId]);
 
   useEffect(() => {
     if (child.dob) {

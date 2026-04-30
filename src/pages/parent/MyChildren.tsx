@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAppSelector } from '../../store';
 import { User, ArrowRight, GraduationCap, Calendar, Sparkles } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 
 const MyChildren = () => {
   const navigate = useNavigate();
 
-  // This data structure matches the children array in your mockUser
-  const childrenList = [
+  const { user } = useAppSelector((state: any) => state.auth);
+  const [childrenList, setChildrenList] = useState<any[]>([
     { 
       id: 'c1', 
       name: 'Shemil Doe', 
@@ -16,7 +17,41 @@ const MyChildren = () => {
       enrolledDate: '2026-01-01', 
       image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80' 
     }
-  ];
+  ]);
+
+  useEffect(() => {
+    const allAdmissions = JSON.parse(localStorage.getItem('admissionsData') || '[]');
+    
+    const calculateAge = (dob: string) => {
+      if (!dob) return 0;
+      const birthDate = new Date(dob);
+      const today = new Date();
+      let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        calculatedAge--;
+      }
+      return calculatedAge >= 0 ? calculatedAge : 0;
+    };
+
+    if (allAdmissions.length > 0) {
+      let filtered = allAdmissions;
+      if (user?.email) {
+        filtered = allAdmissions.filter((c: any) => c.parentEmail === user.email);
+      }
+      
+      if (filtered.length > 0) {
+        setChildrenList(filtered.map((c: any) => ({
+          id: c.id,
+          name: c.fullName || c.nameWithInitials || 'Unknown',
+          age: calculateAge(c.dob),
+          gender: c.gender || 'Unknown',
+          enrolledDate: c.enrolledDate || 'Unknown',
+          image: c.profileImage || 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80'
+        })));
+      }
+    }
+  }, [user]);
 
   return (
     <div className="p-8 bg-surface-secondary min-h-screen font-sans text-left">
