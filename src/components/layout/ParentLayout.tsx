@@ -1,15 +1,31 @@
-import React from "react";
+import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import ParentSidebar from "./ParentSidebar";
 
 const ParentLayout: React.FC = () => {
+  // Shared state to sync sidebar width with main content margin
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
-      <ParentSidebar />
-      <main style={{ flex: 1, marginLeft: "280px", backgroundColor: "#f8fafc" }}>
-        <Outlet />
+      {/* Pass state to sidebar */}
+      <ParentSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      
+      <main 
+        style={{ 
+          flex: 1, 
+          // Dynamic margin: 80px when collapsed, 280px when expanded
+          marginLeft: isCollapsed ? "80px" : "280px", 
+          backgroundColor: "#f8fafc",
+          transition: "margin-left 0.3s ease-in-out" 
+        }}
+      >
+        <div style={{ padding: "24px" }}>
+          <Outlet />
+        </div>
       </main>
     </div>
   );
 };
+
 export default ParentLayout;
