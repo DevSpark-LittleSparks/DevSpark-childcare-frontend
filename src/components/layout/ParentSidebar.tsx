@@ -96,11 +96,11 @@ export default function ParentSidebar({ isCollapsed, setIsCollapsed, onOpenSetti
           </div>
         )}
         <div className={`flex items-center gap-3 p-2 rounded-2xl cursor-pointer transition-all border ${open ? 'bg-white shadow-md border-cyan-200' : 'hover:bg-white/50 border-transparent'} ${isCollapsed ? 'justify-center' : ''}`} onClick={() => setOpen(!open)}>
-          <img src={user?.avatarUrl || `https://ui-avatars.com/api/?name=${user?.firstName}&background=06B6D4&color=fff`} className="w-10 h-10 rounded-xl object-cover border-2 border-white shrink-0" alt="Profile" />
+          <img src={user?.photoURL || `https://ui-avatars.com/api/?name=${user?.displayName || "Parent"}&background=06B6D4&color=fff`} className="w-10 h-10 rounded-xl object-cover border-2 border-white shrink-0" alt="Profile" />
           {!isCollapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-800 truncate">{user?.firstName || "Parent"}</p>
-              <p className="text-[10px] font-bold text-cyan-600 uppercase">Guardian</p>
+              <p className="text-sm font-bold text-slate-800 truncate">{user?.displayName || "Parent"}</p>
+              <p className="text-[10px] font-bold text-cyan-600 uppercase">{user?.role || "Guardian"}</p>
             </div>
           )}
           {!isCollapsed && <MdKeyboardArrowUp className={`text-slate-400 transition-transform ${open ? "rotate-180" : ""}`} />}

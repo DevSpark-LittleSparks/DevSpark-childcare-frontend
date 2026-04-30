@@ -147,15 +147,15 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, onOpenSettin
           onClick={() => setProfileOpen(!profileOpen)}
         >
           <img 
-            src={user?.avatarUrl || `https://ui-avatars.com/api/?name=${user?.firstName}&background=06B6D4&color=fff`} 
+            src={user?.photoURL || `https://ui-avatars.com/api/?name=${user?.displayName || "Admin"}&background=06B6D4&color=fff`} 
             alt="Profile" 
             className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-sm shrink-0" 
           />
           
           {!isCollapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-800 truncate">{user?.firstName}</p>
-              <p className="text-[10px] font-bold text-cyan-600 uppercase tracking-wider">{user?.role || "Admin"}</p>
+              <p className="text-sm font-bold text-slate-800 truncate">{user?.displayName || "Admin"}</p>
+              <p className="text-[10px] font-bold text-cyan-600 uppercase tracking-wider">{user?.role || "Administrator"}</p>
             </div>
           )}
 
