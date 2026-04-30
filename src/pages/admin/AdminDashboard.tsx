@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Users, Briefcase, MessageSquare, TrendingUp, 
   Search, Bell, Check, X, Calendar, MessageCircle, Sparkles 
@@ -7,6 +7,55 @@ import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const [totalStudents, setTotalStudents] = useState(15);
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+
+  const loadData = () => {
+    const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
+    if (admissionsData.length > 0) {
+      setTotalStudents(admissionsData.length);
+    }
+    const userRequests = JSON.parse(localStorage.getItem('user_requests') || '[]');
+    setPendingRequests(userRequests.filter((r: any) => r.status === 'Pending'));
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleApprove = (request: any) => {
+    const userRequests = JSON.parse(localStorage.getItem('user_requests') || '[]');
+    const updatedRequests = userRequests.map((r: any) => 
+      r.id === request.id ? { ...r, status: 'Approved' } : r
+    );
+    localStorage.setItem('user_requests', JSON.stringify(updatedRequests));
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    const otpCredentials = JSON.parse(localStorage.getItem('otp_credentials') || '[]');
+    otpCredentials.push({ 
+      email: request.email, 
+      otp, 
+      role: request.role, 
+      firstName: request.firstName,
+      fullName: `${request.firstName} ${request.lastName}`
+    });
+    localStorage.setItem('otp_credentials', JSON.stringify(otpCredentials));
+
+    // Simulate SMTP Email
+    alert(`[SMTP Email Simulation]\n\nTo: ${request.email}\nSubject: Application Approved\n\nHello ${request.firstName},\n\nYour application for ${request.role} has been approved.\nYour One-Time Password (OTP) is: ${otp}\n\nPlease login using this OTP.`);
+    
+    loadData();
+  };
+
+  const handleReject = (id: number) => {
+    const userRequests = JSON.parse(localStorage.getItem('user_requests') || '[]');
+    const updatedRequests = userRequests.map((r: any) => 
+      r.id === id ? { ...r, status: 'Rejected' } : r
+    );
+    localStorage.setItem('user_requests', JSON.stringify(updatedRequests));
+    loadData();
+  };
 
   return (
     <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
@@ -40,7 +89,7 @@ const AdminDashboard = () => {
           <StatCard 
   icon={<Users className="text-primary-500" size={24} />}
   label="TOTAL STUDENTS"
-  value="15"
+  value={totalStudents.toString()}
   trend="+3 this week"
   trendColor="text-emerald-500"
   iconBg="bg-primary-50"
@@ -85,22 +134,42 @@ const AdminDashboard = () => {
             </div>
             
             <div className="space-y-6">
-              <div className="flex items-center justify-between p-2">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 bg-logo-sparks rounded-xl flex items-center justify-center text-white font-black text-lg">A</div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-bold text-slate-900">Amaya Silva</h4>
-                      <span className="px-2 py-0.5 bg-cyan-50 text-[10px] font-black text-cyan-600 uppercase rounded-md tracking-wider">Staff</span>
+              {pendingRequests.length === 0 ? (
+                <p className="text-sm text-slate-500">No pending requests.</p>
+              ) : (
+                pendingRequests.map((req) => (
+                  <div key={req.id} className="flex items-center justify-between p-2">
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 bg-logo-sparks rounded-xl flex items-center justify-center text-white font-black text-lg">
+                        {req.firstName.charAt(0)}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-bold text-slate-900">{req.firstName} {req.lastName}</h4>
+                          <span className="px-2 py-0.5 bg-cyan-50 text-[10px] font-black text-cyan-600 uppercase rounded-md tracking-wider">
+                            {req.role}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-400 font-medium">{req.email}</p>
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-400 font-medium">Teacher • amaya@gmail.com</p>
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => handleApprove(req)}
+                        className="px-6 py-2.5 bg-midnight text-white text-xs font-bold rounded-xl hover:opacity-90 transition-all"
+                      >
+                        Approve
+                      </button>
+                      <button 
+                        onClick={() => handleReject(req.id)}
+                        className="px-6 py-2.5 bg-slate-50 text-slate-400 text-xs font-bold rounded-xl hover:bg-slate-100 transition-all"
+                      >
+                        Reject
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button className="px-6 py-2.5 bg-midnight text-white text-xs font-bold rounded-xl hover:opacity-90 transition-all">Approve</button>
-                  <button className="px-6 py-2.5 bg-slate-50 text-slate-400 text-xs font-bold rounded-xl hover:bg-slate-100 transition-all">Reject</button>
-                </div>
-              </div>
+                ))
+              )}
             </div>
           </div>
 

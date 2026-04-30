@@ -19,16 +19,38 @@ const Students = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   
-  const [students, setStudents] = useState<StudentData[]>([
-    { id: '001', firstName: 'Amaya', lastName: 'Perera', age: 4, gender: 'Female', class: 'Nursery A', parentName: 'Sunil Perera' },
-    { id: '002', firstName: 'Ethan', lastName: 'Silva', age: 5, gender: 'Male', class: 'Kindergarten', parentName: 'Kasun Silva' },
-    { id: '003', firstName: 'Dinuli', lastName: 'Fernando', age: 3, gender: 'Female', class: 'Toddler B', parentName: 'Ruwan Fernando' },
-    { id: '004', firstName: 'Liam', lastName: 'Jayasinghe', age: 4, gender: 'Male', class: 'Nursery A', parentName: 'Arjuna Jayasinghe' },
-  ]);
+  const [students, setStudents] = useState<StudentData[]>([]);
+
+  React.useEffect(() => {
+    const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
+    const mappedStudents = admissionsData.map((c: any) => ({
+      id: c.id,
+      firstName: c.fullName?.split(' ')[0] || c.nameWithInitials?.split(' ').pop() || 'Student',
+      lastName: c.fullName?.split(' ').slice(1).join(' ') || '',
+      age: c.dob ? Math.floor((new Date().getTime() - new Date(c.dob).getTime()) / 31557600000) : 0,
+      gender: c.gender?.toLowerCase() === 'female' ? 'Female' : 'Male',
+      class: 'New Admission',
+      parentName: c.parentFullName || 'Unknown Parent',
+    }));
+
+    if (mappedStudents.length > 0) {
+      setStudents(mappedStudents);
+    } else {
+      setStudents([
+        { id: '001', firstName: 'Amaya', lastName: 'Perera', age: 4, gender: 'Female', class: 'Nursery A', parentName: 'Sunil Perera' },
+        { id: '002', firstName: 'Ethan', lastName: 'Silva', age: 5, gender: 'Male', class: 'Kindergarten', parentName: 'Kasun Silva' },
+        { id: '003', firstName: 'Dinuli', lastName: 'Fernando', age: 3, gender: 'Female', class: 'Toddler B', parentName: 'Ruwan Fernando' },
+        { id: '004', firstName: 'Liam', lastName: 'Jayasinghe', age: 4, gender: 'Male', class: 'Nursery A', parentName: 'Arjuna Jayasinghe' },
+      ]);
+    }
+  }, []);
 
   const handleDelete = (id: string) => {
     if(window.confirm("Are you sure you want to remove this student?")) {
       setStudents(students.filter(s => s.id !== id));
+      const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
+      const newData = admissionsData.filter((c: any) => c.id !== id);
+      localStorage.setItem('admissionsData', JSON.stringify(newData));
     }
   };
 

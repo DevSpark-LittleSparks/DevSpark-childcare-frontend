@@ -88,7 +88,17 @@ const AdmissionsPage = () => {
     e.preventDefault();
     if (validateForm()) {
       setIsSubmitting(true);
-      // Simulate API storage
+      
+      // Save data to localStorage
+      const existingData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
+      const newChild = {
+        id: 'c' + Date.now(),
+        ...formData,
+        profileImage: previewImage || 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80',
+        enrolledDate: new Date().toISOString().split('T')[0]
+      };
+      localStorage.setItem('admissionsData', JSON.stringify([...existingData, newChild]));
+
       setTimeout(() => {
         setIsSubmitting(false);
         alert("Registration Successful! Data has been stored in LittleSparks.");
