@@ -38,13 +38,16 @@ const AdminDashboard = () => {
         {/* --- Stats Grid Section --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard 
-            icon={<Users className="text-primary-500" size={24} />}
-            label="TOTAL STUDENTS"
-            value="15"
-            trend="+3 this week"
-            trendColor="text-emerald-500"
-            iconBg="bg-primary-50"
-          />
+  icon={<Users className="text-primary-500" size={24} />}
+  label="TOTAL STUDENTS"
+  value="15"
+  trend="+3 this week"
+  trendColor="text-emerald-500"
+  iconBg="bg-primary-50"
+  onClick={() => navigate('/admin/students')}
+/>
+
+
           <StatCard 
             icon={<Briefcase className="text-indigo-500" size={24} />}
             label="STAFF ON DUTY"
@@ -133,8 +136,11 @@ const AdminDashboard = () => {
 
 // --- Sub Components ---
 
-const StatCard = ({ icon, label, value, trend, trendColor, iconBg }: any) => (
-  <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)] group hover:border-primary-500/20 transition-all">
+const StatCard = ({ icon, label, value, trend, trendColor, iconBg, onClick }: any) => (
+  <div 
+    onClick={onClick}
+    className={`bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)] group hover:border-primary-500/20 transition-all ${onClick ? 'cursor-pointer active:scale-[0.98]' : ''}`}
+  >
     <div className="flex items-start justify-between mb-6">
       <div className={`h-14 w-14 ${iconBg} rounded-[1.2rem] flex items-center justify-center group-hover:scale-110 transition-transform`}>
         {icon}

@@ -5,7 +5,7 @@ import AdminLayout from './components/layout/AdminLayout';
 import ParentLayout from './components/layout/ParentLayout';
 import TeacherLayout from './components/layout/TeacherLayout';
 
-// Pages Import 
+// Public & Auth Pages
 import LandingPage from './pages/LandingPage';
 import SignupRequestForm from './pages/auth/SignupRequestForm';
 import RequestConfirmedPage from './pages/auth/RequestConfirmedPage';
@@ -13,20 +13,28 @@ import LoginPage from './pages/auth/LoginPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 
 // Admin Pages
-import AdminDashboardPage from './pages/admin/AdminDashboard'; // Dashboard page එක
+import AdminDashboardPage from './pages/admin/AdminDashboard';
 import AdminProfilePage from './pages/admin/ProfilePage';
-import AdmissionsPage from './pages/admin/Admissions'; // Admissions page එක
+import AdmissionsPage from './pages/admin/Admissions';
+import Student from './pages/admin/Student';
+import ChildProfilePage from './pages/admin/ChildProfilePage'; // Admin Edit/Manage Page
 
-// Other Pages
-import StaffPage from './pages/StaffPage';
+// Parent Pages
+import ParentProfilePage from './pages/parent/ProfilePage';
+import ChildViewPage from './pages/parent/ChildViewPage'; // Parent View-Only Page
+import MyChildren from './pages/parent/MyChildren';
+
+// Teacher Pages
+import TeacherProfilePage from './pages/teacher/ProfilePage';
+
+// Other Management Pages
 import BillingPage from './pages/BillingPage';
 import MealsPage from './pages/MealsPage';
-import ParentProfilePage from './pages/parent/ProfilePage';
-import TeacherProfilePage from './pages/teacher/ProfilePage';
 
 // Import Types
 import { UserProfile } from './types/user.types';
 
+// Mock data for initial profile states
 const mockUser: UserProfile = {
   id: '1',
   name: 'John Doe',
@@ -58,28 +66,38 @@ export const router = createBrowserRouter([
       { path: 'dashboard', element: <AdminDashboardPage /> },
       { path: 'profile', element: <AdminProfilePage initialUser={{...mockUser, role: 'ADMIN'}} /> },
       { path: 'admissions', element: <AdmissionsPage /> }, 
-      { path: 'students', element: <div>Students Page</div> },
-      { path: 'parents', element: <div>Parents Page</div> },
-      { path: 'staff', element: <StaffPage /> },
+      { path: 'students', element: <Student /> },
+      // Admin route for full management/editing
+      { path: 'students/:studentId', element: <ChildProfilePage /> }, 
       { path: 'billing', element: <BillingPage /> },
       { path: 'meal', element: <MealsPage /> },
     ],
   },
 
-  // --- PARENT SECTION ---
-  {
-    path: '/parent',
-    element: <ParentLayout />, 
-    children: [
-      { path: 'dashboard', element: <div>Parent Dashboard</div> },
-      { path: 'profile', element: <ParentProfilePage initialUser={mockUser} /> },
-      { path: 'children', element: <div>My Children</div> },
+  // --- PARENT SECTION 
+      
+      // --- PARENT SECTION ---
+{
+  path: '/parent',
+  element: <ParentLayout />, // Use the Layout here, NOT MyChildren
+  children: [
+    // This makes /parent redirect to dashboard or children automatically
+    { path: 'dashboard', element: <div>Parent Dashboard</div> },
+    { path: 'profile', element: <ParentProfilePage initialUser={mockUser} /> },
+    
+    // This is the page with your clickable cards
+    { path: 'children', element: <MyChildren /> }, 
+    
+    // This is the profile page you want to see when you click
+    { path: 'child-profile/:studentId', element: <ChildViewPage /> }, 
+    
       { path: 'progress', element: <div>Progress</div> },
       { path: 'payments', element: <div>Payments</div> },
       { path: 'notifications', element: <div>Notifications</div> },
       { path: 'messaging', element: <div>Messaging</div> },
-    ],
-  },
+  ],
+},
+    
 
   // --- TEACHER SECTION ---
   {
@@ -87,7 +105,10 @@ export const router = createBrowserRouter([
     element: <TeacherLayout />, 
     children: [
       { path: 'dashboard', element: <div>Teacher Dashboard</div> },
-      { path: 'profile', element: <TeacherProfilePage initialUser={{...mockUser, role: 'TEACHER'}} /> },
+      { 
+        path: 'profile', 
+        element: <TeacherProfilePage initialUser={{...mockUser, role: 'TEACHER'}} /> 
+      },
       { path: 'attendance', element: <div>Daily Attendance</div> },
       { path: 'activities', element: <div>My Activities</div> },
       { path: 'meals', element: <div>Meals</div> },

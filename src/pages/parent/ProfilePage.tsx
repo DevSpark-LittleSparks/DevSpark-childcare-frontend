@@ -1,4 +1,5 @@
 import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   User, Mail, Phone, MapPin, Baby, Eye, EyeOff, Lock, Heart,
   Save, Edit2, Sparkles, Key, CheckCircle2, AlertCircle, Loader2, Camera, Send, ShieldCheck
@@ -14,6 +15,7 @@ interface ParentProfilePageProps {
 }
 
 const ParentProfilePage: React.FC<ParentProfilePageProps> = ({ initialUser }) => {
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [user, setUser] = useState<UserProfile>(initialUser);
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -179,7 +181,6 @@ const ParentProfilePage: React.FC<ParentProfilePageProps> = ({ initialUser }) =>
                   <div className="space-y-6">
                     <ParentInput label="Full Name" name="name" icon={User} value={user.name} onChange={handleInputChange} disabled={!isEditing} />
                     
-                    {/* Relationship Field - Read Only */}
                     <ParentInput 
                       label="Relationship to Student" 
                       name="relationship" 
@@ -219,7 +220,7 @@ const ParentProfilePage: React.FC<ParentProfilePageProps> = ({ initialUser }) =>
                 </div>
               </div>
 
-              {/* My Little Sparks */}
+              {/* My Little Sparks - Updated with Navigation */}
               <div className="bg-slate-50/50 rounded-[2.5rem] p-8 md:p-10 border border-slate-100 relative overflow-hidden">
                 <div className="absolute -bottom-6 -right-6 p-4 opacity-[0.1] rotate-[-15deg] pointer-events-none">
                    <Baby size={220} className="text-primary-900" />
@@ -230,7 +231,11 @@ const ParentProfilePage: React.FC<ParentProfilePageProps> = ({ initialUser }) =>
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10">
                   {user.children?.map((child) => (
-                    <div key={child.id} className="flex items-center justify-between p-6 bg-white border border-slate-100 rounded-[2.2rem] hover:shadow-2xl hover:shadow-primary-500/5 hover:border-primary-500/30 transition-all cursor-pointer group">
+                    <div 
+                      key={child.id} 
+                      onClick={() => navigate(`/parent/child-profile/${child.id}`)}
+                      className="flex items-center justify-between p-6 bg-white border border-slate-100 rounded-[2.2rem] hover:shadow-2xl hover:shadow-primary-500/5 hover:border-primary-500/30 transition-all cursor-pointer group"
+                    >
                       <div className="flex items-center gap-5">
                         <div className="bg-midnight h-14 w-14 rounded-2xl flex items-center justify-center text-primary-500 font-black group-hover:scale-105 transition-transform shadow-lg overflow-hidden border border-slate-200">
                           {child.profileImage ? (
@@ -248,7 +253,7 @@ const ParentProfilePage: React.FC<ParentProfilePageProps> = ({ initialUser }) =>
                         </div>
                       </div>
                       <div className="h-10 w-10 rounded-2xl bg-sidebar-bg flex items-center justify-center text-primary-500 group-hover:bg-primary-500 group-hover:text-white transition-all border border-sidebar-bg">
-                        <Edit2 size={16} />
+                        <Eye size={16} />
                       </div>
                     </div>
                   ))}
