@@ -50,6 +50,17 @@ const SignupRequestForm: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (role === "parent") {
+      const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
+      const parentExists = admissionsData.some((c: any) => c.parentEmail === form.email);
+      
+      if (!parentExists) {
+        alert("Registration failed! We couldn't find your email in our system. Please make sure the Admin has registered your child first.");
+        return;
+      }
+    }
+
     const savedRequests = JSON.parse(localStorage.getItem("user_requests") || "[]");
     const newRequest = {
       ...form,

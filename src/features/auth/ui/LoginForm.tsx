@@ -59,16 +59,43 @@ export function LoginForm() {
   const onSubmit = async (data: LoginFormValues) => {
     dispatch(setLoading(true));
     try {
+      // 1. Check Local OTP Credentials from Admin Approval
+      const otpCredentials = JSON.parse(localStorage.getItem('otp_credentials') || '[]');
+      const validOtpUser = otpCredentials.find((c: any) => c.email === data.email && c.otp === data.password);
+
+      if (validOtpUser) {
+        dispatch(setUser({ 
+          uid: 'otp-' + Date.now(), 
+          email: validOtpUser.email, 
+          displayName: validOtpUser.fullName || validOtpUser.firstName || validOtpUser.role, 
+          photoURL: null,
+          role: validOtpUser.role
+        }));
+        
+        dispatch(setLoading(false));
+        
+        // Redirect based on role
+        if (validOtpUser.role.toLowerCase() === 'parent') {
+          navigate("/parent/children");
+        } else if (validOtpUser.role.toLowerCase() === 'teacher') {
+          navigate("/teacher/dashboard");
+        } else {
+          navigate("/admin/dashboard");
+        }
+        return;
+      }
+
+      // 2. Fallback to Firebase Auth
       const userCredential = await signInWithEmailAndPassword(
         firebaseAuth,
         data.email,
         data.password
       );
       const { uid, email, displayName, photoURL } = userCredential.user;
-      dispatch(setUser({ uid, email, displayName, photoURL }));
+      dispatch(setUser({ uid, email, displayName, photoURL, role: null }));
       navigate("/");
     } catch (err: any) {
-      dispatch(setError(err.message || "Failed to login"));
+      dispatch(setError(err.message || "Failed to login. Invalid credentials."));
     } finally {
       dispatch(setLoading(false));
     }
