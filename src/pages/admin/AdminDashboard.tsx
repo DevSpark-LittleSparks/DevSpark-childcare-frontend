@@ -9,6 +9,7 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [totalStudents, setTotalStudents] = useState(15);
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+  const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
 
   const loadData = () => {
     const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
@@ -138,9 +139,13 @@ const AdminDashboard = () => {
                 <p className="text-sm text-slate-500">No pending requests.</p>
               ) : (
                 pendingRequests.map((req) => (
-                  <div key={req.id} className="flex items-center justify-between p-2">
+                  <div 
+                    key={req.id} 
+                    className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-2xl cursor-pointer transition-all border border-transparent hover:border-slate-100"
+                    onClick={() => setSelectedRequest(req)}
+                  >
                     <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 bg-logo-sparks rounded-xl flex items-center justify-center text-white font-black text-lg">
+                      <div className="h-12 w-12 bg-logo-sparks rounded-xl flex items-center justify-center text-white font-black text-lg shadow-sm">
                         {req.firstName.charAt(0)}
                       </div>
                       <div>
@@ -155,14 +160,14 @@ const AdminDashboard = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <button 
-                        onClick={() => handleApprove(req)}
-                        className="px-6 py-2.5 bg-midnight text-white text-xs font-bold rounded-xl hover:opacity-90 transition-all"
+                        onClick={(e) => { e.stopPropagation(); handleApprove(req); }}
+                        className="px-6 py-2.5 bg-midnight text-white text-xs font-bold rounded-xl hover:opacity-90 transition-all shadow-sm"
                       >
                         Approve
                       </button>
                       <button 
-                        onClick={() => handleReject(req.id)}
-                        className="px-6 py-2.5 bg-slate-50 text-slate-400 text-xs font-bold rounded-xl hover:bg-slate-100 transition-all"
+                        onClick={(e) => { e.stopPropagation(); handleReject(req.id); }}
+                        className="px-6 py-2.5 bg-white border border-slate-200 text-slate-500 text-xs font-bold rounded-xl hover:bg-slate-50 hover:text-slate-700 transition-all shadow-sm"
                       >
                         Reject
                       </button>
@@ -199,6 +204,122 @@ const AdminDashboard = () => {
         </div>
 
       </main>
+
+      {/* Modal for Request Details */}
+      {selectedRequest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setSelectedRequest(null)}>
+          <div 
+            className="bg-white rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="p-6 pb-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-xl font-black text-slate-900">Request Details</h3>
+              <button onClick={() => setSelectedRequest(null)} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-full transition-all">
+                <X size={20} />
+              </button>
+            </div>
+            
+            {/* Modal Content */}
+            <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+              {/* Display all details depending on role */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">First Name</p>
+                  <p className="font-bold text-slate-900">{selectedRequest.firstName}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Last Name</p>
+                  <p className="font-bold text-slate-900">{selectedRequest.lastName}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Email</p>
+                  <p className="font-bold text-slate-900">{selectedRequest.email}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Role</p>
+                  <span className="inline-block mt-1 px-2 py-0.5 bg-cyan-50 text-[10px] font-black text-cyan-600 uppercase rounded-md tracking-wider">
+                    {selectedRequest.role}
+                  </span>
+                </div>
+                
+                {selectedRequest.role === 'parent' && (
+                  <>
+                    <div className="col-span-2">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Child's Name</p>
+                      <p className="font-bold text-slate-900">{selectedRequest.childName || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Date of Birth</p>
+                      <p className="font-bold text-slate-900">{selectedRequest.dob || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Gender</p>
+                      <p className="font-bold text-slate-900 capitalize">{selectedRequest.gender || 'N/A'}</p>
+                    </div>
+                  </>
+                )}
+
+                {selectedRequest.role === 'director' && (
+                  <>
+                    <div className="col-span-2">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Center Name</p>
+                      <p className="font-bold text-slate-900">{selectedRequest.centerName || 'N/A'}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Address</p>
+                      <p className="font-bold text-slate-900">{selectedRequest.centerAddress || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Capacity</p>
+                      <p className="font-bold text-slate-900">{selectedRequest.capacity || 'N/A'}</p>
+                    </div>
+                  </>
+                )}
+
+                {selectedRequest.role === 'teacher' && (
+                  <div>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Experience</p>
+                    <p className="font-bold text-slate-900">{selectedRequest.experience || 'N/A'}</p>
+                  </div>
+                )}
+
+                {selectedRequest.message && (
+                  <div className="col-span-2">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Message</p>
+                    <p className="font-medium text-slate-700 bg-slate-50 p-3 rounded-xl mt-1 text-sm border border-slate-100">
+                      {selectedRequest.message}
+                    </p>
+                  </div>
+                )}
+
+                <div className="col-span-2">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Submitted At</p>
+                    <p className="font-bold text-slate-900">
+                      {selectedRequest.submittedAt ? new Date(selectedRequest.submittedAt).toLocaleString() : 'N/A'}
+                    </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer with Actions */}
+            <div className="p-6 bg-slate-50 flex items-center justify-end gap-3 border-t border-slate-100">
+               <button 
+                onClick={() => { handleReject(selectedRequest.id); setSelectedRequest(null); }}
+                className="px-6 py-3 bg-white border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-50 transition-all shadow-sm"
+              >
+                Reject
+              </button>
+              <button 
+                onClick={() => { handleApprove(selectedRequest); setSelectedRequest(null); }}
+                className="px-6 py-3 bg-midnight text-white text-sm font-bold rounded-xl hover:opacity-90 transition-all shadow-md"
+              >
+                Approve
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
