@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Phone, MapPin, User, Users, ShieldCheck, ChevronRight } from 'lucide-react';
+import { Mail, Phone, MapPin, User, Users, ShieldCheck, ChevronRight, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const ParentManagement = () => {
+  const navigate = useNavigate();
   const [parents, setParents] = useState<any[]>([]);
 
   useEffect(() => {
@@ -39,12 +41,20 @@ const ParentManagement = () => {
 
   return (
     <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
-      <header className="max-w-7xl mx-auto px-6 pt-8 pb-8">
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight">Parent Directory</h1>
-        <p className="text-slate-500 font-medium mt-1">Manage parents and their linked children accounts</p>
+      <header className="max-w-7xl mx-auto px-6 pt-8 pb-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-6">
+            <button 
+              onClick={() => navigate('/admin/dashboard')}
+              className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 transition-all group"
+            >
+              <ArrowLeft className="text-slate-400 group-hover:text-primary-500" size={20} />
+            </button>
+          </div>
+        </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 space-y-6">
+      <main className="max-w-7xl mx-auto px-6 mt-6 space-y-8 animate-fadeUp">
         {parents.length === 0 ? (
           <div className="p-8 text-center bg-white rounded-3xl border border-slate-100">
             <Users className="mx-auto text-slate-300 mb-4" size={48} />

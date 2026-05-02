@@ -59,10 +59,11 @@ const Students = () => {
   );
 
   return (
-    <div className="p-4 space-y-6 animate-fadeUp">
+    <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
       
       {/* --- HEADER SECTION --- */}
-      <div className="flex items-center justify-between mb-8 gap-4">
+      <header className="max-w-7xl mx-auto px-6 pt-8 pb-4">
+        <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-6">
           <button 
             onClick={() => navigate(-1)}
@@ -70,13 +71,6 @@ const Students = () => {
           >
             <ArrowLeft className="text-slate-400 group-hover:text-primary-500" size={20} />
           </button>
-          <div>
-            <div className="flex items-center gap-2 mb-1 text-primary-500">
-              <Sparkles size={14} className="fill-primary-500" />
-              <p className="text-[10px] font-black uppercase tracking-[0.3em]">LittleSparks Management</p>
-            </div>
-            <h1 className="text-3xl font-black text-midnight tracking-tight italic font-sans">All Sparks List</h1>
-          </div>
         </div>
 
         <div className="flex items-center gap-4">
@@ -94,10 +88,13 @@ const Students = () => {
             <span className="text-sm">Add New Student</span>
           </Button>
         </div>
-      </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-6 mt-6 space-y-8 animate-fadeUp">
 
       {/* --- SEARCH BAR --- */}
-      <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+      <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)]">
          <label className="block text-slate-500 font-bold text-sm mb-3 ml-2 italic">Search Directory</label>
          <div className="relative">
             <input 
@@ -111,7 +108,7 @@ const Students = () => {
       </div>
 
       {/* --- GENDER SPLIT TABLES --- */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)]">
         <CompactTable 
           title="Female Sparks" 
           data={filtered.filter(s => s.gender === 'Female')} 
@@ -125,6 +122,7 @@ const Students = () => {
           onDelete={handleDelete}
         />
       </div>
+      </main>
     </div>
   );
 };

@@ -70,14 +70,8 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
     /* Strict Scroll Hide: 
        'overflow-y-auto' සහ 'no-scrollbar' (Tailwind plugin/CSS) භාවිතා කර ඇත.
     */
-    <div className="h-screen w-full bg-surface-secondary overflow-hidden font-sans">
-      <div className="h-full w-full overflow-y-auto scrollbar-hide md:p-8 p-4">
-        <style>{`
-          .scrollbar-hide::-webkit-scrollbar { display: none; }
-          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
-
-        <div className="max-w-4xl mx-auto pb-20">
+    <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
+      <main className="max-w-4xl mx-auto px-6 mt-8 space-y-8 animate-fadeUp">
 
           {/* Status Alert */}
           {statusMessage && (
@@ -265,8 +259,7 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
 
             </div>
           </div>
-        </div>
-      </div>
+      </main>
     </div>
   );
 };
