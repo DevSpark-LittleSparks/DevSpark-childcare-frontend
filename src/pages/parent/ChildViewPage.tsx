@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { selectUser } from '../../features/auth/model/authSlice';
 import { 
   User, MapPin, ArrowLeft, Sparkles, Scale, Ruler, 
   Droplets, ClipboardList, Calendar, Heart, Fingerprint 
 } from 'lucide-react';
 import { Button } from '../../components/common/Button';
-// Assuming you have a Logo component in your project
 import { Logo } from '../../components/common/Logo'; 
 
 const ChildViewPage = () => {
   const navigate = useNavigate();
   const { studentId } = useParams();
+  const reduxUser = useSelector(selectUser);
   const [age, setAge] = useState<string>("");
 
-  // Sample data as fallback
   const [child, setChild] = useState({
     name: 'Amaya Perera',
     fullName: 'Amaya Sudeshini Perera',
-    profileImage: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80', // Placeholder
+    profileImage: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80',
     dob: '2020-05-15',
     gender: 'Female',
     bloodGroup: 'A+',
@@ -32,7 +33,8 @@ const ChildViewPage = () => {
     const allAdmissions = JSON.parse(localStorage.getItem('admissionsData') || '[]');
     const foundChild = allAdmissions.find((c: any) => c.id === studentId);
     
-    if (foundChild) {
+    // Security Check: Only allow if the child belongs to this parent
+    if (foundChild && foundChild.parentEmail === reduxUser?.email) {
       setChild({
         name: foundChild.fullName || foundChild.nameWithInitials || 'Unknown',
         fullName: foundChild.fullName || 'Unknown',
@@ -47,7 +49,7 @@ const ChildViewPage = () => {
         enrolledDate: foundChild.enrolledDate || new Date().toISOString().split('T')[0]
       });
     }
-  }, [studentId]);
+  }, [studentId, reduxUser]);
 
   useEffect(() => {
     if (child.dob) {
@@ -63,129 +65,126 @@ const ChildViewPage = () => {
   }, [child.dob]);
 
   return (
-    <div className="h-screen w-full bg-white overflow-hidden font-sans">
-      <div className="h-full w-full flex flex-col md:flex-row overflow-hidden">
-        
-        {/* --- LEFT SIDE: CONTENT SECTION (60%) --- */}
-        <div className="flex-[1.5] h-full overflow-y-auto p-8 md:p-16 scrollbar-hide">
-          <style>{`.scrollbar-hide::-webkit-scrollbar { display: none; }`}</style>
-          
-          {/* Navigation & Title */}
-          <div className="mb-12">
-
-            
-              <button 
-                            onClick={() => navigate('/parent/profile')}
-                            className="p-3 bg-white rounded-2xl shadow-sm border border-slate-200 text-slate-400 hover:text-primary-500 hover:shadow-md transition-all active:scale-95"
-                          >
-                            <ArrowLeft size={20} />
-                          </button>
-
-            <div className="flex items-center gap-2 mb-3 text-primary-500">
-              <Sparkles size={16} className="fill-primary-500" />
-              <p className="text-[10px] font-black uppercase tracking-[0.3em]">Student Profile</p>
-            </div>
-            <h1 className="text-5xl font-black text-midnight tracking-tight italic">
-              {child.name}
-            </h1>
-          </div>
-
-          <div className="space-y-12">
-            {/* 1. Basic Information Grid */}
-            <section className="space-y-6">
-              <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] border-b pb-4">Personal Identity</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <InfoItem label="Full Name" value={child.fullName} />
-                <InfoItem label="Gender" value={child.gender} />
-                <InfoItem label="Date of Birth" value={`${child.dob} (${age})`} />
-                <InfoItem label="Enrolled Since" value={child.enrolledDate} />
-              </div>
-            </section>
-
-            {/* 2. Physical & Health Stats (The Icons Section) */}
-            <section className="space-y-6">
-              <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] border-b pb-4">Growth & Health</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <StatCard icon={<Ruler size={20}/>} label="Height" value={`${child.height} cm`} color="text-blue-500" />
-                <StatCard icon={<Scale size={20}/>} label="Weight" value={`${child.weight} kg`} color="text-emerald-500" />
-                <StatCard icon={<Droplets size={20}/>} label="Blood" value={child.bloodGroup} color="text-rose-500" />
-                <StatCard icon={<Heart size={20}/>} label="Status" value="Healthy" color="text-orange-500" />
-              </div>
-            </section>
-
-            {/* 3. Medical Notes & Address */}
-            <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="p-8 bg-rose-50/50 rounded-[2.5rem] border border-rose-100/50">
-                <div className="flex items-center gap-3 mb-4 text-rose-600">
-                  <ClipboardList size={18} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Medical Notes</span>
-                </div>
-                <p className="text-sm font-bold text-slate-600 leading-relaxed italic">
-                  "{child.specialNote || "No medical alerts for this student."}"
-                </p>
-              </div>
-
-              <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100">
-                <div className="flex items-center gap-3 mb-4 text-slate-400">
-                  <MapPin size={18} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Home Address</span>
-                </div>
-                <p className="text-sm font-bold text-midnight leading-relaxed">
-                  {child.address}
-                </p>
-              </div>
-            </section>
+    <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
+      <header className="max-w-7xl mx-auto px-6 pt-8 pb-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-6">
+            <button 
+              onClick={() => navigate(-1)}
+              className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 transition-all group"
+            >
+              <ArrowLeft className="text-slate-400 group-hover:text-primary-500" size={20} />
+            </button>
           </div>
         </div>
+      </header>
 
-        {/* --- RIGHT SIDE: IMAGE SECTION (40%) --- */}
-<div className="flex-1 relative min-h-[500px] md:min-h-full overflow-hidden flex items-center justify-center p-6 bg-slate-900">
-  
-  {/* 1. Background Blurred Image */}
-  <div className="absolute inset-0">
-    <img 
-      src={child.profileImage} 
-      alt="background blur"
-      className="w-full h-full object-cover scale-110 blur-2xl opacity-40"
-    />
-    <div className="absolute inset-0 bg-gradient-to-t from-midnight via-transparent to-transparent"></div>
-  </div>
+      <main className="max-w-7xl mx-auto px-6 mt-6 space-y-8 animate-fadeUp">
+        <div className="bg-white rounded-[3rem] shadow-[0_20px_50px_rgba(10,6,55,0.02)] border border-slate-100 overflow-hidden flex flex-col lg:flex-row">
+          
+          {/* --- CONTENT SECTION --- */}
+          <div className="flex-[1.5] p-8 md:p-12 lg:p-16">
+            <div className="mb-12">
+              <div className="flex items-center gap-2 mb-3 text-primary-500">
+                <Sparkles size={16} className="fill-primary-500" />
+                <p className="text-[10px] font-black uppercase tracking-[0.3em]">Student Profile</p>
+              </div>
+              <h1 className="text-3xl font-black text-slate-900 tracking-tight font-sans uppercase">
+                {child.name}
+              </h1>
+            </div>
 
-  {/* 2. Focused Small Box Image - Size eka max-w-[280px] kiremen podi kara */}
-  <div className="relative z-10 w-full max-w-[280px] aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] border-[8px] border-white/10 backdrop-blur-sm animate-fadeUp">
-    <img 
-      src={child.profileImage} 
-      alt={child.name}
-      className="w-full h-full object-cover"
-    />
-  </div>
+            <div className="space-y-12">
+              <section className="space-y-6">
+                <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-3">
+                  <div className="w-10 h-[3px] bg-primary-500 rounded-full"></div> Personal Identity
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <InfoItem label="Full Name" value={child.fullName} />
+                  <InfoItem label="Gender" value={child.gender} />
+                  <InfoItem label="Date of Birth" value={`${child.dob} (${age})`} />
+                  <InfoItem label="Enrolled Since" value={child.enrolledDate} />
+                </div>
+              </section>
 
-  {/* 3. Floating Verified Badge - bottom-6 kiremen thawa pahalata kara */}
-  <div className="absolute bottom-6 right-8 z-20 bg-white/95 backdrop-blur-md p-4 rounded-[2.2rem] shadow-2xl flex items-center gap-4 transition-all hover:scale-105 border border-white">
-     {/* Verified Icon - Size poddak adu kara */}
-     <div className="h-12 w-12 bg-primary-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/30">
-        <Fingerprint size={24} />
-     </div>
+              <section className="space-y-6">
+                <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-3">
+                  <div className="w-10 h-[3px] bg-secondary-500 rounded-full"></div> Growth & Health
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <StatCard icon={<Ruler size={20}/>} label="Height" value={`${child.height} cm`} color="text-blue-500" />
+                  <StatCard icon={<Scale size={20}/>} label="Weight" value={`${child.weight} kg`} color="text-emerald-500" />
+                  <StatCard icon={<Droplets size={20}/>} label="Blood" value={child.bloodGroup} color="text-rose-500" />
+                  <StatCard icon={<Heart size={20}/>} label="Status" value="Healthy" color="text-orange-500" />
+                </div>
+              </section>
 
-     <div className="pr-4 text-left">
-        <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-0.5">
-            Verified Student
-        </p>
-        
-        <Logo 
-          variant="dark" 
-          iconClassName="w-6 h-6" 
-          textClassName="text-lg" 
-        />
-     </div>
-  </div>
-</div>
-      </div>
+              <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="p-8 bg-rose-50/50 rounded-[2.5rem] border border-rose-100/50">
+                  <div className="flex items-center gap-3 mb-4 text-rose-600">
+                    <ClipboardList size={18} />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Medical Notes</span>
+                  </div>
+                  <p className="text-sm font-bold text-slate-600 leading-relaxed italic">
+                    \"{child.specialNote || "No medical alerts for this student."}\"
+                  </p>
+                </div>
+
+                <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100">
+                  <div className="flex items-center gap-3 mb-4 text-slate-400">
+                    <MapPin size={18} />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Home Address</span>
+                  </div>
+                  <p className="text-sm font-bold text-midnight leading-relaxed">
+                    {child.address}
+                  </p>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          {/* --- IMAGE SECTION --- */}
+          <div className="flex-1 relative min-h-[400px] lg:min-h-full overflow-hidden flex items-center justify-center p-6 bg-slate-900">
+            <div className="absolute inset-0">
+              <img 
+                src={child.profileImage} 
+                alt="background blur"
+                className="w-full h-full object-cover scale-110 blur-2xl opacity-40"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-midnight via-transparent to-transparent"></div>
+            </div>
+
+            <div className="relative z-10 w-full max-w-[280px] aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] border-[8px] border-white/10 backdrop-blur-sm animate-fadeUp">
+              <img 
+                src={child.profileImage} 
+                alt={child.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div className="absolute bottom-6 right-8 z-20 bg-white/95 backdrop-blur-md p-4 rounded-[2.2rem] shadow-2xl flex items-center gap-4 transition-all hover:scale-105 border border-white">
+               <div className="h-12 w-12 bg-primary-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/30">
+                  <Fingerprint size={24} />
+               </div>
+
+               <div className="pr-4 text-left">
+                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-0.5">
+                      Verified Student
+                  </p>
+                  <Logo 
+                    variant="dark" 
+                    iconClassName="w-6 h-6" 
+                    textClassName="text-lg" 
+                  />
+               </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };
 
-// Helper Components
 const InfoItem = ({ label, value }: { label: string; value: string }) => (
   <div className="space-y-1">
     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{label}</p>

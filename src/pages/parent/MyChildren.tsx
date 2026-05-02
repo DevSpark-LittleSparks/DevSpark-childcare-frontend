@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../store';
-import { User, ArrowRight, GraduationCap, Calendar, Sparkles } from 'lucide-react';
+import { User, ArrowRight, GraduationCap, Calendar, Sparkles, ArrowLeft } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 
 const MyChildren = () => {
@@ -54,17 +54,21 @@ const MyChildren = () => {
   }, [user]);
 
   return (
-    <div className="p-8 bg-surface-secondary min-h-screen font-sans text-left">
-      <div className="max-w-6xl mx-auto">
-        
-        <header className="mb-12">
-          <div className="flex items-center gap-2 mb-2 text-primary-500">
-            <Sparkles size={16} className="fill-primary-500" />
-            <p className="text-[10px] font-black uppercase tracking-[0.3em]">Family Dashboard</p>
+    <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
+      <header className="max-w-7xl mx-auto px-6 pt-8 pb-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-6">
+            <button 
+              onClick={() => navigate(-1)}
+              className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 transition-all group"
+            >
+              <ArrowLeft className="text-slate-400 group-hover:text-primary-500" size={20} />
+            </button>
           </div>
-          <h1 className="text-4xl font-black text-midnight tracking-tight italic">My Children</h1>
-        </header>
+        </div>
+      </header>
 
+      <main className="max-w-7xl mx-auto px-6 mt-6 space-y-8 animate-fadeUp">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {childrenList.map((child) => (
             /* CLICKABLE BOX START */
@@ -116,7 +120,7 @@ const MyChildren = () => {
             </div>
           ))}
         </div>
-      </div>
+      </main>
     </div>
   );
 };
