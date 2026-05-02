@@ -129,14 +129,7 @@ const AdminDashboard = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="relative group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" size={18} />
-            <input
-              type="text"
-              placeholder="Search Sparks, Staff, Records..."
-              className="pl-12 pr-4 py-3 bg-white border border-slate-100 rounded-2xl w-72 outline-none focus:ring-4 focus:ring-primary-500/5 focus:border-primary-500 transition-all shadow-sm font-medium text-sm"
-            />
-          </div>
+          
 
           <div className="relative">
             <Button
