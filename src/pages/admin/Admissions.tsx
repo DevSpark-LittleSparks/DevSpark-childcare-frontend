@@ -243,8 +243,9 @@ const AdmissionsPage = () => {
 
             <Button
               type="submit"
+              variant="primary"
               disabled={isSubmitting}
-              className="w-full py-7 rounded-[2.2rem] bg-primary-500 text-white hover:bg-primary-600 shadow-2xl shadow-primary-500/20 transition-all flex items-center justify-center gap-4 font-black text-xs tracking-[0.25em] uppercase active:scale-95"
+              className="w-full py-7 rounded-[2.2rem] shadow-2xl shadow-primary-500/20 flex items-center justify-center gap-4 font-black text-xs tracking-[0.25em] uppercase"
             >
               {isSubmitting ? (
                 <Loader2 className="animate-spin" size={20} />

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  MoreVertical, ArrowLeft, Trash2, Eye, Search, Sparkles, Plus 
+import {
+  MoreVertical, ArrowLeft, Trash2, Eye, Search, Sparkles, Plus
 } from 'lucide-react';
-import { Button } from '../../components/common/Button'; 
+import { Button } from '../../components/common/Button';
 
 interface StudentData {
   id: string;
@@ -18,7 +18,7 @@ interface StudentData {
 const Students = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  
+
   const [students, setStudents] = useState<StudentData[]>([]);
 
   React.useEffect(() => {
@@ -46,7 +46,7 @@ const Students = () => {
   }, []);
 
   const handleDelete = (id: string) => {
-    if(window.confirm("Are you sure you want to remove this student?")) {
+    if (window.confirm("Are you sure you want to remove this student?")) {
       setStudents(students.filter(s => s.id !== id));
       const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
       const newData = admissionsData.filter((c: any) => c.id !== id);
@@ -54,74 +54,74 @@ const Students = () => {
     }
   };
 
-  const filtered = students.filter(s => 
+  const filtered = students.filter(s =>
     `${s.firstName} ${s.lastName}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
-      
+
       {/* --- HEADER SECTION --- */}
       <header className="max-w-7xl mx-auto px-6 pt-8 pb-4">
         <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-6">
-          <button 
-            onClick={() => navigate(-1)}
-            className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 transition-all group"
-          >
-            <ArrowLeft className="text-slate-400 group-hover:text-primary-500" size={20} />
-          </button>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="bg-white px-6 py-2.5 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center min-w-[120px]">
-            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Total Sparks</span>
-            <span className="text-xl font-black text-slate-900 leading-none">{students.length}</span>
+          <div className="flex items-center gap-6">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 transition-all group"
+            >
+              <ArrowLeft className="text-slate-400 group-hover:text-primary-500" size={20} />
+            </button>
           </div>
 
-          <Button 
-            onClick={() => navigate('/admin/admissions')}
-            variant="primary" 
-            className="flex items-center gap-2 px-6 py-4 rounded-2xl text-white font-bold transition-all active:scale-95 shadow-lg shadow-primary-500/10"
-          >
-            <Plus size={18} strokeWidth={3} />
-            <span className="text-sm">Add New Student</span>
-          </Button>
-        </div>
+          <div className="flex items-center gap-4">
+            <div className="bg-white px-6 py-2.5 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center min-w-[120px]">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Total Sparks</span>
+              <span className="text-xl font-black text-slate-900 leading-none">{students.length}</span>
+            </div>
+
+            <Button
+              onClick={() => navigate('/admin/admissions')}
+              variant="primary"
+              className="flex items-center gap-2 px-6 py-4 rounded-2xl font-bold transition-all active:scale-95 shadow-lg shadow-primary-500/10"
+            >
+              <Plus size={18} strokeWidth={3} />
+              <span className="text-sm">Add New Student</span>
+            </Button>
+          </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-6 mt-6 space-y-8 animate-fadeUp">
 
-      {/* --- SEARCH BAR --- */}
-      <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)]">
-         <label className="block text-slate-500 font-bold text-sm mb-3 ml-2 italic">Search Directory</label>
-         <div className="relative">
-            <input 
+        {/* --- SEARCH BAR --- */}
+        <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)]">
+          <label className="block text-slate-500 font-bold text-sm mb-3 ml-2 italic">Search Directory</label>
+          <div className="relative">
+            <input
               type="text"
               placeholder="Select student in list..."
               className="w-full pl-6 pr-12 py-4 bg-[#F8FAFC] border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/5 focus:bg-white transition-all text-slate-600 font-medium placeholder:text-slate-300"
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
-         </div>
-      </div>
+          </div>
+        </div>
 
-      {/* --- GENDER SPLIT TABLES --- */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)]">
-        <CompactTable 
-          title="Female Sparks" 
-          data={filtered.filter(s => s.gender === 'Female')} 
-          primaryColor="rose" 
-          onDelete={handleDelete}
-        />
-        <CompactTable 
-          title="Male Sparks" 
-          data={filtered.filter(s => s.gender === 'Male')} 
-          primaryColor="sky" 
-          onDelete={handleDelete}
-        />
-      </div>
+        {/* --- GENDER SPLIT TABLES --- */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)]">
+          <CompactTable
+            title="Female Sparks"
+            data={filtered.filter(s => s.gender === 'Female')}
+            primaryColor="rose"
+            onDelete={handleDelete}
+          />
+          <CompactTable
+            title="Male Sparks"
+            data={filtered.filter(s => s.gender === 'Male')}
+            primaryColor="sky"
+            onDelete={handleDelete}
+          />
+        </div>
       </main>
     </div>
   );
@@ -130,7 +130,7 @@ const Students = () => {
 const CompactTable = ({ title, data, primaryColor, onDelete }: any) => {
   const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  
+
   const styles = {
     rose: { bg: 'bg-rose-50', text: 'text-rose-500', border: 'border-rose-100' },
     sky: { bg: 'bg-sky-50', text: 'text-sky-500', border: 'border-sky-100' }
@@ -163,9 +163,9 @@ const CompactTable = ({ title, data, primaryColor, onDelete }: any) => {
                     </div>
                   </div>
                 </td>
-                
+
                 <td className="px-8 py-5 text-right relative">
-                  <button 
+                  <button
                     onClick={() => setActiveMenu(activeMenu === s.id ? null : s.id)}
                     className="p-2 text-slate-300 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all"
                   >
@@ -175,24 +175,24 @@ const CompactTable = ({ title, data, primaryColor, onDelete }: any) => {
                   {/* ACTION MENU: Simplified to View and Delete only */}
                   {activeMenu === s.id && (
                     <div className="absolute right-16 top-1/2 -translate-y-1/2 z-50 bg-white border border-slate-100 shadow-xl rounded-2xl p-2 flex gap-1 animate-in zoom-in duration-150">
-                      
+
                       {/* VIEW & EDIT ACTION: Navigates to the detailed profile page */}
-                      <button 
+                      <button
                         onClick={() => navigate(`/admin/students/${s.id}`)}
                         className="p-3 hover:bg-primary-50 text-primary-500 rounded-xl transition-all flex items-center gap-2"
                         title="View & Edit Profile"
                       >
-                        <Eye size={18}/>
+                        <Eye size={18} />
                         <span className="text-xs font-bold pr-1">View Profile</span>
                       </button>
-                      
+
                       {/* DELETE ACTION */}
-                      <button 
-                        onClick={() => onDelete(s.id)} 
+                      <button
+                        onClick={() => onDelete(s.id)}
                         className="p-3 hover:bg-rose-50 text-rose-600 rounded-xl transition-all"
                         title="Delete Student"
                       >
-                        <Trash2 size={18}/>
+                        <Trash2 size={18} />
                       </button>
                     </div>
                   )}

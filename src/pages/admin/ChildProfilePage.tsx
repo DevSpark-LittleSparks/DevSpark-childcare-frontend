@@ -58,6 +58,31 @@ const ChildViewPage = () => {
     }
   }, [formData.dob]);
 
+  // Load actual data from admissionsData
+  useEffect(() => {
+    const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
+    const foundChild = admissionsData.find((c: any) => c.id === studentId);
+    if (foundChild) {
+      setFormData({
+        fullName: foundChild.fullName || '',
+        nameWithInitials: foundChild.nameWithInitials || '',
+        dob: foundChild.dob || '',
+        gender: foundChild.gender || 'male',
+        bloodGroup: foundChild.bloodGroup || '',
+        height: foundChild.height || '',
+        weight: foundChild.weight || '',
+        address: foundChild.address || '',
+        specialNote: foundChild.specialNote || '',
+        relationship: foundChild.relationship || '',
+        parentFullName: foundChild.parentFullName || '',
+        parentEmail: foundChild.parentEmail || '',
+        parentContact: foundChild.parentContact || '',
+        parentID: foundChild.parentID || ''
+      });
+      setPreviewImage(foundChild.profileImage || null);
+    }
+  }, [studentId]);
+
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -74,8 +99,14 @@ const ChildViewPage = () => {
 
   const handleSave = () => {
     setIsSaving(true);
-    // Simulate API update for the specific studentId
+    
     setTimeout(() => {
+      const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
+      const updatedData = admissionsData.map((c: any) => 
+        c.id === studentId ? { ...c, ...formData, profileImage: previewImage || c.profileImage } : c
+      );
+      localStorage.setItem('admissionsData', JSON.stringify(updatedData));
+
       setIsSaving(false);
       setIsEditing(false);
       alert("Changes saved to LittleSparks database!");

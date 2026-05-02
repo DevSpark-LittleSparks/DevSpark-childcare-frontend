@@ -4,6 +4,7 @@ import { MdExpandMore as ChevronDown } from "react-icons/md";
 
 // AuthHeader and Common Components
 import { AuthHeader } from "../../shared/ui/AuthHeader/AuthHeader";
+import { Button } from "../../components/common/Button";
 
 // Assets and Images
 import heroImg from "../../assets/images/hero.png";
@@ -227,9 +228,13 @@ const SignupRequestForm: React.FC = () => {
                 <textarea className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500 min-h-[100px] resize-none" name="message" value={form.message} onChange={handleChange} />
               </div>
 
-              <button className="w-full bg-cyan-500 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-cyan-600 transition-all transform hover:-translate-y-0.5" type="submit">
+              <Button 
+                variant="primary"
+                className="w-full py-4 rounded-xl shadow-lg" 
+                type="submit"
+              >
                 Submit Application
-              </button>
+              </Button>
 
               <p className="text-center text-sm text-slate-500">
                 Already have an account? <Link className="text-cyan-600 font-bold hover:underline" to="/login">Login here</Link>
