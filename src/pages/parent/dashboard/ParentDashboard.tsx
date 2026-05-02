@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../../features/auth/model/authSlice';
-import { 
-  Baby, 
-  CreditCard, 
-  MessageSquare, 
-  Calendar, 
-  Bell, 
-  ArrowRight, 
+import {
+  Baby,
+  CreditCard,
+  MessageSquare,
+  Calendar,
+  Bell,
+  ArrowRight,
   Sparkles,
   ShieldCheck,
   Clock,
@@ -23,6 +23,7 @@ const ParentDashboard = () => {
   const navigate = useNavigate();
   const reduxUser = useSelector(selectUser);
   const [childrenCount, setChildrenCount] = useState(0);
+  const [children, setChildren] = useState<any[]>([]);
   const [firstChildImage, setFirstChildImage] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [selectedNotif, setSelectedNotif] = useState<any>(null);
@@ -33,11 +34,23 @@ const ParentDashboard = () => {
   ]);
 
   const markAsRead = (id: number) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, unread: false } : n));
+    setNotifications(prev => {
+      const updated = prev.map(n => n.id === id ? { ...n, unread: false } : n);
+      const sysNotifs = JSON.parse(localStorage.getItem('system_notifications') || '[]');
+      const updatedSys = sysNotifs.map((n: any) => n.id === id ? { ...n, unread: false } : n);
+      localStorage.setItem('system_notifications', JSON.stringify(updatedSys));
+      return updated;
+    });
   };
 
   const markAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+    setNotifications(prev => {
+      const updated = prev.map(n => ({ ...n, unread: false }));
+      const sysNotifs = JSON.parse(localStorage.getItem('system_notifications') || '[]');
+      const updatedSys = sysNotifs.map((n: any) => ({ ...n, unread: false }));
+      localStorage.setItem('system_notifications', JSON.stringify(updatedSys));
+      return updated;
+    });
   };
 
   const openNotif = (notif: any) => {
@@ -52,66 +65,87 @@ const ParentDashboard = () => {
     if (reduxUser?.email) {
       const parentChildren = admissionsData.filter((c: any) => c.parentEmail === reduxUser.email);
       setChildrenCount(parentChildren.length);
+      setChildren(parentChildren);
       if (parentChildren.length > 0) {
         setFirstChildImage(parentChildren[0].profileImage || '');
       }
+    }
+
+    // Load dynamic announcements from Admin
+    const sysNotifs = JSON.parse(localStorage.getItem('system_notifications') || '[]');
+    if (sysNotifs.length > 0) {
+      setNotifications(prev => {
+        const existingIds = prev.map(n => n.id);
+        const newOnes = sysNotifs.filter((n: any) => !existingIds.includes(n.id));
+        return [...newOnes, ...prev];
+      });
     }
   }, [reduxUser]);
 
   return (
     <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
-      
+
       {/* --- TOP HEADER --- */}
       <header className="max-w-7xl mx-auto px-6 pt-8 pb-4 flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-1 text-primary-500">
-            <Sparkles size={16} className="fill-primary-500" />
-            <p className="text-[10px] font-black uppercase tracking-[0.3em]">LittleSparks Family Portal</p>
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-1 bg-primary-500 rounded-full hidden sm:block"></div>
+          <div>
+            <div className="flex items-center gap-2 mb-0.5 text-primary-500">
+              <Sparkles size={14} className="fill-primary-500" />
+              <p className="text-[10px] font-black uppercase tracking-[0.3em]">LittleSparks Family Portal</p>
+            </div>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight font-sans leading-none">
+              Hello, {reduxUser?.displayName?.split(' ')[0] || 'Parent'} 👋
+            </h1>
+            <p className="text-slate-500 text-xs font-bold mt-1 uppercase tracking-wider opacity-60">Overview & Activity</p>
           </div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight font-sans">
-            Hello, {reduxUser?.displayName?.split(' ')[0] || 'Parent'} 👋
-          </h1>
-          <p className="text-slate-500 font-medium mt-1">Here is what's happening with your little sparks today.</p>
         </div>
-        
+
         <div className="flex items-center gap-4 relative">
-          <button 
+          <Button
+            variant="secondary"
             onClick={() => setShowNotifications(!showNotifications)}
-            className={`p-2.5 bg-white border border-slate-100 rounded-xl transition-all shadow-sm relative group ${showNotifications ? 'ring-2 ring-primary-500/20 border-primary-500' : ''}`}
+            className={`h-11 w-11 p-0 rounded-xl transition-all shadow-sm relative ${showNotifications ? 'ring-2 ring-primary-500/20 border-primary-500' : ''}`}
           >
             <Bell size={20} className={showNotifications ? 'text-primary-500' : 'text-slate-400'} />
             {notifications.some(n => n.unread) && (
               <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
             )}
-          </button>
+          </Button>
 
           {/* NOTIFICATION DROPDOWN */}
           {showNotifications && (
-            <div className="absolute top-full right-0 mt-4 w-80 bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(10,6,55,0.15)] border border-slate-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-              <div className="p-6 border-b border-slate-50 flex items-center justify-between">
-                <h3 className="text-xs font-black text-midnight uppercase tracking-widest">Special Announcements</h3>
-                <span className="text-[10px] font-bold text-primary-500 bg-primary-50 px-2 py-0.5 rounded-full">
-                  {notifications.filter(n => n.unread).length} New
+            <div className="absolute top-full right-0 mt-4 w-85 bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(10,6,55,0.15)] border border-slate-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+              <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
+                <h3 className="text-[10px] font-black text-midnight uppercase tracking-widest">Special Announcements</h3>
+                <span className="text-[9px] font-black text-primary-500 bg-primary-50 px-3 py-1 rounded-full uppercase tracking-tighter">
+                  {notifications.filter(n => n.unread).length} New Updates
                 </span>
               </div>
               <div className="max-h-[400px] overflow-y-auto no-scrollbar">
-                {notifications.map((notif) => (
-                  <div 
-                    key={notif.id} 
-                    onClick={() => openNotif(notif)}
-                    className={`p-5 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer relative group`}
-                  >
-                    {notif.unread && <div className="absolute left-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-primary-500 rounded-full"></div>}
-                    <div className="flex justify-between items-start mb-1">
-                      <h4 className="text-[11px] font-black text-midnight uppercase tracking-tight">{notif.title}</h4>
-                      <span className="text-[9px] text-slate-400 font-bold">{notif.time}</span>
+                {notifications.length > 0 ? (
+                  notifications.map((notif) => (
+                    <div
+                      key={notif.id}
+                      onClick={() => openNotif(notif)}
+                      className={`p-6 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer relative group`}
+                    >
+                      {notif.unread && <div className="absolute left-2.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-primary-500 rounded-full"></div>}
+                      <div className="flex justify-between items-start mb-1.5">
+                        <h4 className="text-[11px] font-black text-midnight uppercase tracking-tight">{notif.title}</h4>
+                        <span className="text-[9px] text-slate-400 font-bold">{notif.time}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 leading-relaxed line-clamp-2 font-medium">{notif.desc}</p>
                     </div>
-                    <p className="text-[11px] text-slate-500 leading-tight line-clamp-2">{notif.desc}</p>
+                  ))
+                ) : (
+                  <div className="p-10 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">
+                    No Notifications
                   </div>
-                ))}
+                )}
               </div>
-              <div className="p-4 bg-slate-50 text-center">
-                <button 
+              <div className="p-5 bg-slate-50/80 text-center border-t border-slate-100">
+                <button
                   onClick={markAllRead}
                   className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-primary-500 transition-colors"
                 >
@@ -121,34 +155,35 @@ const ParentDashboard = () => {
             </div>
           )}
 
-          <div 
+          <Button
             onClick={() => navigate('/parent/profile')}
-            className="h-11 w-11 rounded-xl bg-midnight flex items-center justify-center text-primary-500 cursor-pointer hover:scale-105 transition-all shadow-lg"
+            variant="primary"
+            className="h-11 w-11 p-0 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20 active:scale-95"
           >
             <User size={20} />
-          </div>
+          </Button>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-6 mt-6 space-y-8 animate-fadeUp">
-        
+
         {/* --- QUICK STATS --- */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <DashboardStat 
+          <DashboardStat
             icon={<Baby className="text-primary-500" size={24} />}
             label="ENROLLED CHILDREN"
             value={childrenCount.toString()}
             iconBg="bg-primary-50"
             onClick={() => navigate('/parent/children')}
           />
-          <DashboardStat 
+          <DashboardStat
             icon={<CreditCard className="text-emerald-500" size={24} />}
             label="OUTSTANDING FEES"
             value="Rs. 0.00"
             iconBg="bg-emerald-50"
             onClick={() => navigate('/parent/payments')}
           />
-          <DashboardStat 
+          <DashboardStat
             icon={<MessageSquare className="text-blue-500" size={24} />}
             label="UNREAD MESSAGES"
             value="2"
@@ -158,25 +193,25 @@ const ParentDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
+
           {/* --- LEFT COL: MAIN ACTIONS --- */}
           <div className="lg:col-span-2 space-y-8">
-            
+
             {/* FEATURED CARD */}
             <div className="relative group overflow-hidden bg-midnight rounded-[3rem] p-10 text-white shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="absolute top-0 right-0 w-80 h-80 bg-primary-500/10 rounded-full blur-[100px] -mr-40 -mt-40"></div>
-              
+
               <div className="relative z-10 flex-1">
                 <div className="inline-block px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/10 text-[10px] font-black uppercase tracking-widest mb-6">
                   Featured Service
                 </div>
                 <h2 className="text-4xl font-black tracking-tight mb-4 leading-tight italic">
-                  Track Weekly<br/>Progress.
+                  Track Weekly<br />Progress.
                 </h2>
                 <p className="text-slate-400 text-sm max-w-md mb-8 leading-relaxed">
                   Stay updated with your child's academic performance, behavioral tracking, and growth milestones.
                 </p>
-                <Button 
+                <Button
                   onClick={() => navigate('/parent/progress')}
                   className="bg-primary-500 hover:bg-primary-600 text-white px-8 py-6 rounded-2xl group/btn transition-all"
                 >
@@ -185,19 +220,36 @@ const ParentDashboard = () => {
                 </Button>
               </div>
 
-              {/* RIGHT SIDE: CHILD IMAGE & LOGO */}
+              {/* RIGHT SIDE: MULTIPLE CHILD IMAGES & LOGO */}
               <div className="relative z-10 shrink-0 hidden md:block">
-                <div className="relative h-48 w-48 lg:h-56 lg:w-56">
-                  <div className="absolute inset-0 bg-primary-500/20 rounded-[3rem] blur-2xl group-hover:bg-primary-500/40 transition-all"></div>
-                  <div className="relative h-full w-full rounded-[2.5rem] overflow-hidden border-[6px] border-white/10 shadow-2xl">
-                    <img 
-                      src={firstChildImage || "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80"} 
-                      alt="Child" 
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
-                  </div>
-                  {/* LOGO OVERLAY */}
-                  <div className="absolute -bottom-4 -right-4 bg-white p-3 rounded-2xl shadow-2xl">
+                <div className="flex -space-x-12 hover:space-x-2 transition-all duration-500">
+                  {children.length > 0 ? (
+                    children.map((child, index) => (
+                      <div key={child.id} className="relative h-48 w-48 lg:h-56 lg:w-56" style={{ zIndex: 10 + (children.length - index) }}>
+                        <div className="absolute inset-0 bg-primary-500/20 rounded-[3rem] blur-2xl group-hover:bg-primary-500/40 transition-all"></div>
+                        <div className="relative h-full w-full rounded-[2.5rem] overflow-hidden border-[6px] border-white/10 shadow-2xl bg-midnight/20">
+                          <img
+                            src={child.profileImage || "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80"}
+                            alt={child.firstName}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                          />
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="relative h-48 w-48 lg:h-56 lg:w-56">
+                      <div className="absolute inset-0 bg-primary-500/20 rounded-[3rem] blur-2xl group-hover:bg-primary-500/40 transition-all"></div>
+                      <div className="relative h-full w-full rounded-[2.5rem] overflow-hidden border-[6px] border-white/10 shadow-2xl">
+                        <img
+                          src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80"
+                          alt="Default Child"
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {/* LOGO OVERLAY - Only show one logo for the whole stack */}
+                  <div className="absolute -bottom-4 -right-4 bg-white p-3 rounded-2xl shadow-2xl z-[100]">
                     <Logo variant="dark" iconClassName="w-6 h-6" textClassName="text-[10px]" />
                   </div>
                 </div>
@@ -206,15 +258,15 @@ const ParentDashboard = () => {
 
             {/* QUICK LINKS GRID */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <QuickLink 
-                title="Academic Calendar" 
-                desc="Check upcoming holidays and events" 
+              <QuickLink
+                title="Academic Calendar"
+                desc="Check upcoming holidays and events"
                 icon={<Calendar className="text-rose-500" />}
                 bg="bg-rose-50"
               />
-              <QuickLink 
-                title="Daily Meal Plan" 
-                desc="Nutritional tracking for this week" 
+              <QuickLink
+                title="Daily Meal Plan"
+                desc="Nutritional tracking for this week"
                 icon={<Clock className="text-amber-500" />}
                 bg="bg-amber-50"
               />
@@ -230,19 +282,19 @@ const ParentDashboard = () => {
               </div>
 
               <div className="space-y-6">
-                <ActivityItem 
+                <ActivityItem
                   icon={<ShieldCheck size={16} className="text-emerald-500" />}
                   title="Attendance Marked"
                   time="2 hours ago"
                   desc="Shemil arrived at 8:15 AM"
                 />
-                <ActivityItem 
+                <ActivityItem
                   icon={<Clock size={16} className="text-blue-500" />}
                   title="Meal Finished"
                   time="4 hours ago"
                   desc="Lunch (Rice & Curry) completed"
                 />
-                <ActivityItem 
+                <ActivityItem
                   icon={<Bell size={16} className="text-amber-500" />}
                   title="New Announcement"
                   time="Yesterday"
@@ -272,16 +324,16 @@ const ParentDashboard = () => {
         <div className="fixed inset-0 bg-midnight/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-10 duration-500">
             <div className="relative h-48 flex items-center justify-center bg-gradient-to-br from-hero-blue via-hero-purple to-hero-pink">
-               <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, #06C5D4 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
-               <div className="relative z-10 h-20 w-20 bg-white/20 backdrop-blur-md rounded-3xl border border-white/20 flex items-center justify-center shadow-2xl">
-                  <Bell className="text-white" size={32} />
-               </div>
-               <button 
-                 onClick={() => setSelectedNotif(null)}
-                 className="absolute top-6 right-6 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors border border-white/20 text-white"
-               >
-                 <ArrowRight className="rotate-180" size={20} />
-               </button>
+              <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, #06C5D4 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
+              <div className="relative z-10 h-20 w-20 bg-white/20 backdrop-blur-md rounded-3xl border border-white/20 flex items-center justify-center shadow-2xl">
+                <Bell className="text-white" size={32} />
+              </div>
+              <button
+                onClick={() => setSelectedNotif(null)}
+                className="absolute top-6 right-6 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors border border-white/20 text-white"
+              >
+                <ArrowRight className="rotate-180" size={20} />
+              </button>
             </div>
             <div className="p-10 space-y-6">
               <div className="flex items-center justify-between">
@@ -295,9 +347,10 @@ const ParentDashboard = () => {
                 {selectedNotif.fullMsg}
               </p>
               <div className="pt-6">
-                <Button 
+                <Button
+                  variant="primary"
                   onClick={() => setSelectedNotif(null)}
-                  className="w-full bg-midnight text-white py-4 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-xl hover:bg-midnight/90 transition-all"
+                  className="w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary-500/20"
                 >
                   Got it, thanks!
                 </Button>
@@ -311,7 +364,7 @@ const ParentDashboard = () => {
 };
 
 const DashboardStat = ({ icon, label, value, iconBg, onClick }: any) => (
-  <div 
+  <div
     onClick={onClick}
     className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-primary-200 transition-all cursor-pointer group"
   >

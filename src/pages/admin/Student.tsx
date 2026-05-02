@@ -151,53 +151,42 @@ const CompactTable = ({ title, data, primaryColor, onDelete }: any) => {
         <table className="w-full text-left">
           <tbody className="divide-y divide-slate-50">
             {data.map((s: StudentData) => (
-              <tr key={s.id} className="hover:bg-slate-50/50 transition-all group relative">
-                <td className="px-8 py-5">
-                  <div className="flex items-center gap-4">
-                    <div className={`h-12 w-12 ${styles.bg} ${styles.text} rounded-xl flex items-center justify-center font-black border ${styles.border} shadow-sm`}>
-                      {s.firstName[0]}{s.lastName[0]}
+                <tr 
+                  key={s.id} 
+                  onClick={() => navigate(`/admin/students/${s.id}`)}
+                  className="hover:bg-slate-50/50 transition-all group relative cursor-pointer"
+                >
+                  <td className="px-8 py-5">
+                    <div className="flex items-center gap-4">
+                      <div className={`h-12 w-12 ${styles.bg} ${styles.text} rounded-xl flex items-center justify-center font-black border ${styles.border} shadow-sm`}>
+                        {s.firstName[0]}{s.lastName[0]}
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-900 tracking-tight">{s.firstName} {s.lastName}</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{s.class}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-slate-900 tracking-tight">{s.firstName} {s.lastName}</p>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{s.class}</p>
-                    </div>
-                  </div>
-                </td>
+                  </td>
 
-                <td className="px-8 py-5 text-right relative">
-                  <button
-                    onClick={() => setActiveMenu(activeMenu === s.id ? null : s.id)}
-                    className="p-2 text-slate-300 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all"
-                  >
-                    <MoreVertical size={18} />
-                  </button>
-
-                  {/* ACTION MENU: Simplified to View and Delete only */}
-                  {activeMenu === s.id && (
-                    <div className="absolute right-16 top-1/2 -translate-y-1/2 z-50 bg-white border border-slate-100 shadow-xl rounded-2xl p-2 flex gap-1 animate-in zoom-in duration-150">
-
-                      {/* VIEW & EDIT ACTION: Navigates to the detailed profile page */}
+                  <td className="px-8 py-5 text-right relative" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => navigate(`/admin/students/${s.id}`)}
-                        className="p-3 hover:bg-primary-50 text-primary-500 rounded-xl transition-all flex items-center gap-2"
+                        className="p-3 bg-slate-50 text-slate-400 hover:text-primary-500 hover:bg-primary-50 rounded-xl transition-all"
                         title="View & Edit Profile"
                       >
                         <Eye size={18} />
-                        <span className="text-xs font-bold pr-1">View Profile</span>
                       </button>
-
-                      {/* DELETE ACTION */}
                       <button
                         onClick={() => onDelete(s.id)}
-                        className="p-3 hover:bg-rose-50 text-rose-600 rounded-xl transition-all"
+                        className="p-3 bg-slate-50 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
                         title="Delete Student"
                       >
                         <Trash2 size={18} />
                       </button>
                     </div>
-                  )}
-                </td>
-              </tr>
+                  </td>
+                </tr>
             ))}
           </tbody>
         </table>
