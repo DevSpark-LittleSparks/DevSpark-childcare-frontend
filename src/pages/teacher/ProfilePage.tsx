@@ -1,9 +1,10 @@
 import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
 import {
-  User, Mail, Phone, MapPin, Eye, EyeOff, Save, Edit2, 
+  User, Mail, Phone, MapPin, Eye, EyeOff, Save, Edit2, ArrowLeft,
   Key, CheckCircle2, AlertCircle, Loader2, Camera, GraduationCap, 
   BookOpen, ShieldCheck, Briefcase
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
 import { UserProfile } from '../../types/user.types';
 
@@ -15,6 +16,7 @@ interface TeacherProfilePageProps {
 }
 
 const TeacherProfilePage: React.FC<TeacherProfilePageProps> = ({ initialUser }) => {
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [user, setUser] = useState<UserProfile>(initialUser);
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -55,14 +57,21 @@ const TeacherProfilePage: React.FC<TeacherProfilePageProps> = ({ initialUser }) 
   };
 
   return (
-    <div className="h-screen w-full bg-surface-secondary overflow-hidden font-sans text-slate-900">
-      <div className="h-full w-full overflow-y-auto scrollbar-hide md:p-8 p-4">
-        <style>{`
-          .scrollbar-hide::-webkit-scrollbar { display: none; }
-          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
+    <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
+      <header className="max-w-7xl mx-auto px-6 pt-8 pb-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-6">
+            <button 
+              onClick={() => navigate(-1)}
+              className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 transition-all group"
+            >
+              <ArrowLeft className="text-slate-400 group-hover:text-primary-500" size={20} />
+            </button>
+          </div>
+        </div>
+      </header>
 
-        <div className="max-w-4xl mx-auto pb-20">
+      <main className="max-w-4xl mx-auto px-6 mt-6 space-y-8 animate-fadeUp">
           
           {/* Status Alert */}
           {statusMessage && (
@@ -250,8 +259,7 @@ const TeacherProfilePage: React.FC<TeacherProfilePageProps> = ({ initialUser }) 
 
             </div>
           </div>
-        </div>
-      </div>
+      </main>
     </div>
   );
 };
