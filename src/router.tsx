@@ -19,11 +19,13 @@ import AdmissionsPage from './pages/admin/Admissions';
 import Student from './pages/admin/Student';
 import ChildProfilePage from './pages/admin/ChildProfilePage'; // Admin Edit/Manage Page
 import ParentManagement from './pages/admin/ParentManagement';
+import Teachers from './pages/admin/Teachers';
 
 // Parent Pages
 import ParentProfilePage from './pages/parent/ProfilePage';
 import ChildViewPage from './pages/parent/ChildViewPage'; // Parent View-Only Page
 import MyChildren from './pages/parent/MyChildren';
+import ParentDashboard from './pages/parent/dashboard/ParentDashboard';
 
 // Teacher Pages
 import TeacherProfilePage from './pages/teacher/ProfilePage';
@@ -71,6 +73,7 @@ export const router = createBrowserRouter([
       // Admin route for full management/editing
       { path: 'students/:studentId', element: <ChildProfilePage /> }, 
       { path: 'parents', element: <ParentManagement /> },
+      { path: 'teachers', element: <Teachers /> },
       { path: 'billing', element: <BillingPage /> },
       { path: 'meal', element: <MealsPage /> },
     ],
@@ -84,7 +87,7 @@ export const router = createBrowserRouter([
   element: <ParentLayout />, // Use the Layout here, NOT MyChildren
   children: [
     // This makes /parent redirect to dashboard or children automatically
-    { path: 'dashboard', element: <div>Parent Dashboard</div> },
+    { path: 'dashboard', element: <ParentDashboard /> },
     { path: 'profile', element: <ParentProfilePage initialUser={mockUser} /> },
     
     // This is the page with your clickable cards

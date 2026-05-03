@@ -108,7 +108,7 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, onOpenSettin
         <NavGroup title="School Management" isCollapsed={isCollapsed}>
           <SidebarLink to="/admin/students" icon={<MdPeople />} label="Students" isCollapsed={isCollapsed} />
           <SidebarLink to="/admin/parents" icon={<MdPeople />} label="Parents" isCollapsed={isCollapsed} />
-          <SidebarLink to="/admin/staff" icon={<MdManageAccounts />} label="Staff" isCollapsed={isCollapsed} />
+          <SidebarLink to="/admin/teachers" icon={<MdManageAccounts />} label="Staff" isCollapsed={isCollapsed} />
         </NavGroup>
 
         <NavGroup title="Management" isCollapsed={isCollapsed}>

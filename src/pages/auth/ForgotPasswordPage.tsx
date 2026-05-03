@@ -30,7 +30,8 @@ const ForgotPasswordPage: React.FC = () => {
 
             <Button 
               type="submit" 
-              className="w-full py-4 bg-cyan-500 hover:bg-cyan-600 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/30 transition-all transform hover:-translate-y-0.5" 
+              variant="primary"
+              className="w-full py-4 rounded-xl shadow-lg shadow-cyan-500/30" 
             >
               Send Reset Link
             </Button>

@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Layers, Zap, Heart } from 'lucide-react';
+import { Button } from '../components/common/Button';
 
 // ==========================================
 // 1) Internal Logo Component
@@ -128,12 +129,13 @@ const LandingPage: React.FC = () => {
             >
               Log In
             </Link>
-            <button
-              className="lp-btn bg-cyan-500 text-white px-5 py-2.5 rounded-full hover:bg-cyan-600 transition-all duration-300 font-semibold shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transform"
+            <Button
+              variant="primary"
+              className="px-5 py-2.5 rounded-full"
               onClick={() => navigate('/signup-request')}
             >
               Get Started
-            </button>
+            </Button>
           </div>
         </div>
       </header>
@@ -154,12 +156,13 @@ const LandingPage: React.FC = () => {
               organized space so you can stay present with every child.
             </p>
             <div className="hero-cta">
-              <button
-                className="btn secondary bg-cyan-500 text-white px-8 py-4 rounded-full font-bold hover:bg-cyan-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95 transform"
+              <Button
+                variant="primary"
+                className="px-8 py-4 rounded-full shadow-lg"
                 onClick={() => navigate('/signup-request')}
               >
                 Request Form
-              </button>
+              </Button>
             </div>
           </div>
           <div className="hero-right flex justify-center relative">
@@ -183,7 +186,13 @@ const LandingPage: React.FC = () => {
           <div className="max-w-2xl">
             <h2 className="text-4xl font-bold text-white mb-6">Why Choose LITTLESPARKS?</h2>
             <p className="text-lg text-gray-100 mb-8">The nursery and childcare management app that does almost everything.</p>
-            <button className="btn primary bg-cyan-500 text-white px-8 py-4 rounded-full font-bold hover:bg-cyan-600 transition-all active:scale-95 transform w-fit" onClick={() => navigate('/learn-more')}>Learn More</button>
+            <Button 
+              variant="primary" 
+              className="px-8 py-4 rounded-full w-fit" 
+              onClick={() => navigate('/learn-more')}
+            >
+              Learn More
+            </Button>
           </div>
         </div>
       </section>
@@ -216,7 +225,13 @@ const LandingPage: React.FC = () => {
           <div>
             <h2 className="h2 text-4xl font-bold text-gray-900 mb-6">Safety & Compliance - Effortlessly Archived</h2>
             <p className="p text-lg text-gray-700 mb-4">Managing all of your reports in one place. Save countless hours on paperwork.</p>
-            <button className="btn primary bg-cyan-500 text-white px-8 py-3 rounded-full font-bold hover:bg-cyan-600 transition-all active:scale-95 transform" onClick={() => navigate('/contact')}>Contact Us</button>
+            <Button 
+              variant="primary" 
+              className="px-8 py-3 rounded-full" 
+              onClick={() => navigate('/contact')}
+            >
+              Contact Us
+            </Button>
           </div>
         </div>
       </section>

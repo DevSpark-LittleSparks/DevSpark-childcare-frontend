@@ -58,6 +58,31 @@ const ChildViewPage = () => {
     }
   }, [formData.dob]);
 
+  // Load actual data from admissionsData
+  useEffect(() => {
+    const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
+    const foundChild = admissionsData.find((c: any) => c.id === studentId);
+    if (foundChild) {
+      setFormData({
+        fullName: foundChild.fullName || '',
+        nameWithInitials: foundChild.nameWithInitials || '',
+        dob: foundChild.dob || '',
+        gender: foundChild.gender || 'male',
+        bloodGroup: foundChild.bloodGroup || '',
+        height: foundChild.height || '',
+        weight: foundChild.weight || '',
+        address: foundChild.address || '',
+        specialNote: foundChild.specialNote || '',
+        relationship: foundChild.relationship || '',
+        parentFullName: foundChild.parentFullName || '',
+        parentEmail: foundChild.parentEmail || '',
+        parentContact: foundChild.parentContact || '',
+        parentID: foundChild.parentID || ''
+      });
+      setPreviewImage(foundChild.profileImage || null);
+    }
+  }, [studentId]);
+
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -74,8 +99,14 @@ const ChildViewPage = () => {
 
   const handleSave = () => {
     setIsSaving(true);
-    // Simulate API update for the specific studentId
+    
     setTimeout(() => {
+      const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
+      const updatedData = admissionsData.map((c: any) => 
+        c.id === studentId ? { ...c, ...formData, profileImage: previewImage || c.profileImage } : c
+      );
+      localStorage.setItem('admissionsData', JSON.stringify(updatedData));
+
       setIsSaving(false);
       setIsEditing(false);
       alert("Changes saved to LittleSparks database!");
@@ -83,18 +114,17 @@ const ChildViewPage = () => {
   };
 
   return (
-    <div className="h-screen w-full bg-surface-secondary overflow-hidden font-sans text-slate-900">
-      <div className="h-full w-full overflow-y-auto p-4 md:p-8 scrollbar-hide animate-fadeUp">
-        <style>{`.scrollbar-hide::-webkit-scrollbar { display: none; }`}</style>
-        
-        {/* --- TOP BAR --- */}
-        <div className="max-w-6xl mx-auto mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-5">
+    <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
+      
+      {/* --- TOP BAR --- */}
+      <header className="max-w-7xl mx-auto px-6 pt-8 pb-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-6">
             <button 
               onClick={() => navigate(-1)}
-              className="p-3 bg-white rounded-2xl shadow-sm border border-slate-200 text-slate-400 hover:text-primary-500 transition-all active:scale-95"
+              className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 transition-all group"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeft className="text-slate-400 group-hover:text-primary-500" size={20} />
             </button>
             <div>
               <div className="flex items-center gap-2 mb-1 text-primary-500">
@@ -127,8 +157,10 @@ const ChildViewPage = () => {
             </div>
           )}
         </div>
+      </header>
 
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
+      <main className="max-w-7xl mx-auto px-6 mt-6 space-y-8 animate-fadeUp">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
           
           {/* --- STUDENT BIO SECTION --- */}
           <div className="lg:col-span-2 space-y-8">
@@ -238,7 +270,7 @@ const ChildViewPage = () => {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

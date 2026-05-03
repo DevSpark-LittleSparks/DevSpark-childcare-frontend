@@ -1,9 +1,9 @@
 import React, { useState, useRef, ChangeEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Camera, User, MapPin, ArrowLeft, Loader2, 
-  CheckCircle, Sparkles, Scale, Ruler, Droplets, 
-  ClipboardList, Users, Mail, Phone, Hash 
+import {
+  Camera, User, MapPin, ArrowLeft, Loader2,
+  CheckCircle, Sparkles, Scale, Ruler, Droplets,
+  ClipboardList, Users, Mail, Phone, Hash
 } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 
@@ -62,13 +62,13 @@ const AdmissionsPage = () => {
   const validateForm = () => {
     // 1. Check if all boxes are filled (except Special Note)
     const requiredFields = [
-      'fullName', 'nameWithInitials', 'dob', 'gender', 'bloodGroup', 
-      'height', 'weight', 'address', 'relationship', 'parentFullName', 
+      'fullName', 'nameWithInitials', 'dob', 'gender', 'bloodGroup',
+      'height', 'weight', 'address', 'relationship', 'parentFullName',
       'parentEmail', 'parentContact', 'parentID'
     ];
 
     const isAllFilled = requiredFields.every(field => formData[field as keyof typeof formData].trim() !== "");
-    
+
     if (!isAllFilled) {
       alert("Registration failed! Please fill all the boxes in the form.");
       return false;
@@ -88,7 +88,7 @@ const AdmissionsPage = () => {
     e.preventDefault();
     if (validateForm()) {
       setIsSubmitting(true);
-      
+
       // Save data to localStorage
       const existingData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
       const newChild = {
@@ -108,36 +108,29 @@ const AdmissionsPage = () => {
   };
 
   return (
-    <div className="h-screen w-full bg-surface-secondary overflow-hidden font-sans text-slate-900">
-      <div className="h-full w-full overflow-y-auto p-4 md:p-8 scrollbar-hide animate-fadeUp">
-        <style>{`.scrollbar-hide::-webkit-scrollbar { display: none; }`}</style>
-        
-        {/* Header Section */}
-        <div className="max-w-6xl mx-auto mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-5">
-            <button 
+    <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
+      {/* Header Section */}
+      <header className="max-w-7xl mx-auto px-6 pt-8 pb-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-6">
+            <button
               onClick={() => navigate('/admin/dashboard')}
-              className="p-3 bg-white rounded-2xl shadow-sm border border-slate-200 text-slate-400 hover:text-primary-500 hover:shadow-md transition-all active:scale-95"
+              className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 transition-all group"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeft className="text-slate-400 group-hover:text-primary-500" size={20} />
             </button>
-            <div>
-              <div className="flex items-center gap-2 mb-1 text-primary-500">
-                <Sparkles size={14} className="fill-primary-500" />
-                <p className="text-[10px] font-black uppercase tracking-[0.3em]">LittleSparks Admissions</p>
-              </div>
-              {/* title */}
-              <h1 className="text-3xl font-black text-midnight tracking-tight italic font-sans">Enroll New Spark</h1>
-            </div>
+
           </div>
         </div>
+      </header>
 
-        <form onSubmit={handleSubmit} className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
-          
+      <main className="max-w-7xl mx-auto px-6 mt-6 space-y-8 animate-fadeUp">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
+
           {/* Main Form Area */}
           <div className="lg:col-span-2 space-y-8">
             <div className="bg-white rounded-[3rem] shadow-[0_20px_60px_rgba(10,6,55,0.03)] border border-slate-100 p-8 md:p-12">
-              
+
               <div className="flex items-center gap-4 mb-10">
                 <div className="h-10 w-10 bg-primary-50 rounded-xl flex items-center justify-center text-primary-500">
                   <User size={20} />
@@ -148,7 +141,7 @@ const AdmissionsPage = () => {
               {/* Photo & Identity */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
                 <div className="flex flex-col items-center">
-                  <div 
+                  <div
                     onClick={() => fileInputRef.current?.click()}
                     className="h-32 w-32 bg-slate-50 rounded-[2.5rem] border-4 border-white shadow-xl overflow-hidden cursor-pointer flex items-center justify-center relative group"
                   >
@@ -171,13 +164,13 @@ const AdmissionsPage = () => {
                   <input type="date" name="dob" onChange={handleInputChange} className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-2xl outline-none text-sm font-bold" />
                 </div>
                 <div className="space-y-2 text-left">
-  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
-    Age
-  </label>
-  <div className="w-full p-4 bg-slate-50 border-2 border-transparent rounded-2xl text-sm font-bold text-midnight shadow-sm">
-    {age || "AGE"}
-  </div>
-</div>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                    Age
+                  </label>
+                  <div className="w-full p-4 bg-slate-50 border-2 border-transparent rounded-2xl text-sm font-bold text-midnight shadow-sm">
+                    {age || "AGE"}
+                  </div>
+                </div>
                 <div className="space-y-2 text-left">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Gender</label>
                   <select name="gender" onChange={handleInputChange} className="w-full p-4 bg-slate-50 rounded-2xl outline-none text-sm font-bold appearance-none border-2 border-transparent focus:border-primary-500">
@@ -225,13 +218,13 @@ const AdmissionsPage = () => {
           <div className="space-y-8 animate-fadeUp" style={{ animationDelay: '0.2s' }}>
             <div className="bg-midnight rounded-[3rem] p-10 shadow-2xl relative overflow-hidden">
               <h3 className="text-white font-black text-lg uppercase tracking-tight mb-8">Guardian Details</h3>
-              
+
               <div className="space-y-5 text-left">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Relationship</label>
-                  <select 
-                    name="relationship" 
-                    onChange={handleInputChange} 
+                  <select
+                    name="relationship"
+                    onChange={handleInputChange}
                     className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl outline-none text-sm font-bold text-white appearance-none focus:border-primary-500"
                   >
                     <option value="" className="bg-midnight">Select Role</option>
@@ -248,10 +241,11 @@ const AdmissionsPage = () => {
               </div>
             </div>
 
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
+              variant="primary"
               disabled={isSubmitting}
-              className="w-full py-7 rounded-[2.2rem] bg-primary-500 text-white hover:bg-primary-600 shadow-2xl shadow-primary-500/20 transition-all flex items-center justify-center gap-4 font-black text-xs tracking-[0.25em] uppercase active:scale-95"
+              className="w-full py-7 rounded-[2.2rem] shadow-2xl shadow-primary-500/20 flex items-center justify-center gap-4 font-black text-xs tracking-[0.25em] uppercase"
             >
               {isSubmitting ? (
                 <Loader2 className="animate-spin" size={20} />
@@ -261,7 +255,7 @@ const AdmissionsPage = () => {
             </Button>
           </div>
         </form>
-      </div>
+      </main>
     </div>
   );
 };
@@ -270,13 +264,12 @@ const AdmissionsPage = () => {
 const LittleInput = ({ label, dark, ...props }: any) => (
   <div className="space-y-2 text-left">
     <label className={`text-[10px] font-black uppercase tracking-widest ml-1 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{label}</label>
-    <input 
-      {...props} 
-      className={`w-full p-4 rounded-2xl outline-none text-sm font-bold transition-all ${
-        dark 
-          ? 'bg-white/5 border border-white/10 text-white focus:bg-white/10 focus:border-primary-500' 
+    <input
+      {...props}
+      className={`w-full p-4 rounded-2xl outline-none text-sm font-bold transition-all ${dark
+          ? 'bg-white/5 border border-white/10 text-white focus:bg-white/10 focus:border-primary-500'
           : 'bg-slate-50 border-2 border-transparent focus:border-primary-500 focus:bg-white text-midnight shadow-sm'
-      }`} 
+        }`}
     />
   </div>
 );
