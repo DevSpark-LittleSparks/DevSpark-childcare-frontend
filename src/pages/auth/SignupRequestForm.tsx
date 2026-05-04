@@ -1,12 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { MdExpandMore as ChevronDown } from "react-icons/md";
-
-// AuthHeader and Common Components
 import { AuthHeader } from "../../shared/ui/AuthHeader/AuthHeader";
 import { Button } from "../../components/common/Button";
-
-// Assets and Images
+import { apiClient } from "../../services/axiosInstance";
 import heroImg from "../../assets/images/hero.png";
 import requestSideImg from "../../assets/images/request-side.png";
 import directorDashboardImg from "../../assets/images/image_5.jpg";
@@ -17,13 +13,20 @@ interface FormData {
   firstName: string;
   lastName: string;
   email: string;
+  password?: string;
+  phone: string;
+  address: string;
   role: UserRole;
+  // Parent specific
   childName?: string;
   dob?: string;
   gender?: string;
+  relationship?: string;
+  // Director specific
   centerName?: string;
   centerAddress?: string;
   capacity?: string;
+  // Teacher specific
   experience?: string;
   message: string;
 }
@@ -31,11 +34,23 @@ interface FormData {
 const SignupRequestForm: React.FC = () => {
   const navigate = useNavigate();
   const [role, setRole] = useState<UserRole>("director");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState<FormData>({
     firstName: "",
     lastName: "",
     email: "",
+    password: "",
+    phone: "",
+    address: "",
     role: "director",
+    relationship: "MOTHER",
+    experience: "1-5",
+    centerName: "",
+    centerAddress: "",
+    capacity: "",
+    childName: "",
+    dob: "",
+    gender: "male",
     message: "",
   });
   const [emailError, setEmailError] = useState("");
@@ -53,34 +68,33 @@ const SignupRequestForm: React.FC = () => {
     setForm(prev => ({ ...prev, role: newRole }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     if (!emailRegex.test(form.email)) {
-      setEmailError("Please enter a valid email address (e.g., name@example.com).");
+      setEmailError("Please enter a valid email address.");
       return;
     }
 
-    if (role === "parent") {
-      const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
-      const parentExists = admissionsData.some((c: any) => c.parentEmail === form.email);
+    setIsSubmitting(true);
+    try {
+      // Send all data to the backend based on role
+      let endpoint = "/api/v1/auth/signup/parent/request";
+      if (role === "teacher") endpoint = "/api/v1/auth/signup/teacher/request";
+      if (role === "director") endpoint = "/api/v1/auth/signup/director/request";
 
-      if (!parentExists) {
-        alert("Registration failed! We couldn't find your email in our system. Please make sure the Admin has registered your child first.");
-        return;
-      }
+      await apiClient.post(endpoint, {
+        ...form,
+        fullName: `${form.firstName} ${form.lastName}`
+      });
+
+      navigate("/request-confirmed");
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const savedRequests = JSON.parse(localStorage.getItem("user_requests") || "[]");
-    const newRequest = {
-      ...form,
-      id: Date.now(),
-      status: "Pending",
-      submittedAt: new Date().toISOString(),
-    };
-    localStorage.setItem("user_requests", JSON.stringify([...savedRequests, newRequest]));
-    navigate("/request-confirmed");
   };
 
   const content = {
@@ -111,10 +125,7 @@ const SignupRequestForm: React.FC = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <AuthHeader backLink="/" />
 
-      {/* Main Container: Removed max-w-1440 for Full Width */}
       <div className="flex-1 flex flex-col lg:flex-row w-full overflow-hidden">
-
-        {/* LEFT: FORM SECTION */}
         <section className="flex-1 p-8 lg:p-12 xl:p-20 bg-white overflow-y-auto flex items-center justify-center lg:justify-end">
           <div className="w-full max-w-md lg:mr-12 xl:mr-24">
 
@@ -125,7 +136,6 @@ const SignupRequestForm: React.FC = () => {
               {content[role].leftSubtitle}
             </p>
 
-            {/* Role Selector Tabs */}
             <div className="flex p-1.5 bg-slate-100 rounded-2xl mb-10 shadow-inner">
               {(["director", "teacher", "parent"] as UserRole[]).map((r) => (
                 <button
@@ -168,10 +178,24 @@ const SignupRequestForm: React.FC = () => {
                 {emailError && <p className="text-red-500 text-xs mt-1">{emailError}</p>}
               </div>
 
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Password</label>
+                <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500 transition-all" type="password" name="password" placeholder="••••••••" value={form.password} onChange={handleChange} required />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Phone</label>
+                <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500 transition-all" type="text" name="phone" placeholder="0771234567" value={form.phone} onChange={handleChange} required />
+              </div>
+
               {/* Dynamic Role Fields */}
               <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-500">
                 {role === "parent" && (
                   <>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Address</label>
+                      <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500 transition-all" type="text" name="address" placeholder="Residential Address" value={form.address} onChange={handleChange} required />
+                    </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Child's Name</label>
                       <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500" type="text" name="childName" value={form.childName || ""} onChange={handleChange} required />
@@ -190,6 +214,14 @@ const SignupRequestForm: React.FC = () => {
                         </select>
                       </div>
                     </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Relationship</label>
+                      <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500" name="relationship" value={form.relationship || "MOTHER"} onChange={handleChange} required>
+                        <option value="MOTHER">Mother</option>
+                        <option value="FATHER">Father</option>
+                        <option value="GUARDIAN">Guardian</option>
+                      </select>
+                    </div>
                   </>
                 )}
                 {role === "director" && (
@@ -198,28 +230,31 @@ const SignupRequestForm: React.FC = () => {
                       <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Center Name</label>
                       <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500" type="text" name="centerName" value={form.centerName || ""} onChange={handleChange} required />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Address</label>
-                        <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500" type="text" name="centerAddress" value={form.centerAddress || ""} onChange={handleChange} required />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Capacity</label>
-                        <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500" type="number" name="capacity" value={form.capacity || ""} onChange={handleChange} required />
-                      </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Center Address</label>
+                      <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500" type="text" name="centerAddress" value={form.centerAddress || ""} onChange={handleChange} required />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Capacity</label>
+                      <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500" type="number" name="capacity" value={form.capacity || ""} onChange={handleChange} required />
                     </div>
                   </>
                 )}
                 {role === "teacher" && (
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Experience</label>
-                    <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500" name="experience" value={form.experience || ""} onChange={handleChange} required>
-                      <option value="" disabled>Select Years</option>
-                      <option value="0-1">0 - 1 Year</option>
-                      <option value="2-5">2 - 5 Years</option>
-                      <option value="5+">5+ Years</option>
-                    </select>
-                  </div>
+                  <>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Address</label>
+                      <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500 transition-all" type="text" name="address" placeholder="Residential Address" value={form.address} onChange={handleChange} required />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Experience</label>
+                      <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500" name="experience" value={form.experience || "1-5"} onChange={handleChange} required>
+                        <option value="< 1">Less than 1 year</option>
+                        <option value="1-5">1 - 5 years</option>
+                        <option value="> 5">More than 5 years</option>
+                      </select>
+                    </div>
+                  </>
                 )}
               </div>
 
@@ -228,12 +263,8 @@ const SignupRequestForm: React.FC = () => {
                 <textarea className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500 min-h-[100px] resize-none" name="message" value={form.message} onChange={handleChange} />
               </div>
 
-              <Button 
-                variant="primary"
-                className="w-full py-4 rounded-xl shadow-lg" 
-                type="submit"
-              >
-                Submit Application
+              <Button variant="primary" className="w-full py-4 rounded-xl shadow-lg" type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Submitting..." : "Submit Application"}
               </Button>
 
               <p className="text-center text-sm text-slate-500">
@@ -243,7 +274,6 @@ const SignupRequestForm: React.FC = () => {
           </div>
         </section>
 
-        {/* RIGHT: MOCKUP SECTION (Full Width) */}
         <section className="hidden lg:flex flex-1 bg-gradient-to-br from-cyan-600 to-blue-700 p-12 items-center justify-center relative overflow-hidden">
           <div className="absolute top-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
           <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-cyan-400/20 rounded-full blur-3xl translate-x-1/4 translate-y-1/4" />
