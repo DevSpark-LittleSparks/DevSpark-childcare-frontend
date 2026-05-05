@@ -58,48 +58,67 @@ export function LoginForm() {
 
   const onSubmit = async (data: LoginFormValues) => {
     dispatch(setLoading(true));
+    dispatch(setError(null));
+
     try {
-      // 1. Check Local OTP Credentials from Admin Approval
-      const otpCredentials = JSON.parse(localStorage.getItem('otp_credentials') || '[]');
-      const validOtpUser = otpCredentials.find((c: any) => c.email === data.email && c.otp === data.password);
+      // 1. Check if input might be an OTP (6-digit number)
+      const isOtp = /^\d{6}$/.test(data.password);
 
-      if (validOtpUser) {
-        dispatch(setUser({
-          uid: 'otp-' + Date.now(),
-          email: validOtpUser.email,
-          displayName: validOtpUser.fullName || validOtpUser.firstName || validOtpUser.role,
-          photoURL: null,
-          role: validOtpUser.role
-        }));
-
-        dispatch(setLoading(false));
-
-        // Redirect based on role
-        if (validOtpUser.role.toLowerCase() === 'parent') {
-          navigate("/parent/children");
-        } else if (validOtpUser.role.toLowerCase() === 'teacher') {
-          navigate("/teacher/dashboard");
-        } else {
-          navigate("/admin/dashboard");
+      if (isOtp) {
+        try {
+          await apiClient.post("/api/v1/auth/signup/verify-otp", {
+            email: data.email,
+            otpCode: data.password
+          });
+          
+          alert("✨ Account Activated Successfully! You can now log in using your permanent password.");
+          dispatch(setLoading(false));
+          return;
+        } catch (otpErr: any) {
+          // If it wasn't an OTP or verification failed, continue to normal login
+          console.log("Not an OTP or verification failed, trying normal login...");
         }
-        return;
       }
 
-      // 2. Fallback to Firebase Auth
+      // 2. Standard Firebase Auth
       const userCredential = await signInWithEmailAndPassword(
         firebaseAuth,
         data.email,
         data.password
       );
+
       const { uid, email, displayName, photoURL } = userCredential.user;
-      dispatch(setUser({ uid, email, displayName, photoURL, role: null }));
-      navigate("/");
+      
+      // Get role from Firebase Custom Claims (we set this in backend)
+      const idTokenResult = await userCredential.user.getIdTokenResult();
+      const role = idTokenResult.claims.role as string;
+
+      dispatch(setUser({ uid, email, displayName, photoURL, role }));
+      
+      // Redirect based on role
+      if (role === 'PARENT') navigate("/parent/children");
+      else if (role === 'TEACHER') navigate("/teacher/dashboard");
+      else if (role === 'ADMIN') navigate("/admin/dashboard");
+      else navigate("/");
+
     } catch (err: any) {
-      dispatch(setError(err.message || "Failed to login. Invalid credentials."));
+      if (err.code === 'auth/user-disabled') {
+        // Redirect to new verification page with email pre-filled
+        navigate(`/verify-otp?email=${encodeURIComponent(data.email)}`);
+        return;
+      }
+      
+      let msg = "Invalid email or password.";
+      if (err.response?.data?.message) {
+        msg = err.response.data.message;
+      }
+      dispatch(setError(msg));
     } finally {
+
       dispatch(setLoading(false));
     }
   };
+
 
   return (
     <Card className="w-full max-w-md p-8 shadow-2xl border-t-4 border-t-cyan-500 bg-white/80 backdrop-blur-sm">

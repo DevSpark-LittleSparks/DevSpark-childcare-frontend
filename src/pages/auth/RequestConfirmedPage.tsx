@@ -34,8 +34,8 @@ const RequestConfirmedPage: React.FC = () => {
                 notified and will review your details shortly.
               </p>
               <p className="text-lg text-slate-500 leading-relaxed font-medium">
-                You will receive an email confirmation with Login instructions once
-                your request is approved.
+                Once approved, you will receive an email with a <b>Verification OTP</b> to activate your account. 
+                Please keep an eye on your inbox!
               </p>
             </div>
 
