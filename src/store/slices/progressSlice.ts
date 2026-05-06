@@ -26,7 +26,7 @@ const initialState: ProgressState = {
  */
 export const fetchProgressData = createAsyncThunk(
   'progress/fetchProgressData',
-  async (filter?: string, { rejectWithValue }) => {
+  async (filter: string | undefined, { rejectWithValue }) => {
     try {
       const data = await progressService.getChildrenData(filter);
       return data;
