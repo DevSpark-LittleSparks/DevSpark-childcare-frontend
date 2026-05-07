@@ -4,8 +4,7 @@ import {
   Camera, User, MapPin, ArrowLeft, Loader2, Save, 
   Edit3, X, Sparkles, Scale, Ruler, Droplets, 
   ClipboardList, Users, Mail, Phone, Hash, Calendar, Heart
-} from 'lucide-react';
-import { Button } from '../../components/common/Button';
+import { apiClient } from '../../services/axiosInstance';
 
 /**
  * ChildViewPage - Admin Management View
@@ -28,20 +27,20 @@ const ChildViewPage = () => {
 
   // Form State: Keys match the AdmissionsPage exactly
   const [formData, setFormData] = useState({
-    fullName: 'Amaya Perera',
-    nameWithInitials: 'A.P. Perera',
-    dob: '2020-05-15',
-    gender: 'female',
-    bloodGroup: 'A+',
-    height: '105',
-    weight: '18',
-    address: 'No 45, Flower Road, Colombo 07',
-    specialNote: 'Nut allergy, requires inhaler for dust.',
-    relationship: 'mother',
-    parentFullName: 'Sunethra Perera',
-    parentEmail: 'sunethra.p@gmail.com',
-    parentContact: '+94771234567',
-    parentID: '856643221V'
+    fullName: '',
+    nameWithInitials: '',
+    dob: '',
+    gender: 'male',
+    bloodGroup: '',
+    height: '',
+    weight: '',
+    address: '',
+    specialNote: '',
+    relationship: '',
+    parentFullName: '',
+    parentEmail: '',
+    parentContact: '',
+    parentID: ''
   });
 
   // Calculate age dynamically if DOB is changed during edit
@@ -67,9 +66,9 @@ const ChildViewPage = () => {
           const data = res.data.data;
           setFormData({
             fullName: `${data.firstName} ${data.lastName}`,
-            nameWithInitials: data.nameWithInitials || `${data.firstName.charAt(0)}.${data.lastName}`, // Fallback
+            nameWithInitials: `${data.firstName.charAt(0)}.${data.lastName}`, // Fallback
             dob: data.dob || '',
-            gender: data.gender.toLowerCase() || 'male',
+            gender: data.gender ? data.gender.toLowerCase() : 'male',
             bloodGroup: data.bloodGroup || '',
             height: data.height || '',
             weight: data.weight || '',
