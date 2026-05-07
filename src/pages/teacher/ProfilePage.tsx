@@ -26,6 +26,22 @@ const TeacherProfilePage: React.FC<TeacherProfilePageProps> = ({ initialUser }) 
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const fetchProfile = async () => {
+    try {
+      const res = await apiClient.get('/api/v1/auth/teacher/profile');
+      if (res.data.success) {
+        setUser(res.data.data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch teacher profile:", err);
+      setStatusMessage({ type: 'error', text: 'Failed to load profile data.' });
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
   useEffect(() => {
     if (statusMessage) {
       const timer = setTimeout(() => setStatusMessage(null), 3000);
@@ -49,11 +65,17 @@ const TeacherProfilePage: React.FC<TeacherProfilePageProps> = ({ initialUser }) 
 
   const handleSaveData = async () => {
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      await apiClient.put('/api/v1/auth/teacher/profile', user);
       setIsEditing(false);
       setStatusMessage({ type: 'success', text: 'Teacher profile updated successfully.' });
-    }, 1500);
+      fetchProfile();
+    } catch (err) {
+      console.error("Update failed:", err);
+      setStatusMessage({ type: 'error', text: 'Update failed. Please try again.' });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (

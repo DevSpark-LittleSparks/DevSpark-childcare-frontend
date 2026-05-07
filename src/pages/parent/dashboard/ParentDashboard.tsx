@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../../../components/common/Button';
 import { Logo } from '../../../components/common/Logo';
+import { apiClient } from '../../../services/axiosInstance';
 
 const ParentDashboard = () => {
   const navigate = useNavigate();
@@ -27,58 +28,85 @@ const ParentDashboard = () => {
   const [firstChildImage, setFirstChildImage] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [selectedNotif, setSelectedNotif] = useState<any>(null);
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: 'Special Announcement', desc: 'Tomorrow is a holiday due to the public event. All classes are suspended for the day. Please keep your children safe and enjoy the break.', time: '10m ago', type: 'info', unread: true, fullMsg: 'Dear Parents, please be informed that the childcare center will remain closed tomorrow due to the scheduled public celebrations and security arrangements. We will resume normal operations from the day after. Thank you for your cooperation.' },
-    { id: 2, title: 'System Update', desc: 'New progress tracking features have been enabled for all parents. You can now view detailed reports.', time: '2h ago', type: 'success', unread: true, fullMsg: 'We have updated our system with new developmental milestone tracking. You can now see weekly summaries of your child\'s learning activities and behavioral growth directly from your dashboard. Check the Progress section for more details.' },
-    { id: 3, title: 'Fee Reminder', desc: 'Monthly fee for May is now available. Please settle by the end of the week.', time: '1d ago', type: 'warning', unread: false, fullMsg: 'The invoice for the month of May has been generated and is ready for payment. You can view the details in the Payments section. A late fee may apply if not settled by May 15th.' },
-  ]);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
-  const markAsRead = (id: number) => {
-    setNotifications(prev => {
-      const updated = prev.map(n => n.id === id ? { ...n, unread: false } : n);
-      const sysNotifs = JSON.parse(localStorage.getItem('system_notifications') || '[]');
-      const updatedSys = sysNotifs.map((n: any) => n.id === id ? { ...n, unread: false } : n);
-      localStorage.setItem('system_notifications', JSON.stringify(updatedSys));
-      return updated;
-    });
+  const fetchNotifications = async () => {
+    try {
+      const res = await apiClient.get('/api/v1/notifications');
+      if (res.data.success) {
+        const mapped = res.data.data.map((n: any) => ({
+          id: n.id,
+          title: n.title,
+          desc: n.message.length > 60 ? n.message.substring(0, 60) + '...' : n.message,
+          fullMsg: n.message,
+          time: formatTimeAgo(n.createdAt),
+          type: n.type.toLowerCase(),
+          unread: !n.isRead
+        }));
+        setNotifications(mapped);
+      }
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    }
+  };
+
+  const formatTimeAgo = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInMins = Math.floor(diffInMs / 60000);
+    const diffInHours = Math.floor(diffInMins / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInMins < 60) return `${diffInMins}m ago`;
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    return `${diffInDays}d ago`;
+  };
+
+  const markAsRead = async (id: number) => {
+    try {
+      await apiClient.put(`/api/v1/notifications/${id}/read`);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, unread: false } : n));
+    } catch (err) {
+      console.error("Failed to mark as read:", err);
+    }
   };
 
   const markAllRead = () => {
-    setNotifications(prev => {
-      const updated = prev.map(n => ({ ...n, unread: false }));
-      const sysNotifs = JSON.parse(localStorage.getItem('system_notifications') || '[]');
-      const updatedSys = sysNotifs.map((n: any) => ({ ...n, unread: false }));
-      localStorage.setItem('system_notifications', JSON.stringify(updatedSys));
-      return updated;
+    // Optional: Implement bulk read in backend if needed
+    notifications.forEach(n => {
+      if (n.unread) markAsRead(n.id);
     });
   };
 
   const openNotif = (notif: any) => {
     setSelectedNotif(notif);
-    markAsRead(notif.id);
+    if (notif.unread) markAsRead(notif.id);
     setShowNotifications(false);
   };
 
   useEffect(() => {
-    // Get children count from admissionsData
-    const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
-    if (reduxUser?.email) {
-      const parentChildren = admissionsData.filter((c: any) => c.parentEmail === reduxUser.email);
-      setChildrenCount(parentChildren.length);
-      setChildren(parentChildren);
-      if (parentChildren.length > 0) {
-        setFirstChildImage(parentChildren[0].profileImage || '');
+    // Get children data from real API
+    const fetchChildren = async () => {
+      try {
+        const response = await apiClient.get('/api/v1/auth/parent/profile');
+        if (response.data.success) {
+          const profile = response.data.data;
+          setChildrenCount(profile.children.length);
+          setChildren(profile.children.map((c: any) => ({
+            id: c.id,
+            firstName: c.name.split(' ')[0],
+            profileImage: c.profileImage
+          })));
+        }
+      } catch (err) {
+        console.error("Failed to fetch children info:", err);
       }
-    }
+    };
 
-    // Load dynamic announcements from Admin
-    const sysNotifs = JSON.parse(localStorage.getItem('system_notifications') || '[]');
-    if (sysNotifs.length > 0) {
-      setNotifications(prev => {
-        const existingIds = prev.map(n => n.id);
-        const newOnes = sysNotifs.filter((n: any) => !existingIds.includes(n.id));
-        return [...newOnes, ...prev];
-      });
+    if (reduxUser?.email) {
+      fetchChildren();
+      fetchNotifications();
     }
   }, [reduxUser]);
 
@@ -92,7 +120,7 @@ const ParentDashboard = () => {
           <div>
             <div className="flex items-center gap-2 mb-0.5 text-primary-500">
               <Sparkles size={14} className="fill-primary-500" />
-              <p className="text-[10px] font-black uppercase tracking-[0.3em]">LittleSparks Family Portal</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em]">LittleSparks</p>
             </div>
             <h1 className="text-3xl font-black text-slate-900 tracking-tight font-sans leading-none">
               Hello, {reduxUser?.displayName?.split(' ')[0] || 'Parent'} 👋
@@ -322,37 +350,62 @@ const ParentDashboard = () => {
       {/* --- NOTIFICATION MODAL --- */}
       {selectedNotif && (
         <div className="fixed inset-0 bg-midnight/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-10 duration-500">
-            <div className="relative h-48 flex items-center justify-center bg-gradient-to-br from-hero-blue via-hero-purple to-hero-pink">
-              <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, #06C5D4 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
-              <div className="relative z-10 h-20 w-20 bg-white/20 backdrop-blur-md rounded-3xl border border-white/20 flex items-center justify-center shadow-2xl">
-                <Bell className="text-white" size={32} />
+          <div className="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-10 duration-500 border border-slate-100">
+            {/* GRADUATION THEME HEADER */}
+            {selectedNotif.type === 'graduation' ? (
+              <div className="relative h-56 flex flex-col items-center justify-center bg-gradient-to-br from-primary-500 via-primary-600 to-midnight overflow-hidden">
+                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+                
+                <div className="relative z-10 bg-white p-4 rounded-3xl shadow-2xl mb-4 transform -rotate-3 hover:rotate-0 transition-transform duration-500">
+                  <Logo variant="dark" iconClassName="w-10 h-10" textClassName="hidden" />
+                </div>
+                <h2 className="relative z-10 text-white font-black text-xs uppercase tracking-[0.4em] mb-2 opacity-80">LittleSparks</h2>
+                <div className="relative z-10 px-6 py-1 bg-white/20 backdrop-blur-md rounded-full border border-white/20">
+                  <span className="text-[10px] font-black text-white uppercase tracking-widest">Big School Transition</span>
+                </div>
               </div>
-              <button
-                onClick={() => setSelectedNotif(null)}
-                className="absolute top-6 right-6 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors border border-white/20 text-white"
-              >
-                <ArrowRight className="rotate-180" size={20} />
-              </button>
-            </div>
+            ) : (
+              <div className="relative h-48 flex items-center justify-center bg-gradient-to-br from-hero-blue via-hero-purple to-hero-pink">
+                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, #06C5D4 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
+                <div className="relative z-10 h-20 w-20 bg-white/20 backdrop-blur-md rounded-3xl border border-white/20 flex items-center justify-center shadow-2xl">
+                  <Bell className="text-white" size={32} />
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={() => setSelectedNotif(null)}
+              className="absolute top-6 right-6 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors border border-white/20 text-white z-[110]"
+            >
+              <ArrowRight className="rotate-180" size={20} />
+            </button>
+
             <div className="p-10 space-y-6">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black text-primary-500 uppercase tracking-[0.3em]">{selectedNotif.type} announcement</span>
+                <span className="text-[10px] font-black text-primary-500 uppercase tracking-[0.3em]">
+                  {selectedNotif.type === 'graduation' ? '🌟 Milestone' : `${selectedNotif.type} announcement`}
+                </span>
                 <span className="text-[10px] font-bold text-slate-400 uppercase">{selectedNotif.time}</span>
               </div>
+              
               <h3 className="text-2xl font-black text-midnight tracking-tight leading-tight italic">
                 {selectedNotif.title}
               </h3>
-              <p className="text-slate-500 text-sm leading-relaxed">
-                {selectedNotif.fullMsg}
-              </p>
-              <div className="pt-6">
+              
+              <div className={`p-6 rounded-[2rem] border ${selectedNotif.type === 'graduation' ? 'bg-primary-50/50 border-primary-100' : 'bg-slate-50 border-slate-100'}`}>
+                <p className="text-slate-600 text-sm leading-relaxed font-medium italic">
+                  "{selectedNotif.fullMsg}"
+                </p>
+              </div>
+
+              <div className="pt-2">
                 <Button
                   variant="primary"
                   onClick={() => setSelectedNotif(null)}
                   className="w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary-500/20"
                 >
-                  Got it, thanks!
+                  {selectedNotif.type === 'graduation' ? 'Yay! So proud! 💖' : 'Got it, thanks!'}
                 </Button>
               </div>
             </div>

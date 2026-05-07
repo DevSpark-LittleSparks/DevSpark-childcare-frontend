@@ -6,6 +6,7 @@ import {
   ClipboardList, Users, Mail, Phone, Hash
 } from 'lucide-react';
 import { Button } from '../../components/common/Button';
+import { apiClient } from '../../services/axiosInstance';
 
 const AdmissionsPage = () => {
   const navigate = useNavigate();
@@ -67,14 +68,43 @@ const AdmissionsPage = () => {
       'parentEmail', 'parentContact', 'parentID'
     ];
 
-    const isAllFilled = requiredFields.every(field => formData[field as keyof typeof formData].trim() !== "");
+    const missingFields = requiredFields.filter(field => {
+      const value = formData[field as keyof typeof formData];
+      return typeof value === 'string' ? value.trim() === "" : !value;
+    });
 
-    if (!isAllFilled) {
-      alert("Registration failed! Please fill all the boxes in the form.");
+    if (missingFields.length > 0) {
+      alert(`Registration failed! Please fill the following missing fields: \n${missingFields.join(', ')}`);
       return false;
     }
 
-    // 2. Sri Lankan Mobile Number Validation (+94 + 9 digits)
+    // Mandatory Profile Picture check
+    if (!previewImage) {
+      alert("Registration failed! Child's Profile Picture is mandatory. Please upload an image.");
+      return false;
+    }
+
+    // 2. Child Age Validation (must be between 3 and 6 years old for childcare)
+    if (formData.dob) {
+      const dob = new Date(formData.dob);
+      const today = new Date();
+      const ageInYears = Math.floor((today.getTime() - dob.getTime()) / 31557600000);
+
+      if (dob > today) {
+        alert("Invalid Birthday! Date of birth cannot be in the future.");
+        return false;
+      }
+      if (ageInYears < 3) {
+        alert("Child must be at least 3 years old to be registered.");
+        return false;
+      }
+      if (ageInYears > 6) {
+        alert("Child must be 6 years old or younger for childcare registration.");
+        return false;
+      }
+    }
+
+    // 3. Sri Lankan Mobile Number Validation (+94 + 9 digits)
     const slPhoneRegex = /^\+94\d{9}$/;
     if (!slPhoneRegex.test(formData.parentContact)) {
       alert("Invalid Mobile Number! It must start with +94 followed by 9 numbers (e.g., +94701234567)");
@@ -84,26 +114,26 @@ const AdmissionsPage = () => {
     return true;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+
+  // display msg when submit button is clicked 
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
       setIsSubmitting(true);
-
-      // Save data to localStorage
-      const existingData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
-      const newChild = {
-        id: 'c' + Date.now(),
-        ...formData,
-        profileImage: previewImage || 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80',
-        enrolledDate: new Date().toISOString().split('T')[0]
-      };
-      localStorage.setItem('admissionsData', JSON.stringify([...existingData, newChild]));
-
-      setTimeout(() => {
-        setIsSubmitting(false);
-        alert("Registration Successful! Data has been stored in LittleSparks.");
+      try {
+        const payload = {
+          ...formData,
+          profilePic: previewImage
+        };
+        await apiClient.post('/api/v1/child/register', payload);
+        alert("Registration Successful! Child has been registered in the system.");
         navigate('/admin/dashboard');
-      }, 2000);
+      } catch (err: any) {
+        console.error("Registration failed:", err);
+        alert(err.response?.data?.message || "Registration failed! Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -161,7 +191,10 @@ const AdmissionsPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2 text-left">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Birthday</label>
-                  <input type="date" name="dob" onChange={handleInputChange} className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-2xl outline-none text-sm font-bold" />
+                  <input type="date" name="dob" onChange={handleInputChange}
+                    max={new Date(new Date().setFullYear(new Date().getFullYear() - 1)).toISOString().split('T')[0]}
+                    min={new Date(new Date().setFullYear(new Date().getFullYear() - 6)).toISOString().split('T')[0]}
+                    className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-2xl outline-none text-sm font-bold" />
                 </div>
                 <div className="space-y-2 text-left">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
@@ -267,8 +300,8 @@ const LittleInput = ({ label, dark, ...props }: any) => (
     <input
       {...props}
       className={`w-full p-4 rounded-2xl outline-none text-sm font-bold transition-all ${dark
-          ? 'bg-white/5 border border-white/10 text-white focus:bg-white/10 focus:border-primary-500'
-          : 'bg-slate-50 border-2 border-transparent focus:border-primary-500 focus:bg-white text-midnight shadow-sm'
+        ? 'bg-white/5 border border-white/10 text-white focus:bg-white/10 focus:border-primary-500'
+        : 'bg-slate-50 border-2 border-transparent focus:border-primary-500 focus:bg-white text-midnight shadow-sm'
         }`}
     />
   </div>

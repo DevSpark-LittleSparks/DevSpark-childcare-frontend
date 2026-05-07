@@ -58,28 +58,38 @@ const ChildViewPage = () => {
     }
   }, [formData.dob]);
 
-  // Load actual data from admissionsData
+  // Load actual data from backend
   useEffect(() => {
-    const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
-    const foundChild = admissionsData.find((c: any) => c.id === studentId);
-    if (foundChild) {
-      setFormData({
-        fullName: foundChild.fullName || '',
-        nameWithInitials: foundChild.nameWithInitials || '',
-        dob: foundChild.dob || '',
-        gender: foundChild.gender || 'male',
-        bloodGroup: foundChild.bloodGroup || '',
-        height: foundChild.height || '',
-        weight: foundChild.weight || '',
-        address: foundChild.address || '',
-        specialNote: foundChild.specialNote || '',
-        relationship: foundChild.relationship || '',
-        parentFullName: foundChild.parentFullName || '',
-        parentEmail: foundChild.parentEmail || '',
-        parentContact: foundChild.parentContact || '',
-        parentID: foundChild.parentID || ''
-      });
-      setPreviewImage(foundChild.profileImage || null);
+    const fetchChildData = async () => {
+      try {
+        const res = await apiClient.get(`/api/v1/auth/admin/child/${studentId}`);
+        if (res.data.success) {
+          const data = res.data.data;
+          setFormData({
+            fullName: `${data.firstName} ${data.lastName}`,
+            nameWithInitials: data.nameWithInitials || `${data.firstName.charAt(0)}.${data.lastName}`, // Fallback
+            dob: data.dob || '',
+            gender: data.gender.toLowerCase() || 'male',
+            bloodGroup: data.bloodGroup || '',
+            height: data.height || '',
+            weight: data.weight || '',
+            address: data.address || '',
+            specialNote: data.specialNote || '',
+            relationship: data.relationship || '',
+            parentFullName: data.parentFullName || '',
+            parentEmail: data.parentEmail || '',
+            parentContact: data.parentContact || '',
+            parentID: data.parentID || ''
+          });
+          setPreviewImage(data.profileImage || null);
+        }
+      } catch (err) {
+        console.error("Failed to fetch child data:", err);
+      }
+    };
+
+    if (studentId) {
+      fetchChildData();
     }
   }, [studentId]);
 
@@ -97,20 +107,38 @@ const ChildViewPage = () => {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsSaving(true);
-    
-    setTimeout(() => {
-      const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
-      const updatedData = admissionsData.map((c: any) => 
-        c.id === studentId ? { ...c, ...formData, profileImage: previewImage || c.profileImage } : c
-      );
-      localStorage.setItem('admissionsData', JSON.stringify(updatedData));
+    try {
+      // Split fullName back to first/last for backend if needed
+      const nameParts = formData.fullName.split(' ');
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(' ');
 
-      setIsSaving(false);
+      const payload = {
+        firstName,
+        lastName,
+        dob: formData.dob,
+        gender: formData.gender.toUpperCase(),
+        bloodGroup: formData.bloodGroup,
+        height: formData.height,
+        weight: formData.weight,
+        address: formData.address,
+        specialNote: formData.specialNote,
+        guardianName: formData.parentFullName,
+        guardianEmail: formData.parentEmail,
+        profilePic: previewImage
+      };
+
+      await apiClient.put(`/api/v1/auth/admin/child/${studentId}`, payload);
       setIsEditing(false);
-      alert("Changes saved to LittleSparks database!");
-    }, 1500);
+      alert("Changes saved to database successfully!");
+    } catch (err) {
+      console.error("Save failed:", err);
+      alert("Failed to save changes.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (

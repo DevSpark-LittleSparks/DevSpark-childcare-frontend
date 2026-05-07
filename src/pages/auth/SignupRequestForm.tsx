@@ -292,7 +292,8 @@ const SignupRequestForm: React.FC = () => {
                         <input
                           className={`w-full px-4 py-3 bg-slate-50 border ${errors.dob ? 'border-red-500' : 'border-slate-200 focus:border-cyan-500'} rounded-xl outline-none`}
                           type="date" name="dob"
-                          max={new Date().toISOString().split('T')[0]}
+                          max={new Date(new Date().setFullYear(new Date().getFullYear() - 3)).toISOString().split('T')[0]}
+                          min={new Date(new Date().setFullYear(new Date().getFullYear() - 6)).toISOString().split('T')[0]}
                           value={form.dob || ""} onChange={handleChange} required
                         />
                         {errors.dob && <p className="text-red-500 text-xs mt-1">{errors.dob}</p>}

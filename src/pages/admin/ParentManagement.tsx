@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Mail, Phone, MapPin, User, Users, ShieldCheck, ChevronRight, ArrowLeft, Search, Square, CheckSquare, Trash2, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
+import { apiClient } from '../../services/axiosInstance';
 
 const ParentManagement = () => {
   const navigate = useNavigate();
@@ -10,41 +11,51 @@ const ParentManagement = () => {
   const [selectedParents, setSelectedParents] = useState<string[]>([]);
   const [viewingParent, setViewingParent] = useState<any | null>(null);
 
-  const loadParents = () => {
-    const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
-    const systemUsers = JSON.parse(localStorage.getItem('system_users') || '[]');
-    
-    // Group parents by email from admissionsData (Primary Source)
-    const parentsMap = new Map();
+  const loadParents = async () => {
+    try {
+      const [parentsRes, childrenRes] = await Promise.all([
+        apiClient.get('/api/v1/auth/admin/all-parents'),
+        apiClient.get('/api/v1/child/all')
+      ]);
 
-    admissionsData.forEach((child: any) => {
-      if (!child.parentEmail) return;
+      const liveParents = parentsRes.data.data;
+      const liveChildren = childrenRes.data.data;
 
-      if (!parentsMap.has(child.parentEmail)) {
-        // Check if this parent has an approved account in system_users
-        const hasAccount = systemUsers.some((u: any) => u.email === child.parentEmail);
+      const parentsMap = new Map();
 
-        parentsMap.set(child.parentEmail, {
-          email: child.parentEmail,
-          fullName: child.parentFullName || "Unknown Parent",
-          contact: child.parentContact || "N/A",
-          idNumber: child.parentID || "N/A",
-          relationship: child.relationship || "Guardian",
-          status: hasAccount ? 'active' : 'no_account',
+      liveParents.forEach((p: any) => {
+        // Ensure we handle cases where account might be missing (though it shouldn't be)
+        const email = p.account?.email || "Unknown";
+        const status = p.account?.status?.toLowerCase() === 'active' ? 'active' : 'inactive';
+        
+        parentsMap.set(email, {
+          parentId: p.parentId,
+          email: email,
+          fullName: p.fullName || "Unknown",
+          contact: p.phone || "N/A",
+          idNumber: p.nic || "N/A",
+          relationship: p.relationship || "Guardian",
+          status: status,
           children: []
         });
-      }
-
-      parentsMap.get(child.parentEmail).children.push({
-        id: child.id,
-        name: child.fullName || child.nameWithInitials,
-        age: child.dob ? Math.floor((new Date().getTime() - new Date(child.dob).getTime()) / 31557600000) : 0,
-        gender: child.gender,
-        image: child.profileImage || 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80'
       });
-    });
 
-    setParents(Array.from(parentsMap.values()));
+      liveChildren.forEach((c: any) => {
+        if (parentsMap.has(c.guardianEmail)) {
+          parentsMap.get(c.guardianEmail).children.push({
+            id: c.childId,
+            name: c.firstName + " " + c.lastName,
+            age: c.dob ? Math.floor((new Date().getTime() - new Date(c.dob).getTime()) / 31557600000) : 0,
+            gender: c.gender,
+            image: c.profilePic || 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80'
+          });
+        }
+      });
+
+      setParents(Array.from(parentsMap.values()));
+    } catch (err) {
+      console.error("Failed to load parents and children:", err);
+    }
   };
 
   useEffect(() => {
@@ -57,11 +68,20 @@ const ParentManagement = () => {
     `${p.fullName} ${p.email}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDelete = (email: string) => {
+  const handleDelete = async (email: string) => {
     if (window.confirm("Are you sure you want to remove this parent and their linked records?")) {
-      setParents(parents.filter(p => p.email !== email));
-      setSelectedParents(selectedParents.filter(e => e !== email));
-      // In a real app, we would also update admissionsData to remove/unlink children
+      try {
+        // Find the parent's ID from backend data
+        const parent = parents.find(p => p.email === email);
+        if (parent?.parentId) {
+          await apiClient.delete(`/api/v1/auth/admin/parent/${parent.parentId}`);
+        }
+        setParents(parents.filter(p => p.email !== email));
+        setSelectedParents(selectedParents.filter(e => e !== email));
+      } catch (err) {
+        console.error("Delete failed:", err);
+        alert("Failed to delete parent. Please try again.");
+      }
     }
   };
 

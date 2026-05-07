@@ -3,55 +3,39 @@ import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../store';
 import { User, ArrowRight, GraduationCap, Calendar, Sparkles, ArrowLeft } from 'lucide-react';
 import { Button } from '../../components/common/Button';
+import { Logo } from '../../components/common/Logo';
+import { apiClient } from '../../services/axiosInstance';
 
 const MyChildren = () => {
   const navigate = useNavigate();
 
   const { user } = useAppSelector((state: any) => state.auth);
-  const [childrenList, setChildrenList] = useState<any[]>([
-    { 
-      id: 'c1', 
-      name: 'Shemil Doe', 
-      age: 4, 
-      gender: 'Male', 
-      enrolledDate: '2026-01-01', 
-      image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80' 
-    }
-  ]);
+  const [childrenList, setChildrenList] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const allAdmissions = JSON.parse(localStorage.getItem('admissionsData') || '[]');
-    
-    const calculateAge = (dob: string) => {
-      if (!dob) return 0;
-      const birthDate = new Date(dob);
-      const today = new Date();
-      let calculatedAge = today.getFullYear() - birthDate.getFullYear();
-      const monthDiff = today.getMonth() - birthDate.getMonth();
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        calculatedAge--;
+    const fetchChildren = async () => {
+      try {
+        const res = await apiClient.get('/api/v1/auth/parent/profile');
+        if (res.data.success) {
+          const parentData = res.data.data;
+          setChildrenList(parentData.children.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            age: '---', // Age calculation can be added if DOB is in summary
+            gender: 'Enrolled',
+            image: c.profileImage || ''
+          })));
+        }
+      } catch (err) {
+        console.error("Failed to fetch children:", err);
+      } finally {
+        setIsLoading(false);
       }
-      return calculatedAge >= 0 ? calculatedAge : 0;
     };
 
-    if (allAdmissions.length > 0) {
-      let filtered = allAdmissions;
-      if (user?.email) {
-        filtered = allAdmissions.filter((c: any) => c.parentEmail === user.email);
-      }
-      
-      if (filtered.length > 0) {
-        setChildrenList(filtered.map((c: any) => ({
-          id: c.id,
-          name: c.fullName || c.nameWithInitials || 'Unknown',
-          age: calculateAge(c.dob),
-          gender: c.gender || 'Unknown',
-          enrolledDate: c.enrolledDate || 'Unknown',
-          image: c.profileImage || 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80'
-        })));
-      }
-    }
-  }, [user]);
+    fetchChildren();
+  }, []);
 
   return (
     <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">

@@ -4,6 +4,7 @@ import {
   MoreVertical, ArrowLeft, Trash2, Eye, Search, Sparkles, Plus
 } from 'lucide-react';
 import { Button } from '../../components/common/Button';
+import { apiClient } from '../../services/axiosInstance';
 
 interface StudentData {
   id: string;
@@ -13,6 +14,7 @@ interface StudentData {
   gender: 'Male' | 'Female';
   class: string;
   parentName: string;
+  status: string;
 }
 
 const Students = () => {
@@ -22,35 +24,40 @@ const Students = () => {
   const [students, setStudents] = useState<StudentData[]>([]);
 
   React.useEffect(() => {
-    const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
-    const mappedStudents = admissionsData.map((c: any) => ({
-      id: c.id,
-      firstName: c.fullName?.split(' ')[0] || c.nameWithInitials?.split(' ').pop() || 'Student',
-      lastName: c.fullName?.split(' ').slice(1).join(' ') || '',
-      age: c.dob ? Math.floor((new Date().getTime() - new Date(c.dob).getTime()) / 31557600000) : 0,
-      gender: c.gender?.toLowerCase() === 'female' ? 'Female' : 'Male',
-      class: 'New Admission',
-      parentName: c.parentFullName || 'Unknown Parent',
-    }));
+    const fetchStudents = async () => {
+      try {
+        const response = await apiClient.get('/api/v1/child/all');
+        const liveData = response.data.data;
+        
+        const mappedStudents = liveData.map((c: any) => ({
+          id: c.childId,
+          firstName: c.firstName,
+          lastName: c.lastName,
+          age: c.dob ? Math.floor((new Date().getTime() - new Date(c.dob).getTime()) / 31557600000) : 0,
+          gender: c.gender?.charAt(0).toUpperCase() + c.gender?.slice(1).toLowerCase(),
+          class: c.status || 'ENROLLED',
+          parentName: c.guardianName || 'Guardian', 
+          status: c.status || 'ENROLLED'
+        }));
+        
+        setStudents(mappedStudents);
+      } catch (err) {
+        console.error("Failed to fetch students:", err);
+      }
+    };
 
-    if (mappedStudents.length > 0) {
-      setStudents(mappedStudents);
-    } else {
-      setStudents([
-        { id: '001', firstName: 'Amaya', lastName: 'Perera', age: 4, gender: 'Female', class: 'Nursery A', parentName: 'Sunil Perera' },
-        { id: '002', firstName: 'Ethan', lastName: 'Silva', age: 5, gender: 'Male', class: 'Kindergarten', parentName: 'Kasun Silva' },
-        { id: '003', firstName: 'Dinuli', lastName: 'Fernando', age: 3, gender: 'Female', class: 'Toddler B', parentName: 'Ruwan Fernando' },
-        { id: '004', firstName: 'Liam', lastName: 'Jayasinghe', age: 4, gender: 'Male', class: 'Nursery A', parentName: 'Arjuna Jayasinghe' },
-      ]);
-    }
+    fetchStudents();
   }, []);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to remove this student?")) {
-      setStudents(students.filter(s => s.id !== id));
-      const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
-      const newData = admissionsData.filter((c: any) => c.id !== id);
-      localStorage.setItem('admissionsData', JSON.stringify(newData));
+      try {
+        await apiClient.delete(`/api/v1/auth/admin/child/${id}`);
+        setStudents(students.filter(s => s.id !== id));
+      } catch (err) {
+        console.error("Delete failed:", err);
+        alert("Failed to delete student. Please try again.");
+      }
     }
   };
 
@@ -162,8 +169,22 @@ const CompactTable = ({ title, data, primaryColor, onDelete }: any) => {
                         {s.firstName[0]}{s.lastName[0]}
                       </div>
                       <div>
-                        <p className="font-bold text-slate-900 tracking-tight">{s.firstName} {s.lastName}</p>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{s.class}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-slate-900 tracking-tight">{s.firstName} {s.lastName}</p>
+                          {s.status === 'GRADUATING' && (
+                            <span className="animate-pulse flex h-2 w-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <p className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter border ${
+                            s.status === 'GRADUATING' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                            s.status === 'GRADUATED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                            'bg-blue-50 text-blue-600 border-blue-100'
+                          }`}>
+                            {s.status === 'GRADUATING' ? 'BIG SCHOOL READY' : 
+                             s.status === 'GRADUATED' ? 'ALUMNI' : 'ENROLLED'}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </td>

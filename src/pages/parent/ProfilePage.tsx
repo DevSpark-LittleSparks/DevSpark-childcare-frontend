@@ -40,30 +40,21 @@ const ParentProfilePage: React.FC<ParentProfilePageProps> = ({ initialUser }) =>
     }
   }, [statusMessage]);
 
-  useEffect(() => {
-    if (reduxUser?.email) {
-      const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
-      const parentChildren = admissionsData.filter((c: any) => c.parentEmail === reduxUser.email);
-
-      if (parentChildren.length > 0) {
-        const info = parentChildren[0];
-        setUser(prev => ({
-          ...prev,
-          name: info.parentFullName || reduxUser.displayName || prev.name,
-          email: info.parentEmail,
-          relationship: info.relationship || prev.relationship,
-          phone1: info.parentContact || prev.phone1,
-          address: info.address || prev.address,
-          role: 'PARENT',
-          children: parentChildren.map((c: any) => ({
-            id: c.id,
-            name: c.fullName || c.nameWithInitials,
-            profileImage: c.profileImage,
-          }))
-        }));
+  const fetchProfile = async () => {
+    try {
+      const res = await apiClient.get('/api/v1/auth/parent/profile');
+      if (res.data.success) {
+        setUser(res.data.data);
       }
+    } catch (err) {
+      console.error("Failed to fetch parent profile:", err);
+      setStatusMessage({ type: 'error', text: 'Failed to load profile data.' });
     }
-  }, [reduxUser]);
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -81,11 +72,16 @@ const ParentProfilePage: React.FC<ParentProfilePageProps> = ({ initialUser }) =>
 
   const handleSaveData = async () => {
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      await apiClient.put('/api/v1/auth/parent/profile', user);
       setIsEditing(false);
       setStatusMessage({ type: 'success', text: 'Parent profile updated successfully!' });
-    }, 1500);
+    } catch (err) {
+      console.error("Update failed:", err);
+      setStatusMessage({ type: 'error', text: 'Update failed. Please try again.' });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleSubmitRequest = async () => {
@@ -94,6 +90,7 @@ const ParentProfilePage: React.FC<ParentProfilePageProps> = ({ initialUser }) =>
       return;
     }
     setIsSubmittingRequest(true);
+    // Note: Request endpoint would be a separate feature, keeping mock behavior for now
     setTimeout(() => {
       setIsSubmittingRequest(false);
       setRequestType("");

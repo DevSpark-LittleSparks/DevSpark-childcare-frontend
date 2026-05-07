@@ -5,8 +5,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
-
-// Asset import
+import { apiClient } from '../../services/axiosInstance';
 import adminAvatar from '../../assets/images/admin-avatar.jpeg';
 
 interface AdminProfileData {
@@ -37,6 +36,22 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const fetchProfile = async () => {
+    try {
+      const res = await apiClient.get('/api/v1/auth/admin/profile');
+      if (res.data.success) {
+        setUser(res.data.data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch admin profile:", err);
+      setStatusMessage({ type: 'error', text: 'Failed to load profile data.' });
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
   useEffect(() => {
     if (statusMessage) {
       const timer = setTimeout(() => setStatusMessage(null), 3000);
@@ -60,12 +75,19 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
 
   const handleSaveAllData = async () => {
     setIsSaving(true);
-    setTimeout(() => {
-      localStorage.setItem('admin_profile_data', JSON.stringify(user));
+    try {
+      const res = await apiClient.put('/api/v1/auth/admin/profile', user);
+      if (res.data.success) {
+        setIsEditing(false);
+        setStatusMessage({ type: 'success', text: 'Administrative profile and center details updated successfully.' });
+        fetchProfile(); // Refresh
+      }
+    } catch (err: any) {
+      console.error("Failed to update profile:", err);
+      setStatusMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update profile.' });
+    } finally {
       setIsSaving(false);
-      setIsEditing(false);
-      setStatusMessage({ type: 'success', text: 'Administrative profile and center details updated successfully.' });
-    }, 1500);
+    }
   };
 
   return (

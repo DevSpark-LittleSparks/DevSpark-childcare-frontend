@@ -9,7 +9,7 @@ import { AuthHeader } from "../../shared/ui/AuthHeader/AuthHeader";
 const VerifyOtpPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // Get email from query params or state
   const queryEmail = new URLSearchParams(location.search).get("email") || "";
   const [email, setEmail] = useState(queryEmail);
@@ -40,7 +40,7 @@ const VerifyOtpPage: React.FC = () => {
         email: email,
         otpCode: otp
       });
-      
+
       setSuccess(true);
       setTimeout(() => {
         navigate("/login", { state: { message: "Account activated! Please login with your password." } });
@@ -58,10 +58,10 @@ const VerifyOtpPage: React.FC = () => {
 
       <main className="flex-1 flex items-center justify-center p-6 lg:p-12">
         <div className="w-full max-w-[480px] animate-in fade-in zoom-in-95 duration-500">
-          
+
           {/* Main Verification Card */}
           <div className="bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-slate-100 p-10 lg:p-12 relative overflow-hidden">
-            
+
             {/* Subtle Gradient Accent */}
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-cyan-400 to-blue-500" />
 
@@ -102,7 +102,7 @@ const VerifyOtpPage: React.FC = () => {
                     required
                   />
                 )}
-                
+
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">
                     Verification Code
@@ -140,12 +140,12 @@ const VerifyOtpPage: React.FC = () => {
             )}
 
             <div className="mt-12 flex flex-col items-center gap-6">
-              <Link to="/login" className="text-sm font-black text-slate-400 hover:text-cyan-600 transition-colors uppercase tracking-widest">
-                Back to Sign In
+              <Link to="/signup-request" className="text-sm font-black text-slate-400 hover:text-cyan-600 transition-colors uppercase tracking-widest">
+                Back to Sign Up
               </Link>
-              
+
               <div className="h-px w-24 bg-slate-100" />
-              
+
               <Link to="/login" className="text-sm font-bold text-cyan-600 hover:text-cyan-700 transition-colors underline decoration-2 underline-offset-4">
                 Already have an account?
               </Link>
