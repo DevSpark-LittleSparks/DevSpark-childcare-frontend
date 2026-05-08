@@ -1,9 +1,10 @@
 import React, { useState, useRef, ChangeEvent, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { 
-  Camera, User, MapPin, ArrowLeft, Loader2, Save, 
-  Edit3, X, Sparkles, Scale, Ruler, Droplets, 
+import {
+  Camera, User, MapPin, ArrowLeft, Loader2, Save,
+  Edit3, X, Sparkles, Scale, Ruler, Droplets,
   ClipboardList, Users, Mail, Phone, Hash, Calendar, Heart
+} from 'lucide-react';
 import { apiClient } from '../../services/axiosInstance';
 
 /**
@@ -18,7 +19,7 @@ const ChildViewPage = () => {
 
   // Security: Check if user is accessing via the admin route
   const isAdmin = location.pathname.startsWith('/admin');
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -142,12 +143,12 @@ const ChildViewPage = () => {
 
   return (
     <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
-      
+
       {/* --- TOP BAR --- */}
       <header className="max-w-7xl mx-auto px-6 pt-8 pb-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-6">
-            <button 
+            <button
               onClick={() => navigate(-1)}
               className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 transition-all group"
             >
@@ -169,7 +170,7 @@ const ChildViewPage = () => {
               {isEditing ? (
                 <>
                   <Button variant="ghost" onClick={() => setIsEditing(false)} className="rounded-xl border-2 px-6">
-                    <X size={18} className="mr-2"/> Cancel
+                    <X size={18} className="mr-2" /> Cancel
                   </Button>
                   <Button onClick={handleSave} disabled={isSaving} className="rounded-xl shadow-lg shadow-primary-500/20 px-8">
                     {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} className="mr-2" />}
@@ -188,14 +189,14 @@ const ChildViewPage = () => {
 
       <main className="max-w-7xl mx-auto px-6 mt-6 space-y-8 animate-fadeUp">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
-          
+
           {/* --- STUDENT BIO SECTION --- */}
           <div className="lg:col-span-2 space-y-8">
             <div className="bg-white rounded-[3rem] shadow-[0_20px_60px_rgba(10,6,55,0.02)] border border-slate-100 p-8 md:p-12 relative overflow-hidden">
-              
+
               <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
                 <div className="flex flex-col items-center">
-                  <div 
+                  <div
                     onClick={() => isEditing && fileInputRef.current?.click()}
                     className={`h-40 w-40 rounded-[3rem] border-4 border-white shadow-2xl overflow-hidden relative group transition-all ${isEditing ? 'cursor-pointer ring-8 ring-primary-500/5' : ''}`}
                   >
@@ -224,42 +225,42 @@ const ChildViewPage = () => {
 
               {/* Physical Data Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-5 p-7 bg-slate-50/50 rounded-[2.5rem] border border-slate-100/50">
-                <MiniStat icon={<Calendar size={14}/>} label="DOB" value={formData.dob} isEditing={isEditing} name="dob" type="date" onChange={handleInputChange} />
-                <MiniStat icon={<Heart size={14}/>} label="Calculated Age" value={age} />
-                <MiniStat icon={<Ruler size={14}/>} label="Height (CM)" value={formData.height} isEditing={isEditing} name="height" type="number" onChange={handleInputChange} />
-                <MiniStat icon={<Scale size={14}/>} label="Weight (KG)" value={formData.weight} isEditing={isEditing} name="weight" type="number" onChange={handleInputChange} />
+                <MiniStat icon={<Calendar size={14} />} label="DOB" value={formData.dob} isEditing={isEditing} name="dob" type="date" onChange={handleInputChange} />
+                <MiniStat icon={<Heart size={14} />} label="Calculated Age" value={age} />
+                <MiniStat icon={<Ruler size={14} />} label="Height (CM)" value={formData.height} isEditing={isEditing} name="height" type="number" onChange={handleInputChange} />
+                <MiniStat icon={<Scale size={14} />} label="Weight (KG)" value={formData.weight} isEditing={isEditing} name="weight" type="number" onChange={handleInputChange} />
               </div>
 
               {/* Health & Demographics */}
               <div className="mt-12 space-y-8">
-                 <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 bg-rose-50 rounded-lg flex items-center justify-center text-rose-500">
-                        <Droplets size={16} />
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 bg-rose-50 rounded-lg flex items-center justify-center text-rose-500">
+                    <Droplets size={16} />
+                  </div>
+                  <h3 className="text-xs font-black text-midnight uppercase tracking-[0.2em]">Medical & Safety</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <InputField label="Blood Group" name="bloodGroup" value={formData.bloodGroup} isEditing={isEditing} type="select" options={['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']} onChange={handleInputChange} />
+                  <InputField label="Gender" name="gender" value={formData.gender} isEditing={isEditing} type="select" options={['male', 'female']} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-3 text-left">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2">
+                    <ClipboardList size={12} className="text-primary-500" /> Important Health Notes
+                  </label>
+                  {isEditing ? (
+                    <textarea
+                      name="specialNote"
+                      value={formData.specialNote}
+                      onChange={handleInputChange}
+                      rows={3}
+                      className="w-full p-5 bg-slate-50 border-2 border-primary-500/10 focus:border-primary-500 rounded-3xl outline-none text-sm font-bold transition-all"
+                    />
+                  ) : (
+                    <div className="p-6 bg-primary-50/20 border border-primary-100/30 rounded-3xl text-sm font-bold text-slate-600 leading-relaxed italic">
+                      {formData.specialNote || "No medical conditions reported."}
                     </div>
-                    <h3 className="text-xs font-black text-midnight uppercase tracking-[0.2em]">Medical & Safety</h3>
-                 </div>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <InputField label="Blood Group" name="bloodGroup" value={formData.bloodGroup} isEditing={isEditing} type="select" options={['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']} onChange={handleInputChange} />
-                    <InputField label="Gender" name="gender" value={formData.gender} isEditing={isEditing} type="select" options={['male', 'female']} onChange={handleInputChange} />
-                 </div>
-                 <div className="space-y-3 text-left">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2">
-                      <ClipboardList size={12} className="text-primary-500" /> Important Health Notes
-                    </label>
-                    {isEditing ? (
-                      <textarea 
-                        name="specialNote" 
-                        value={formData.specialNote} 
-                        onChange={handleInputChange}
-                        rows={3}
-                        className="w-full p-5 bg-slate-50 border-2 border-primary-500/10 focus:border-primary-500 rounded-3xl outline-none text-sm font-bold transition-all"
-                      />
-                    ) : (
-                      <div className="p-6 bg-primary-50/20 border border-primary-100/30 rounded-3xl text-sm font-bold text-slate-600 leading-relaxed italic">
-                        {formData.specialNote || "No medical conditions reported."}
-                      </div>
-                    )}
-                 </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -268,9 +269,9 @@ const ChildViewPage = () => {
           <div className="space-y-8">
             <div className="bg-midnight rounded-[3rem] p-10 shadow-2xl text-white relative overflow-hidden">
               <div className="absolute top-0 right-0 p-8 opacity-5">
-                 <Users size={120} />
+                <Users size={120} />
               </div>
-              
+
               <div className="flex items-center gap-4 mb-10 relative z-10">
                 <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center">
                   <Users size={20} className="text-primary-400" />
@@ -288,10 +289,10 @@ const ChildViewPage = () => {
 
               {!isEditing && (
                 <div className="mt-12 pt-8 border-t border-white/5 space-y-4 relative z-10">
-                   <div className="flex items-start gap-4 text-slate-400">
-                      <MapPin size={18} className="mt-1 flex-shrink-0 text-primary-500" />
-                      <p className="text-xs font-bold leading-relaxed">{formData.address}</p>
-                   </div>
+                  <div className="flex items-start gap-4 text-slate-400">
+                    <MapPin size={18} className="mt-1 flex-shrink-0 text-primary-500" />
+                    <p className="text-xs font-bold leading-relaxed">{formData.address}</p>
+                  </div>
                 </div>
               )}
             </div>
@@ -309,21 +310,21 @@ const InputField = ({ label, value, isEditing, name, dark, type = "text", option
     <label className={`text-[10px] font-black uppercase tracking-widest ml-1 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{label}</label>
     {isEditing ? (
       type === "select" ? (
-        <select 
-          name={name} 
-          value={value} 
+        <select
+          name={name}
+          value={value}
           onChange={onChange}
           className={`w-full p-4 rounded-2xl outline-none text-sm font-bold transition-all border-2 ${dark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-primary-500/10 focus:border-primary-500 text-midnight'}`}
         >
           {options.map((opt: string) => <option key={opt} value={opt} className="text-midnight">{opt.toUpperCase()}</option>)}
         </select>
       ) : (
-        <input 
-          type={type} 
-          name={name} 
-          value={value} 
+        <input
+          type={type}
+          name={name}
+          value={value}
           onChange={onChange}
-          className={`w-full p-4 rounded-2xl outline-none text-sm font-bold transition-all border-2 ${dark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-primary-500/10 focus:border-primary-500 text-midnight'}`} 
+          className={`w-full p-4 rounded-2xl outline-none text-sm font-bold transition-all border-2 ${dark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-primary-500/10 focus:border-primary-500 text-midnight'}`}
         />
       )
     ) : (
@@ -336,15 +337,15 @@ const MiniStat = ({ icon, label, value, isEditing, name, type, onChange }: any) 
   <div className="flex flex-col text-left">
     <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter flex items-center gap-1.5 mb-2">{icon} {label}</span>
     {isEditing && name ? (
-       <input 
-        type={type} 
-        name={name} 
-        value={value} 
-        onChange={onChange} 
-        className="bg-transparent border-b-2 border-primary-500/40 outline-none text-sm font-black text-midnight w-full pb-1" 
-       />
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="bg-transparent border-b-2 border-primary-500/40 outline-none text-sm font-black text-midnight w-full pb-1"
+      />
     ) : (
-       <span className="text-sm font-black text-midnight tracking-tight">{value}</span>
+      <span className="text-sm font-black text-midnight tracking-tight">{value}</span>
     )}
   </div>
 );
