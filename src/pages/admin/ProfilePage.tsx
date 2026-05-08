@@ -1,6 +1,6 @@
 import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
 import {
-  User, Mail, Phone, MapPin, Eye, EyeOff, Save, Edit2, ArrowLeft,
+  User, Mail, Phone, MapPin, Save, Edit2, ArrowLeft,
   Key, CheckCircle2, AlertCircle, Loader2, Camera, School, Users, ShieldCheck
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -9,30 +9,34 @@ import { apiClient } from '../../services/axiosInstance';
 import adminAvatar from '../../assets/images/admin-avatar.jpeg';
 
 interface AdminProfileData {
-  name: string;
+  fullName: string;
   email: string;
   role: string;
   phone1: string;
   phone2: string;
   address: string;
-  password: string;
-  profileImage?: string;
+  profilePic?: string;
   centerName: string;
   capacity: string;
 }
 
-interface AdminProfilePageProps {
-  initialUser: AdminProfileData;
-}
-
-const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
+const AdminProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [user, setUser] = useState<AdminProfileData>(initialUser);
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [newPassword, setNewPassword] = useState<string>("");
+  const [user, setUser] = useState<AdminProfileData>({
+    fullName: '',
+    email: '',
+    role: '',
+    phone1: '',
+    phone2: '',
+    address: '',
+    centerName: '',
+    capacity: ''
+  });
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -68,7 +72,7 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => setUser(prev => ({ ...prev, profileImage: reader.result as string }));
+      reader.onloadend = () => setUser(prev => ({ ...prev, profilePic: reader.result as string }));
       reader.readAsDataURL(file);
     }
   };
@@ -80,7 +84,7 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
       if (res.data.success) {
         setIsEditing(false);
         setStatusMessage({ type: 'success', text: 'Administrative profile and center details updated successfully.' });
-        fetchProfile(); // Refresh
+        fetchProfile();
       }
     } catch (err: any) {
       console.error("Failed to update profile:", err);
@@ -90,10 +94,33 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
     }
   };
 
+  const handlePasswordUpdate = async () => {
+    if (passwords.new !== passwords.confirm) {
+      return setStatusMessage({ type: 'error', text: 'Passwords do not match.' });
+    }
+    if (passwords.new.length < 6) {
+      return setStatusMessage({ type: 'error', text: 'New password must be at least 6 characters.' });
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const res = await apiClient.post('/api/v1/auth/admin/change-password', {
+        currentPassword: passwords.current,
+        newPassword: passwords.new
+      });
+      if (res.data.success) {
+        setStatusMessage({ type: 'success', text: 'Password updated successfully.' });
+        setPasswords({ current: '', new: '', confirm: '' });
+      }
+    } catch (err: any) {
+      console.error("Failed to update password:", err);
+      setStatusMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update password.' });
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   return (
-    /* Strict Scroll Hide: 
-       'overflow-y-auto' සහ 'no-scrollbar' (Tailwind plugin/CSS) භාවිතා කර ඇත.
-    */
     <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
       <header className="max-w-7xl mx-auto px-6 pt-8 pb-4">
         <div className="flex items-center justify-between gap-4">
@@ -109,8 +136,6 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
       </header>
 
       <main className="max-w-4xl mx-auto px-6 mt-6 space-y-8 animate-fadeUp">
-
-        {/* Status Alert */}
         {statusMessage && (
           <div className={`mb-6 p-4 rounded-2xl flex items-center gap-3 shadow-xl border animate-in slide-in-from-top-4 duration-300 z-50 bg-white ${statusMessage.type === 'success' ? 'text-secondary-500 border-secondary-500/20' : 'text-red-500 border-red-100'
             }`}>
@@ -120,8 +145,6 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
         )}
 
         <div className="bg-white rounded-[3rem] shadow-[0_20px_50px_rgba(10,6,55,0.05)] border border-slate-200 overflow-hidden">
-
-          {/* Header Section with Config Gradients */}
           <div className="relative h-72 flex flex-col items-center justify-center text-center px-6 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-hero-blue via-hero-purple to-hero-pink opacity-90"></div>
             <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, #06C5D4 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
@@ -129,12 +152,18 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
             <div className="relative z-10 flex flex-col items-center">
               <div className="relative mb-4 group">
                 <div className="h-32 w-32 bg-white p-1.5 rounded-[2.2rem] shadow-2xl border border-white/50 overflow-hidden">
-                  <div className="h-full w-full bg-sidebar-bg rounded-[1.8rem] overflow-hidden">
-                    <img
-                      src={user.profileImage || adminAvatar}
-                      alt="Admin"
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
+                  <div className="h-full w-full bg-sidebar-bg rounded-[1.8rem] overflow-hidden flex items-center justify-center relative">
+                    {user.profilePic ? (
+                      <img
+                        src={user.profilePic}
+                        alt="Admin"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-primary-500 to-hero-purple text-white font-black text-5xl uppercase select-none">
+                        {user.fullName ? user.fullName.charAt(0) : 'A'}
+                      </div>
+                    )}
                   </div>
                 </div>
                 {isEditing && (
@@ -149,7 +178,7 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
               </div>
 
               <h1 className="text-3xl font-black text-midnight tracking-tight mb-2 uppercase">
-                {user.name}
+                {user.fullName}
               </h1>
 
               <span className="bg-midnight text-white text-[10px] font-black px-6 py-2 rounded-full uppercase tracking-[0.25em] shadow-lg shadow-midnight/20">
@@ -159,8 +188,6 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
           </div>
 
           <div className="p-8 md:p-12 space-y-12">
-
-            {/* Action Bar */}
             <div className="flex justify-between items-center bg-sidebar-bg/40 p-5 rounded-[2.5rem] border border-sidebar-bg">
               <div className="flex items-center gap-3 ml-2">
                 <div className="p-2 bg-white rounded-xl shadow-sm">
@@ -178,7 +205,7 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
               ) : (
                 <div className="flex gap-4">
                   <button
-                    onClick={() => { setIsEditing(false); setUser(initialUser); }}
+                    onClick={() => { setIsEditing(false); fetchProfile(); }}
                     className="text-slate-500 font-bold text-xs hover:text-midnight"
                   >
                     Discard
@@ -186,7 +213,7 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
                   <Button
                     onClick={handleSaveAllData}
                     disabled={isSaving}
-                    className="bg-primary-500 hover:bg-primary-600px-8 rounded-2xl shadow-lg shadow-primary-500/20 font-bold text-xs py-3"
+                    className="bg-primary-500 hover:bg-primary-600 px-8 rounded-2xl shadow-lg shadow-primary-500/20 font-bold text-xs py-3"
                   >
                     {isSaving ? <Loader2 className="animate-spin mr-2" size={14} /> : <Save size={14} className="mr-2" />}
                     Save Changes
@@ -195,16 +222,13 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
               )}
             </div>
 
-            {/* Form Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12">
-
-              {/* Personal Info */}
               <div className="space-y-8">
                 <h3 className="text-[11px] font-black text-midnight uppercase tracking-[0.4em] flex items-center gap-3">
                   <div className="w-10 h-[3px] bg-primary-500 rounded-full"></div> Personal Information
                 </h3>
                 <div className="space-y-6">
-                  <AdminInput label="Full Name" name="name" icon={User} value={user.name} onChange={handleInputChange} disabled={!isEditing} />
+                  <AdminInput label="Full Name" name="fullName" icon={User} value={user.fullName} onChange={handleInputChange} disabled={!isEditing} />
                   <AdminInput label="Registered Email" name="email" icon={Mail} value={user.email} disabled={true} />
                   <div className="grid grid-cols-2 gap-4">
                     <AdminInput label="Primary Phone" name="phone1" icon={Phone} value={user.phone1} onChange={handleInputChange} disabled={!isEditing} />
@@ -213,7 +237,6 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
                 </div>
               </div>
 
-              {/* Preschool Data */}
               <div className="space-y-8">
                 <h3 className="text-[11px] font-black text-midnight uppercase tracking-[0.4em] flex items-center gap-3">
                   <div className="w-10 h-[3px] bg-secondary-500 rounded-full"></div> Preschool Data
@@ -238,62 +261,76 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
               </div>
             </div>
 
-            {/* Security Section */}
             <div className="pt-10 border-t border-slate-100">
               <div className="bg-midnight rounded-[3rem] p-8 md:p-12 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-80 h-80 bg-primary-500/10 rounded-full blur-[100px] -mr-40 -mt-40"></div>
-
-                <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                  <div className="space-y-4">
-                    <div className="inline-block p-3 bg-white/5 border border-white/10 rounded-2xl mb-2">
-                      <Key className="text-primary-500" size={24} />
+                
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-10">
+                    <div className="space-y-2">
+                      <h4 className="text-white font-black text-xl uppercase tracking-tight">Security & Password</h4>
+                      <p className="text-slate-400 text-xs tracking-wider">Update your administrative access credentials.</p>
                     </div>
-                    <h4 className="text-white font-black text-xl uppercase tracking-tight">Security Credentials</h4>
-                    <p className="text-slate-400 text-xs leading-relaxed max-w-xs">
-                      Keep your administrative access safe. This key is required for all sensitive system updates.
-                    </p>
+                    <div className="p-3 bg-white/5 border border-white/10 rounded-2xl">
+                      <ShieldCheck className="text-primary-500" size={24} />
+                    </div>
                   </div>
 
-                  <div className="space-y-6">
-                    <div className="relative group">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        value={user.password}
-                        disabled
-                        className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl text-primary-100 font-mono text-sm tracking-[0.3em] transition-all group-hover:bg-white/10"
-                      />
-                      <button onClick={() => setShowPassword(!showPassword)} className="absolute right-5 top-5 text-slate-500 hover:text-white transition-colors">
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Current Password</label>
+                      <div className="relative">
+                        <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
+                        <input
+                          type="password"
+                          placeholder="••••••••"
+                          value={passwords.current}
+                          onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
+                          className="w-full pl-11 p-4 bg-white/5 border border-white/10 rounded-2xl text-white text-sm outline-none focus:border-primary-500 transition-all"
+                        />
+                      </div>
                     </div>
 
-                    <div className="flex gap-3">
-                      <input
-                        type="text"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        disabled={!isEditing}
-                        placeholder="New Security Key..."
-                        className="flex-1 p-4 bg-white/10 border border-white/10 rounded-2xl text-white font-mono text-xs focus:border-primary-500 outline-none disabled:opacity-20 placeholder:text-slate-600"
-                      />
-                      <button
-                        onClick={() => {
-                          if (newPassword.length < 6) return setStatusMessage({ type: 'error', text: 'Key is too weak.' });
-                          setUser({ ...user, password: newPassword });
-                          setNewPassword("");
-                          setStatusMessage({ type: 'success', text: 'Security key updated locally.' });
-                        }}
-                        disabled={!isEditing || !newPassword}
-                        className="bg-primary-500 hover:bg-primary-600 disabled:bg-slate-800 p-4 rounded-2xl text-white transition-all shadow-lg"
-                      >
-                        <CheckCircle2 size={20} />
-                      </button>
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">New Password</label>
+                      <div className="relative">
+                        <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
+                        <input
+                          type="password"
+                          placeholder="New password"
+                          value={passwords.new}
+                          onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
+                          className="w-full pl-11 p-4 bg-white/5 border border-white/10 rounded-2xl text-white text-sm outline-none focus:border-primary-500 transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Confirm New</label>
+                      <div className="relative flex gap-3">
+                        <div className="relative flex-1">
+                          <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
+                          <input
+                            type="password"
+                            placeholder="Confirm password"
+                            value={passwords.confirm}
+                            onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
+                            className="w-full pl-11 p-4 bg-white/5 border border-white/10 rounded-2xl text-white text-sm outline-none focus:border-primary-500 transition-all"
+                          />
+                        </div>
+                        <button
+                          onClick={handlePasswordUpdate}
+                          disabled={isChangingPassword || !passwords.current || !passwords.new}
+                          className="bg-primary-500 hover:bg-primary-600 disabled:bg-slate-800 p-4 rounded-2xl text-white transition-all shadow-lg active:scale-95"
+                        >
+                          {isChangingPassword ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </main>
@@ -301,7 +338,6 @@ const AdminProfilePage: React.FC<AdminProfilePageProps> = ({ initialUser }) => {
   );
 };
 
-// Reusable Input
 const AdminInput = ({ label, icon: Icon, ...props }: any) => (
   <div className="space-y-2 group">
     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{label}</label>
