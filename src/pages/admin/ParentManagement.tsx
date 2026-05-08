@@ -52,7 +52,10 @@ const ParentManagement = () => {
         }
       });
 
-      setParents(Array.from(parentsMap.values()));
+      const sortedParents = Array.from(parentsMap.values()).sort((a: any, b: any) => 
+        a.fullName.localeCompare(b.fullName)
+      );
+      setParents(sortedParents);
     } catch (err) {
       console.error("Failed to load parents and children:", err);
     }

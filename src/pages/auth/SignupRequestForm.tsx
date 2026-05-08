@@ -115,9 +115,16 @@ const SignupRequestForm: React.FC = () => {
       if (form.dob) {
         const dob = new Date(form.dob);
         const today = new Date();
-        const maxAge = new Date(today.getFullYear() - 10, today.getMonth(), today.getDate());
-        if (dob > today) newErrors.dob = "Date of birth cannot be in the future.";
-        else if (dob < maxAge) newErrors.dob = "Child must be under 10 years old.";
+        const minAge = new Date(today.getFullYear() - 10, today.getMonth(), today.getDate());
+        const maxAge = new Date(today.getFullYear() - 3, today.getMonth(), today.getDate());
+        
+        if (dob > today) {
+          newErrors.dob = "Date of birth cannot be in the future.";
+        } else if (dob > maxAge) {
+          newErrors.dob = "Child must be at least 3 years old.";
+        } else if (dob < minAge) {
+          newErrors.dob = "Child must be under 10 years old.";
+        }
       } else {
         newErrors.dob = "Child's date of birth is required.";
       }

@@ -153,7 +153,7 @@ const VerifyOtpPage: React.FC = () => {
           </div>
 
           <p className="text-center mt-10 text-slate-400 text-xs font-medium">
-            &copy; 2026 DevSpark ChildCare. All rights reserved.
+            &copy; 2026 LittleSparks ChildCare. All rights reserved.
           </p>
         </div>
       </main>

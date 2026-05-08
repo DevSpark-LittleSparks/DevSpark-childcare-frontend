@@ -40,7 +40,11 @@ const Students = () => {
           status: c.status || 'ENROLLED'
         }));
         
-        setStudents(mappedStudents);
+        const sortedStudents = mappedStudents.sort((a: any, b: any) => 
+          a.firstName.localeCompare(b.firstName)
+        );
+        
+        setStudents(sortedStudents);
       } catch (err) {
         console.error("Failed to fetch students:", err);
       }
@@ -171,18 +175,17 @@ const CompactTable = ({ title, data, primaryColor, onDelete }: any) => {
                       <div>
                         <div className="flex items-center gap-2">
                           <p className="font-bold text-slate-900 tracking-tight">{s.firstName} {s.lastName}</p>
-                          {s.status === 'GRADUATING' && (
+                          {s.status === 'BIG_SCHOOL_READY' && (
                             <span className="animate-pulse flex h-2 w-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></span>
                           )}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">
                           <p className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter border ${
-                            s.status === 'GRADUATING' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                            s.status === 'GRADUATED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                            s.status === 'BIG_SCHOOL_READY' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                            s.status === 'ALUMNI' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
                             'bg-blue-50 text-blue-600 border-blue-100'
                           }`}>
-                            {s.status === 'GRADUATING' ? 'BIG SCHOOL READY' : 
-                             s.status === 'GRADUATED' ? 'ALUMNI' : 'ENROLLED'}
+                            {s.status?.replace(/_/g, ' ') || 'ENROLLED'}
                           </p>
                         </div>
                       </div>

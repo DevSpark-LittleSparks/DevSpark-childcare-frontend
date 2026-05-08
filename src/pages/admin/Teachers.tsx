@@ -43,7 +43,10 @@ const Teachers = () => {
         joinedAt: t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'N/A'
       }));
       
-      setTeachers(mappedTeachers);
+      const sortedTeachers = mappedTeachers.sort((a: any, b: any) => 
+        a.firstName.localeCompare(b.firstName)
+      );
+      setTeachers(sortedTeachers);
     } catch (err) {
       console.error("Failed to load teachers:", err);
     }

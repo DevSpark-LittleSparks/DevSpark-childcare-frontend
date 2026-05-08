@@ -41,7 +41,8 @@ const ChildViewPage = () => {
     parentFullName: '',
     parentEmail: '',
     parentContact: '',
-    parentID: ''
+    parentID: '',
+    status: 'ENROLLED'
   });
 
   // Calculate age dynamically if DOB is changed during edit
@@ -79,7 +80,8 @@ const ChildViewPage = () => {
             parentFullName: data.parentFullName || '',
             parentEmail: data.parentEmail || '',
             parentContact: data.parentContact || '',
-            parentID: data.parentID || ''
+            parentID: data.parentID || '',
+            status: data.status || 'ENROLLED'
           });
           setPreviewImage(data.profileImage || null);
         }
@@ -127,7 +129,8 @@ const ChildViewPage = () => {
         specialNote: formData.specialNote,
         guardianName: formData.parentFullName,
         guardianEmail: formData.parentEmail,
-        profilePic: previewImage
+        profilePic: previewImage,
+        status: formData.status
       };
 
       await apiClient.put(`/api/v1/auth/admin/child/${studentId}`, payload);
@@ -242,6 +245,7 @@ const ChildViewPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <InputField label="Blood Group" name="bloodGroup" value={formData.bloodGroup} isEditing={isEditing} type="select" options={['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']} onChange={handleInputChange} />
                   <InputField label="Gender" name="gender" value={formData.gender} isEditing={isEditing} type="select" options={['male', 'female']} onChange={handleInputChange} />
+                  <InputField label="Status" name="status" value={formData.status} isEditing={isEditing} type="select" options={['ENROLLED', 'BIG_SCHOOL_READY', 'ALUMNI']} onChange={handleInputChange} />
                 </div>
                 <div className="space-y-3 text-left">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2">
