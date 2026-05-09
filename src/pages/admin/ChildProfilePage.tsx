@@ -6,6 +6,7 @@ import {
   ClipboardList, Users, Mail, Phone, Hash, Calendar, Heart
 } from 'lucide-react';
 import { apiClient } from '../../services/axiosInstance';
+import { Button } from '../../components/common/Button';
 
 /**
  * ChildViewPage - Admin Management View

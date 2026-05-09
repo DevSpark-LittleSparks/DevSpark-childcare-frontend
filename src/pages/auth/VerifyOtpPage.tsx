@@ -38,7 +38,7 @@ const VerifyOtpPage: React.FC = () => {
     try {
       await apiClient.post("/api/v1/auth/signup/verify-otp", {
         email: email,
-        otpCode: otp
+        otp: otp
       });
 
       setSuccess(true);
