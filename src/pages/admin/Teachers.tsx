@@ -5,6 +5,7 @@ import {
   MapPin, ShieldCheck, UserCheck, UserX, MoreVertical, CheckSquare, Square
 } from 'lucide-react';
 import { Button } from '../../components/common/Button';
+import { apiClient } from '../../services/axiosInstance';
 
 interface TeacherData {
   id: string;
@@ -25,31 +26,29 @@ const Teachers = () => {
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
   const [viewingTeacher, setViewingTeacher] = useState<TeacherData | null>(null);
 
-  const loadTeachers = () => {
-    const systemUsers = JSON.parse(localStorage.getItem('system_users') || '[]');
-    const teacherRecords = systemUsers
-      .filter((u: any) => u.role.toLowerCase() === 'teacher')
-      .map((u: any) => ({
-        id: u.id.toString(),
-        firstName: u.firstName,
-        lastName: u.lastName,
-        email: u.email,
-        role: u.role || 'Primary Teacher',
-        status: u.status || 'active',
-        phone: u.phone || '077 123 4567',
-        address: u.address || 'No 12, Main Street, Colombo',
-        joinedAt: u.joinedAt || new Date().toLocaleDateString()
+  const loadTeachers = async () => {
+    try {
+      const response = await apiClient.get('/api/v1/auth/admin/all-teachers');
+      const liveData = response.data.data;
+      
+      const mappedTeachers = liveData.map((t: any) => ({
+        id: t.id || t.teacherId || t.email,
+        firstName: t.firstName,
+        lastName: t.lastName,
+        email: t.email,
+        role: t.role || 'Teacher',
+        status: t.status?.toLowerCase() === 'active' ? 'active' : 'inactive',
+        phone: t.phoneNumber || 'N/A',
+        address: t.address || 'N/A',
+        joinedAt: t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'N/A'
       }));
-
-    if (teacherRecords.length > 0) {
-      setTeachers(teacherRecords);
-    } else {
-      // Dummy data if none approved yet
-      setTeachers([
-        { id: 't1', firstName: 'Sarah', lastName: 'Williams', email: 'sarah@littlespark.com', role: 'Montessori Specialist', status: 'active', phone: '071 888 2233', address: 'Kandy, Sri Lanka', joinedAt: '2026-02-15' },
-        { id: 't2', firstName: 'David', lastName: 'Perera', email: 'david@littlespark.com', role: 'Physical Education', status: 'active', phone: '077 444 5566', address: 'Negombo, Sri Lanka', joinedAt: '2026-03-01' },
-        { id: 't3', firstName: 'Emily', lastName: 'De Silva', email: 'emily@littlespark.com', role: 'Art & Craft', status: 'inactive', phone: '076 222 3344', address: 'Galle, Sri Lanka', joinedAt: '2026-01-20' },
-      ]);
+      
+      const sortedTeachers = mappedTeachers.sort((a: any, b: any) => 
+        a.firstName.localeCompare(b.firstName)
+      );
+      setTeachers(sortedTeachers);
+    } catch (err) {
+      console.error("Failed to load teachers:", err);
     }
   };
 
@@ -65,10 +64,16 @@ const Teachers = () => {
     ));
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to remove this staff member?")) {
-      setTeachers(teachers.filter(t => t.id !== id));
-      setSelectedTeachers(selectedTeachers.filter(sid => sid !== id));
+      try {
+        await apiClient.delete(`/api/v1/auth/admin/teacher/${id}`);
+        setTeachers(teachers.filter(t => t.id !== id));
+        setSelectedTeachers(selectedTeachers.filter(sid => sid !== id));
+      } catch (err) {
+        console.error("Delete failed:", err);
+        alert("Failed to delete teacher. Please try again.");
+      }
     }
   };
 

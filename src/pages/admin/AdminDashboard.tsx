@@ -6,6 +6,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
 import { Logo } from '../../components/common/Logo';
+import { apiClient } from '../../services/axiosInstance';
+
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -18,100 +20,94 @@ const AdminDashboard = () => {
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [showAdminNotifs, setShowAdminNotifs] = useState(false);
 
-  const loadData = () => {
-    const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
-    setTotalStudents(admissionsData.length);
+  const loadData = async () => {
+    try {
+      // Fetch real stats from backend
+      const statsRes = await apiClient.get('/api/v1/auth/admin/stats');
+      const stats = statsRes.data.data;
+      setTotalStudents(stats.totalStudents || 0);
+      setTotalStaff(stats.totalStaff || 0);
+      setTotalParents(stats.totalParents || 0);
 
-    const systemUsers = JSON.parse(localStorage.getItem('system_users') || '[]');
-    setTotalStaff(systemUsers.filter((u: any) => u.role.toLowerCase() === 'teacher').length);
-    setTotalParents(systemUsers.filter((u: any) => u.role.toLowerCase() === 'parent').length);
+      // Fetch real pending requests from all 3 roles
+      const [teachers, parents, directors] = await Promise.all([
+        apiClient.get('/api/v1/auth/admin/pending-teachers'),
+        apiClient.get('/api/v1/auth/admin/pending-parents'),
+        apiClient.get('/api/v1/auth/admin/pending-directors')
+      ]);
 
-    const userRequests = JSON.parse(localStorage.getItem('user_requests') || '[]');
-    setPendingRequests(userRequests.filter((r: any) => r.status === 'Pending'));
+      const allPending = [
+        ...(teachers.data.data || []),
+        ...(parents.data.data || []),
+        ...(directors.data.data || [])
+      ].sort((a: any, b: any) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
+
+      setPendingRequests(allPending);
+    } catch (err) {
+      console.error("Failed to load admin data:", err);
+    }
   };
 
-  const handleBroadcast = () => {
-    if (!announcement.title || !announcement.desc) return alert("Please fill both title and description.");
+  const handleBroadcast = async () => {
+    if (!announcement.title || !announcement.desc) {
+      alert("Please fill in both title and content.");
+      return;
+    }
 
     setIsBroadcasting(true);
-    setTimeout(() => {
-      const notifications = JSON.parse(localStorage.getItem('system_notifications') || '[]');
-      const newNotif = {
-        id: Date.now(),
-        title: announcement.title,
-        desc: announcement.desc.length > 80 ? announcement.desc.substring(0, 80) + '...' : announcement.desc,
-        fullMsg: announcement.desc,
-        time: 'Just now',
-        type: 'special',
-        unread: true
-      };
-
-      localStorage.setItem('system_notifications', JSON.stringify([newNotif, ...notifications]));
+    try {
+      await apiClient.post(`/api/v1/auth/admin/broadcast?title=${encodeURIComponent(announcement.title)}&content=${encodeURIComponent(announcement.desc)}`);
+      alert("Announcement successfully sent to all registered parents!");
       setAnnouncement({ title: '', desc: '' });
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to send broadcast.");
+    } finally {
       setIsBroadcasting(false);
-      alert("Announcement broadcasted to all parents!");
-    }, 1000);
+    }
+  };
+
+
+  const handleApprove = async (request: any) => {
+    try {
+      let endpoint = '';
+      if (request.role === 'TEACHER') endpoint = `/api/v1/auth/admin/approve-teacher/${request.requestId}`;
+      else if (request.role === 'PARENT') endpoint = `/api/v1/auth/admin/approve-parent/${request.requestId}`;
+      else if (request.role === 'DIRECTOR') endpoint = `/api/v1/auth/admin/approve-director/${request.requestId}`;
+
+      await apiClient.post(endpoint);
+      alert(`${request.role} request approved! OTP has been sent to ${request.email}`);
+      setSelectedRequest(null);
+      loadData();
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Approval failed.");
+    }
+  };
+
+  const handleReject = async (request: any) => {
+    const reason = prompt("Enter reason for rejection:", "Your application was not approved.");
+    if (reason === null) return;
+
+    try {
+      let endpoint = '';
+      if (request.role === 'TEACHER') endpoint = `/api/v1/auth/admin/reject-teacher/${request.requestId}`;
+      else if (request.role === 'PARENT') endpoint = `/api/v1/auth/admin/reject-parent/${request.requestId}`;
+      else if (request.role === 'DIRECTOR') endpoint = `/api/v1/auth/admin/reject-director/${request.requestId}`;
+
+      await apiClient.post(`${endpoint}?reason=${encodeURIComponent(reason)}`);
+      alert("Request rejected and applicant notified.");
+      setSelectedRequest(null);
+      loadData();
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Rejection failed.");
+    }
   };
 
   useEffect(() => {
     loadData();
-    window.addEventListener('storage', loadData);
-    return () => window.removeEventListener('storage', loadData);
+    const interval = setInterval(loadData, 30000); // Polling every 30s
+    return () => clearInterval(interval);
   }, []);
 
-  const handleApprove = (request: any) => {
-    const userRequests = JSON.parse(localStorage.getItem('user_requests') || '[]');
-    const updatedRequests = userRequests.map((r: any) =>
-      r.id === request.id ? { ...r, status: 'Approved' } : r
-    );
-    localStorage.setItem('user_requests', JSON.stringify(updatedRequests));
-    
-    // Add to system_users for real-time Staff/Parent management
-    const systemUsers = JSON.parse(localStorage.getItem('system_users') || '[]');
-    const newUser = {
-      id: request.id,
-      firstName: request.firstName,
-      lastName: request.lastName,
-      fullName: `${request.firstName} ${request.lastName}`,
-      email: request.email,
-      role: request.role, // 'Parent' or 'Teacher'
-      status: 'active',
-      phone: request.phone || '077 123 4567',
-      address: request.address || 'No 12, Main Street, Colombo',
-      joinedAt: new Date().toLocaleDateString()
-    };
-    
-    // Avoid duplicates
-    if (!systemUsers.find((u: any) => u.email === newUser.email)) {
-      localStorage.setItem('system_users', JSON.stringify([...systemUsers, newUser]));
-    }
-
-    // Generate OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
-    const otpCredentials = JSON.parse(localStorage.getItem('otp_credentials') || '[]');
-    otpCredentials.push({
-      email: request.email,
-      otp,
-      role: request.role,
-      firstName: request.firstName,
-      fullName: `${request.firstName} ${request.lastName}`
-    });
-    localStorage.setItem('otp_credentials', JSON.stringify(otpCredentials));
-
-    // Simulate SMTP Email
-    alert(`[SMTP Email Simulation]\n\nTo: ${request.email}\nSubject: Application Approved\n\nHello ${request.firstName},\n\nYour application for ${request.role} has been approved.\nYour One-Time Password (OTP) is: ${otp}\n\nPlease login using this OTP.`);
-
-    loadData();
-  };
-
-  const handleReject = (id: number) => {
-    const userRequests = JSON.parse(localStorage.getItem('user_requests') || '[]');
-    const updatedRequests = userRequests.map((r: any) =>
-      r.id === id ? { ...r, status: 'Rejected' } : r
-    );
-    localStorage.setItem('user_requests', JSON.stringify(updatedRequests));
-    loadData();
-  };
 
   return (
     <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
@@ -165,7 +161,7 @@ const AdminDashboard = () => {
                           <h4 className="text-[11px] font-black text-midnight uppercase tracking-tight">Pending {req.role} Request</h4>
                         </div>
                         <p className="text-[11px] text-slate-500 leading-tight">
-                          <span className="font-bold text-midnight">{req.firstName} {req.lastName}</span> has submitted a new application for review.
+                          <span className="font-bold text-midnight">{req.fullName}</span> has submitted a new application for review.
                         </p>
                       </div>
                     ))
@@ -253,17 +249,17 @@ const AdminDashboard = () => {
               ) : (
                 pendingRequests.map((req) => (
                   <div
-                    key={req.id}
+                    key={req.requestId}
                     className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-2xl cursor-pointer transition-all border border-transparent hover:border-slate-100"
                     onClick={() => setSelectedRequest(req)}
                   >
                     <div className="flex items-center gap-4">
                       <div className="h-12 w-12 bg-logo-sparks rounded-xl flex items-center justify-center text-white font-black text-lg shadow-sm">
-                        {req.firstName.charAt(0)}
+                        {req.fullName.charAt(0)}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-slate-900">{req.firstName} {req.lastName}</h4>
+                          <h4 className="font-bold text-slate-900">{req.fullName}</h4>
                           <span className="px-2 py-0.5 bg-cyan-50 text-[10px] font-black text-cyan-600 uppercase rounded-md tracking-wider">
                             {req.role}
                           </span>
@@ -281,7 +277,7 @@ const AdminDashboard = () => {
                       </Button>
                       <Button
                         variant="outline"
-                        onClick={(e) => { e.stopPropagation(); handleReject(req.id); }}
+                        onClick={(e) => { e.stopPropagation(); handleReject(req); }}
                         className="px-6 py-2.5 text-xs font-bold rounded-xl border-slate-200 text-slate-500 hover:bg-slate-50"
                       >
                         Reject
@@ -391,13 +387,9 @@ const AdminDashboard = () => {
             <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
               {/* Display all details depending on role */}
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">First Name</p>
-                  <p className="font-bold text-slate-900">{selectedRequest.firstName}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Last Name</p>
-                  <p className="font-bold text-slate-900">{selectedRequest.lastName}</p>
+                <div className="col-span-2">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Full Name</p>
+                  <p className="font-bold text-slate-900">{selectedRequest.fullName}</p>
                 </div>
                 <div className="col-span-2">
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Email</p>
@@ -410,55 +402,12 @@ const AdminDashboard = () => {
                   </span>
                 </div>
 
-                {selectedRequest.role === 'parent' && (
-                  <>
-                    <div className="col-span-2">
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Child's Name</p>
-                      <p className="font-bold text-slate-900">{selectedRequest.childName || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Date of Birth</p>
-                      <p className="font-bold text-slate-900">{selectedRequest.dob || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Gender</p>
-                      <p className="font-bold text-slate-900 capitalize">{selectedRequest.gender || 'N/A'}</p>
-                    </div>
-                  </>
-                )}
-
-                {selectedRequest.role === 'director' && (
-                  <>
-                    <div className="col-span-2">
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Center Name</p>
-                      <p className="font-bold text-slate-900">{selectedRequest.centerName || 'N/A'}</p>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Address</p>
-                      <p className="font-bold text-slate-900">{selectedRequest.centerAddress || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Capacity</p>
-                      <p className="font-bold text-slate-900">{selectedRequest.capacity || 'N/A'}</p>
-                    </div>
-                  </>
-                )}
-
-                {selectedRequest.role === 'teacher' && (
-                  <div>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Experience</p>
-                    <p className="font-bold text-slate-900">{selectedRequest.experience || 'N/A'}</p>
-                  </div>
-                )}
-
-                {selectedRequest.message && (
-                  <div className="col-span-2">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Message</p>
-                    <p className="font-medium text-slate-700 bg-slate-50 p-3 rounded-xl mt-1 text-sm border border-slate-100">
-                      {selectedRequest.message}
-                    </p>
-                  </div>
-                )}
+                <div className="col-span-2">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Additional Information</p>
+                  <p className="font-medium text-slate-700 bg-slate-50 p-3 rounded-xl mt-1 text-sm border border-slate-100">
+                    {selectedRequest.extraInfo || 'No additional details provided.'}
+                  </p>
+                </div>
 
                 <div className="col-span-2">
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Submitted At</p>
@@ -471,8 +420,8 @@ const AdminDashboard = () => {
 
             {/* Modal Footer with Actions */}
             <div className="p-6 bg-slate-50 flex items-center justify-end gap-3 border-t border-slate-100">
-              <button
-                onClick={() => { handleReject(selectedRequest.id); setSelectedRequest(null); }}
+               <button
+                onClick={() => { handleReject(selectedRequest); }}
                 className="px-6 py-3 bg-white border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-50 transition-all shadow-sm"
               >
                 Reject

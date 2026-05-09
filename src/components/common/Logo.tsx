@@ -43,13 +43,13 @@ export const Logo = ({
       </svg>
 
       {/* Text part with standard fonts and -ml-2 gap */}
-  
+
       <span
         className={`font-logo font-extrabold tracking-tighter -ml-2 ${mainTextColorClass} ${textClassName}`}
       >
         Little<span className="text-logo-sparks">Sparks</span>
       </span>
-      
+
 
     </div>
   );

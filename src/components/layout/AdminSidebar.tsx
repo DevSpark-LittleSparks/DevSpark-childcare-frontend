@@ -146,11 +146,17 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, onOpenSettin
           className={`flex items-center gap-3 p-2 rounded-2xl cursor-pointer transition-all border ${profileOpen ? 'bg-white shadow-md border-cyan-200' : 'hover:bg-white/50 border-transparent'} ${isCollapsed ? 'justify-center' : ''}`} 
           onClick={() => setProfileOpen(!profileOpen)}
         >
-          <img 
-            src={user?.photoURL || `https://ui-avatars.com/api/?name=${user?.displayName || "Admin"}&background=06B6D4&color=fff`} 
-            alt="Profile" 
-            className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-sm shrink-0" 
-          />
+          {user?.photoURL ? (
+            <img 
+              src={user?.photoURL} 
+              alt="Profile" 
+              className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-sm shrink-0" 
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-hero-purple flex items-center justify-center text-white font-black text-lg shrink-0 shadow-sm border-2 border-white">
+              {user?.displayName ? user.displayName.charAt(0).toUpperCase() : 'A'}
+            </div>
+          )}
           
           {!isCollapsed && (
             <div className="flex-1 min-w-0">

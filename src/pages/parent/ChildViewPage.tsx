@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 import { Logo } from '../../components/common/Logo'; 
+import { apiClient } from '../../services/axiosInstance';
 
 const ChildViewPage = () => {
   const navigate = useNavigate();
@@ -16,40 +17,48 @@ const ChildViewPage = () => {
   const [age, setAge] = useState<string>("");
 
   const [child, setChild] = useState({
-    name: 'Amaya Perera',
-    fullName: 'Amaya Sudeshini Perera',
-    profileImage: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80',
-    dob: '2020-05-15',
-    gender: 'Female',
-    bloodGroup: 'A+',
-    height: '105',
-    weight: '18',
-    address: 'No 45, Flower Road, Colombo 07',
-    specialNote: 'Nut allergy, requires inhaler for dust.',
-    enrolledDate: '2026-01-10'
+    name: 'Loading...',
+    fullName: 'Loading...',
+    profileImage: '',
+    dob: '',
+    gender: '---',
+    bloodGroup: '---',
+    height: '---',
+    weight: '---',
+    address: '---',
+    specialNote: '',
+    enrolledDate: '---'
   });
 
   useEffect(() => {
-    const allAdmissions = JSON.parse(localStorage.getItem('admissionsData') || '[]');
-    const foundChild = allAdmissions.find((c: any) => c.id === studentId);
-    
-    // Security Check: Only allow if the child belongs to this parent
-    if (foundChild && foundChild.parentEmail === reduxUser?.email) {
-      setChild({
-        name: foundChild.fullName || foundChild.nameWithInitials || 'Unknown',
-        fullName: foundChild.fullName || 'Unknown',
-        profileImage: foundChild.profileImage || 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80',
-        dob: foundChild.dob || '2020-01-01',
-        gender: foundChild.gender || 'Not specified',
-        bloodGroup: foundChild.bloodGroup || 'Not specified',
-        height: foundChild.height || 'N/A',
-        weight: foundChild.weight || 'N/A',
-        address: foundChild.address || 'N/A',
-        specialNote: foundChild.specialNote || 'No special notes.',
-        enrolledDate: foundChild.enrolledDate || new Date().toISOString().split('T')[0]
-      });
+    const fetchChildData = async () => {
+      try {
+        const res = await apiClient.get(`/api/v1/auth/parent/child/${studentId}`);
+        if (res.data.success) {
+          const data = res.data.data;
+          setChild({
+            name: data.name,
+            fullName: data.fullName,
+            profileImage: data.profileImage || '',
+            dob: data.dob,
+            gender: data.gender,
+            bloodGroup: data.bloodGroup,
+            height: data.height,
+            weight: data.weight,
+            address: data.address,
+            specialNote: data.specialNote,
+            enrolledDate: data.enrolledDate
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch child data:", err);
+      }
+    };
+
+    if (studentId) {
+      fetchChildData();
     }
-  }, [studentId, reduxUser]);
+  }, [studentId]);
 
   useEffect(() => {
     if (child.dob) {
