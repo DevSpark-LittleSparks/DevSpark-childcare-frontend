@@ -19,6 +19,7 @@ import {
 import { Button } from '../../../components/common/Button';
 import { Logo } from '../../../components/common/Logo';
 import { apiClient } from '../../../services/axiosInstance';
+import AlertBanner from '../../../components/shared/AlertBanner';
 
 const ParentDashboard = () => {
   const navigate = useNavigate();
@@ -31,19 +32,17 @@ const ParentDashboard = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
 
   const fetchNotifications = async () => {
+    if (!reduxUser?.uid) {
+      console.warn("DEBUG: No UID found in reduxUser, skipping fetch.");
+      return;
+    }
     try {
-      const res = await apiClient.get('/api/v1/notifications');
+      console.log("DEBUG: Fetching notifications for UID:", reduxUser.uid);
+      const res = await apiClient.get(`/api/v1/notifications/my-alerts/${reduxUser.uid}?role=PARENT`);
       if (res.data.success) {
-        const mapped = res.data.data.map((n: any) => ({
-          id: n.id,
-          title: n.title,
-          desc: n.message.length > 60 ? n.message.substring(0, 60) + '...' : n.message,
-          fullMsg: n.message,
-          time: formatTimeAgo(n.createdAt),
-          type: n.type.toLowerCase(),
-          unread: !n.isRead
-        }));
-        setNotifications(mapped);
+        // Map backend isRead to frontend unread for easier logic if desired, 
+        // or just use !n.isRead directly.
+        setNotifications(res.data.data);
       }
     } catch (err) {
       console.error("Failed to fetch notifications:", err);
@@ -63,25 +62,28 @@ const ParentDashboard = () => {
     return `${diffInDays}d ago`;
   };
 
-  const markAsRead = async (id: number) => {
+  const markAsRead = async (id: string) => {
+    console.log("DEBUG: Marking notification as read, ID:", id);
     try {
-      await apiClient.put(`/api/v1/notifications/${id}/read`);
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, unread: false } : n));
+      await apiClient.put(`/api/v1/notifications/${id}/read?userId=${reduxUser.uid}`);
+      setNotifications(prev => prev.map(n => 
+        n.id === id ? { ...n, isRead: true } : n
+      ));
+      console.log("DEBUG: Successfully marked as read locally and in DB.");
     } catch (err) {
       console.error("Failed to mark as read:", err);
     }
   };
 
   const markAllRead = () => {
-    // Optional: Implement bulk read in backend if needed
     notifications.forEach(n => {
-      if (n.unread) markAsRead(n.id);
+      if (!n.isRead) markAsRead(n.id);
     });
   };
 
   const openNotif = (notif: any) => {
     setSelectedNotif(notif);
-    if (notif.unread) markAsRead(notif.id);
+    if (!notif.isRead) markAsRead(notif.id);
     setShowNotifications(false);
   };
 
@@ -89,7 +91,7 @@ const ParentDashboard = () => {
     // Get children data from real API
     const fetchChildren = async () => {
       try {
-        const response = await apiClient.get('/api/v1/auth/parent/profile');
+        const response = await apiClient.get('/api/v1/parent/profile');
         if (response.data.success) {
           const profile = response.data.data;
           setChildrenCount(profile.children.length);
@@ -107,6 +109,8 @@ const ParentDashboard = () => {
     if (reduxUser?.email) {
       fetchChildren();
       fetchNotifications();
+      const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
+      return () => clearInterval(interval);
     }
   }, [reduxUser]);
 
@@ -136,8 +140,10 @@ const ParentDashboard = () => {
             className={`h-11 w-11 p-0 rounded-xl transition-all shadow-sm relative ${showNotifications ? 'ring-2 ring-primary-500/20 border-primary-500' : ''}`}
           >
             <Bell size={20} className={showNotifications ? 'text-primary-500' : 'text-slate-400'} />
-            {notifications.some(n => n.unread) && (
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+            {notifications.some(n => !n.isRead) && (
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white ring-2 ring-white animate-in zoom-in duration-300">
+                {notifications.filter(n => !n.isRead).length}
+              </span>
             )}
           </Button>
 
@@ -147,23 +153,31 @@ const ParentDashboard = () => {
               <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
                 <h3 className="text-[10px] font-black text-midnight uppercase tracking-widest">Special Announcements</h3>
                 <span className="text-[9px] font-black text-primary-500 bg-primary-50 px-3 py-1 rounded-full uppercase tracking-tighter">
-                  {notifications.filter(n => n.unread).length} New Updates
+                  {notifications.filter(n => !n.isRead).length} New Updates
                 </span>
               </div>
               <div className="max-h-[400px] overflow-y-auto no-scrollbar">
                 {notifications.length > 0 ? (
-                  notifications.map((notif) => (
+                  notifications.map((notif, idx) => (
                     <div
-                      key={notif.id}
+                      key={idx}
                       onClick={() => openNotif(notif)}
                       className={`p-6 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer relative group`}
                     >
-                      {notif.unread && <div className="absolute left-2.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-primary-500 rounded-full"></div>}
                       <div className="flex justify-between items-start mb-1.5">
-                        <h4 className="text-[11px] font-black text-midnight uppercase tracking-tight">{notif.title}</h4>
-                        <span className="text-[9px] text-slate-400 font-bold">{notif.time}</span>
+                        <div className="flex items-center gap-2">
+                          {!notif.isRead && <div className="w-1.5 h-1.5 rounded-full bg-primary-500"></div>}
+                          <h4 className="text-[11px] font-black text-midnight uppercase tracking-tight">
+                            {notif.title || 'System Notification'}
+                          </h4>
+                        </div>
+                        <span className="text-[9px] text-slate-400 font-bold">
+                          {new Date(notif.createdAt).toLocaleDateString()}
+                        </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 leading-relaxed line-clamp-2 font-medium">{notif.desc}</p>
+                      <p className="text-[11px] text-slate-500 leading-relaxed line-clamp-2 font-medium">
+                        {notif.body}
+                      </p>
                     </div>
                   ))
                 ) : (
@@ -192,6 +206,12 @@ const ParentDashboard = () => {
           </Button>
         </div>
       </header>
+      
+      {/* --- ALERT BANNER FOR BROADCASTS --- */}
+      <AlertBanner 
+        notifications={notifications.filter(n => n.type === 'BROADCAST' && !n.isRead)} 
+        onRead={markAsRead}
+      />
 
       <main className="max-w-7xl mx-auto px-6 mt-6 space-y-8 animate-fadeUp">
 
@@ -386,7 +406,9 @@ const ParentDashboard = () => {
                 <span className="text-[10px] font-black text-primary-500 uppercase tracking-[0.3em]">
                   {selectedNotif.type === 'graduation' ? '🌟 Milestone' : `${selectedNotif.type} announcement`}
                 </span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase">{selectedNotif.time}</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase">
+                  {new Date(selectedNotif.createdAt).toLocaleDateString()}
+                </span>
               </div>
               
               <h3 className="text-2xl font-black text-midnight tracking-tight leading-tight italic">
@@ -395,14 +417,17 @@ const ParentDashboard = () => {
               
               <div className={`p-6 rounded-[2rem] border ${selectedNotif.type === 'graduation' ? 'bg-primary-50/50 border-primary-100' : 'bg-slate-50 border-slate-100'}`}>
                 <p className="text-slate-600 text-sm leading-relaxed font-medium italic">
-                  "{selectedNotif.fullMsg}"
+                  "{selectedNotif.body}"
                 </p>
               </div>
 
               <div className="pt-2">
                 <Button
                   variant="primary"
-                  onClick={() => setSelectedNotif(null)}
+                  onClick={() => {
+                    markAsRead(selectedNotif.id);
+                    setSelectedNotif(null);
+                  }}
                   className="w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary-500/20"
                 >
                   {selectedNotif.type === 'graduation' ? 'Yay! So proud! 💖' : 'Got it, thanks!'}

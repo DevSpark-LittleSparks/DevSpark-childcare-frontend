@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Users, Briefcase, MessageSquare, TrendingUp,
-  Search, Bell, Check, X, Calendar, MessageCircle, Sparkles, ShieldCheck, User
+  Search, Bell, Check, X, Calendar, MessageCircle, Sparkles, ShieldCheck, User, Megaphone
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
@@ -48,23 +48,6 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleBroadcast = async () => {
-    if (!announcement.title || !announcement.desc) {
-      alert("Please fill in both title and content.");
-      return;
-    }
-
-    setIsBroadcasting(true);
-    try {
-      await apiClient.post(`/api/v1/auth/admin/broadcast?title=${encodeURIComponent(announcement.title)}&content=${encodeURIComponent(announcement.desc)}`);
-      alert("Announcement successfully sent to all registered parents!");
-      setAnnouncement({ title: '', desc: '' });
-    } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to send broadcast.");
-    } finally {
-      setIsBroadcasting(false);
-    }
-  };
 
 
   const handleApprove = async (request: any) => {
@@ -289,51 +272,32 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* --- ANNOUNCEMENT BROADCASTER --- */}
-          <div className="bg-gradient-to-br from-primary-500 to-indigo-600 rounded-[3rem] p-10 shadow-[0_25px_60px_rgba(6,197,212,0.3)] relative overflow-hidden group">
+          {/* --- BROADCAST CENTER LINK --- */}
+          <div className="bg-gradient-to-br from-primary-500 to-indigo-600 rounded-[3rem] p-10 shadow-[0_25px_60px_rgba(6,197,212,0.3)] relative overflow-hidden group cursor-pointer"
+               onClick={() => navigate('/admin/broadcast')}>
             {/* Abstract Decorative Circles */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
             <div className="absolute bottom-0 left-0 w-40 h-40 bg-indigo-400/20 rounded-full blur-2xl -ml-20 -mb-20"></div>
 
-            <div className="relative z-10">
-              <div className="flex items-center gap-5 mb-10">
-                <div className="p-4 bg-white/20 backdrop-blur-md border border-white/30 rounded-[1.5rem] text-white shadow-2xl">
-                  <Bell size={28} className="animate-bounce" />
+            <div className="relative z-10 flex flex-col h-full justify-between">
+              <div className="flex items-center gap-5">
+                <div className="p-4 bg-white/20 backdrop-blur-md border border-white/30 rounded-[1.5rem] text-white shadow-2xl group-hover:scale-110 transition-transform">
+                  <Megaphone size={28} className="animate-bounce" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black text-white uppercase tracking-[0.2em] leading-none">Broadcast Portal</h3>
-                  <p className="text-[10px] font-black text-white/70 uppercase mt-1.5 tracking-[0.3em]">Parent-Wide Transmission</p>
+                  <h3 className="text-xl font-black text-white uppercase tracking-[0.2em] leading-none">Broadcast Center</h3>
+                  <p className="text-[10px] font-black text-white/70 uppercase mt-1.5 tracking-[0.3em]">Institutional Communications</p>
                 </div>
               </div>
 
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-white uppercase tracking-[0.3em] ml-1 opacity-80">Announcement Title</label>
-                  <input
-                    type="text"
-                    placeholder=" eg: Special Announcement"
-                    value={announcement.title}
-                    onChange={(e) => setAnnouncement({ ...announcement, title: e.target.value })}
-                    className="w-full p-5 bg-white/10 border-2 border-white/20 rounded-2xl outline-none focus:border-white focus:bg-white/20 transition-all text-sm font-bold text-white placeholder:text-white/40 backdrop-blur-sm shadow-inner"
-                  />
+              <div className="mt-12">
+                <p className="text-white/80 font-medium text-sm leading-relaxed mb-6">
+                  Send high-priority alerts and announcements to Parents and Teachers instantly.
+                </p>
+                <div className="flex items-center gap-2 text-white font-black text-[10px] uppercase tracking-widest bg-white/10 w-fit px-4 py-2 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/20 transition-all">
+                  Launch Portal
+                  <TrendingUp size={12} className="rotate-45" />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-white uppercase tracking-[0.3em] ml-1 opacity-80">Message Content</label>
-                  <textarea
-                    placeholder="Enter the full message details here..."
-                    value={announcement.desc}
-                    onChange={(e) => setAnnouncement({ ...announcement, desc: e.target.value })}
-                    rows={4}
-                    className="w-full p-6 bg-white/10 border-2 border-white/20 rounded-[2.5rem] outline-none focus:border-white focus:bg-white/20 transition-all text-sm font-medium text-white placeholder:text-white/40 resize-none backdrop-blur-sm shadow-inner leading-relaxed"
-                  />
-                </div>
-                <Button
-                  onClick={handleBroadcast}
-                  disabled={isBroadcasting}
-                  className="w-full py-5 bg-midnight text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] shadow-[0_15px_30px_rgba(10,6,55,0.3)] hover:bg-midnight/90 hover:scale-[1.02] active:scale-[0.98] transition-all border-none"
-                >
-                  {isBroadcasting ? "Transmitting..." : "Send to All Parents"}
-                </Button>
               </div>
             </div>
           </div>

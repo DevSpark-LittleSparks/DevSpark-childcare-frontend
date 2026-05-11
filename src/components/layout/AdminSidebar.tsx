@@ -4,7 +4,7 @@ import {
   MdDashboard, MdAssignmentInd, MdPeople, MdManageAccounts, 
   MdCreditCard, MdPayments, MdChat, MdRestaurant, MdSecurity, MdHistory, 
   MdLogout, MdSettings, MdPerson, MdKeyboardArrowUp,
-  MdMenuOpen, MdMenu 
+  MdMenuOpen, MdMenu, MdCampaign
 } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
 import { logout, selectUser } from "../../features/auth/model/authSlice";
@@ -103,6 +103,7 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, onOpenSettin
         <div className="space-y-1 mb-6">
           <SidebarLink to="/admin/dashboard" icon={<MdDashboard />} label="Home" isCollapsed={isCollapsed} />
           <SidebarLink to="/admin/admissions" icon={<MdAssignmentInd />} label="Admissions" isCollapsed={isCollapsed} />
+          <SidebarLink to="/admin/broadcast" icon={<MdCampaign />} label="Broadcast Center" isCollapsed={isCollapsed} />
         </div>
 
         <NavGroup title="School Management" isCollapsed={isCollapsed}>
