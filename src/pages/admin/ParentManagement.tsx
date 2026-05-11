@@ -15,7 +15,7 @@ const ParentManagement = () => {
     try {
       const [parentsRes, childrenRes] = await Promise.all([
         apiClient.get('/api/v1/auth/admin/all-parents'),
-        apiClient.get('/api/v1/child/all')
+        apiClient.get('/api/v1/auth/admin/all-children')
       ]);
 
       const liveParents = parentsRes.data.data;

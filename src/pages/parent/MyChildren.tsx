@@ -16,15 +16,15 @@ const MyChildren = () => {
   useEffect(() => {
     const fetchChildren = async () => {
       try {
-        const res = await apiClient.get('/api/v1/auth/parent/profile');
+        const res = await apiClient.get('/api/v1/parent/profile');
         if (res.data.success) {
           const parentData = res.data.data;
           setChildrenList(parentData.children.map((c: any) => ({
-            id: c.id,
+            id: c.childId,
             name: c.name,
             age: '---', // Age calculation can be added if DOB is in summary
             gender: 'Enrolled',
-            image: c.profileImage || ''
+            image: c.profilePic || ''
           })));
         }
       } catch (err) {
