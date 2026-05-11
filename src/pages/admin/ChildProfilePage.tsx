@@ -78,13 +78,13 @@ const ChildViewPage = () => {
             address: data.address || '',
             specialNote: data.specialNote || '',
             relationship: data.relationship || '',
-            parentFullName: data.parentFullName || '',
-            parentEmail: data.parentEmail || '',
+            parentFullName: data.guardianName || '',
+            parentEmail: data.guardianEmail || '',
             parentContact: data.parentContact || '',
             parentID: data.parentID || '',
             status: data.status || 'ENROLLED'
           });
-          setPreviewImage(data.profileImage || null);
+          setPreviewImage(data.profilePic || null);
         }
       } catch (err) {
         console.error("Failed to fetch child data:", err);

@@ -26,7 +26,7 @@ const Students = () => {
   React.useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const response = await apiClient.get('/api/v1/child/all');
+        const response = await apiClient.get('/api/v1/auth/admin/all-children');
         const liveData = response.data.data;
         
         const mappedStudents = liveData.map((c: any) => ({
@@ -34,7 +34,7 @@ const Students = () => {
           firstName: c.firstName,
           lastName: c.lastName,
           age: c.dob ? Math.floor((new Date().getTime() - new Date(c.dob).getTime()) / 31557600000) : 0,
-          gender: c.gender?.charAt(0).toUpperCase() + c.gender?.slice(1).toLowerCase(),
+          gender: c.gender ? (c.gender.charAt(0).toUpperCase() + c.gender.slice(1).toLowerCase()) : 'Unknown',
           class: c.status || 'ENROLLED',
           parentName: c.guardianName || 'Guardian', 
           status: c.status || 'ENROLLED'
