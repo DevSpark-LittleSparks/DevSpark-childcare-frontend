@@ -96,7 +96,7 @@ export function LoginForm() {
       dispatch(setUser({ uid, email, displayName, photoURL, role }));
       
       // Redirect based on role
-      if (role === 'PARENT') navigate("/parent/children");
+      if (role === 'PARENT') navigate("/parent/dashboard");
       else if (role === 'TEACHER') navigate("/teacher/dashboard");
       else if (role === 'ADMIN') navigate("/admin/dashboard");
       else navigate("/");

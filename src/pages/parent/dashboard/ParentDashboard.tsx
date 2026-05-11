@@ -33,11 +33,9 @@ const ParentDashboard = () => {
 
   const fetchNotifications = async () => {
     if (!reduxUser?.uid) {
-      console.warn("DEBUG: No UID found in reduxUser, skipping fetch.");
       return;
     }
     try {
-      console.log("DEBUG: Fetching notifications for UID:", reduxUser.uid);
       const res = await apiClient.get(`/api/v1/notifications/my-alerts/${reduxUser.uid}?role=PARENT`);
       if (res.data.success) {
         // Map backend isRead to frontend unread for easier logic if desired, 
@@ -63,13 +61,11 @@ const ParentDashboard = () => {
   };
 
   const markAsRead = async (id: string) => {
-    console.log("DEBUG: Marking notification as read, ID:", id);
     try {
       await apiClient.put(`/api/v1/notifications/${id}/read?userId=${reduxUser.uid}`);
       setNotifications(prev => prev.map(n => 
         n.id === id ? { ...n, isRead: true } : n
       ));
-      console.log("DEBUG: Successfully marked as read locally and in DB.");
     } catch (err) {
       console.error("Failed to mark as read:", err);
     }
@@ -96,9 +92,9 @@ const ParentDashboard = () => {
           const profile = response.data.data;
           setChildrenCount(profile.children.length);
           setChildren(profile.children.map((c: any) => ({
-            id: c.id,
-            firstName: c.name.split(' ')[0],
-            profileImage: c.profileImage
+            id: c.childId,
+            firstName: c.name ? c.name.split(' ')[0] : 'Child',
+            profileImage: c.profilePic || ''
           })));
         }
       } catch (err) {

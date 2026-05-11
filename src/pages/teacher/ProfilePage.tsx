@@ -2,11 +2,13 @@ import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
 import {
   User, Mail, Phone, MapPin, Save, Edit2, ArrowLeft,
   Key, CheckCircle2, AlertCircle, Loader2, Camera, GraduationCap,
-  ShieldCheck, Briefcase
+  ShieldCheck, Briefcase, Send
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAppSelector } from '../../store';
 import { Button } from '../../components/common/Button';
 import { apiClient } from '../../services/axiosInstance';
+import { UserProfile } from '../../types/user.types';
 
 interface TeacherProfileData {
   teacherId: string;
@@ -20,8 +22,9 @@ interface TeacherProfileData {
   maxDailyActivities: number;
 }
 
-const TeacherProfilePage: React.FC = () => {
+const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
   const navigate = useNavigate();
+  const reduxUser = useAppSelector((state) => state.auth.user);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [user, setUser] = useState<TeacherProfileData>({
     teacherId: '',
@@ -38,6 +41,11 @@ const TeacherProfilePage: React.FC = () => {
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // Request form state
+  const [requestType, setRequestType] = useState<string>("");
+  const [requestDescription, setRequestDescription] = useState<string>("");
+  const [isSubmittingRequest, setIsSubmittingRequest] = useState<boolean>(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -116,6 +124,28 @@ const TeacherProfilePage: React.FC = () => {
       setStatusMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update password.' });
     } finally {
       setIsChangingPassword(false);
+    }
+  };
+
+
+  const handleSubmitRequest = async () => {
+    if (!requestType || !requestDescription.trim()) {
+      setStatusMessage({ type: 'error', text: 'Please fill in all request fields.' });
+      return;
+    }
+    if (!reduxUser?.uid) return;
+
+    setIsSubmittingRequest(true);
+    try {
+      await apiClient.post(`/api/v1/notifications/submit-request?userId=${reduxUser.uid}&type=${requestType}`, requestDescription);
+      setRequestType("");
+      setRequestDescription("");
+      setStatusMessage({ type: 'success', text: 'Request submitted to administration.' });
+    } catch (err) {
+      console.error("Failed to submit request:", err);
+      setStatusMessage({ type: 'error', text: 'Failed to submit request.' });
+    } finally {
+      setIsSubmittingRequest(false);
     }
   };
 
@@ -253,6 +283,53 @@ const TeacherProfilePage: React.FC = () => {
                         className="w-full pl-12 p-4 bg-white border-2 border-slate-100 rounded-2xl outline-none text-sm font-bold text-midnight min-h-[90px] focus:border-primary-500 transition-all disabled:bg-slate-50"
                       />
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-sidebar-bg/20 rounded-[3rem] p-8 border border-sidebar-bg/50 overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-6 opacity-[0.03]">
+                <Send size={100} className="text-primary-900" />
+              </div>
+              <h3 className="text-[11px] font-black text-midnight mb-6 flex items-center gap-3 uppercase tracking-[0.3em] relative z-10">
+                <Send size={16} className="text-primary-500" />
+                Administrative Request
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Request Category</label>
+                  <select
+                    value={requestType}
+                    onChange={(e) => setRequestType(e.target.value)}
+                    className="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-primary-500 outline-none font-bold text-sm text-midnight appearance-none"
+                  >
+                    <option value="">Select Type</option>
+                    <option value="leave-request">Leave Request</option>
+                    <option value="material-request">Classroom Materials</option>
+                    <option value="incident-report">Incident Report</option>
+                    <option value="schedule-change">Schedule Change</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div className="md:col-span-2 space-y-3">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Description</label>
+                  <div className="flex gap-3">
+                    <input
+                      type="text"
+                      value={requestDescription}
+                      onChange={(e) => setRequestDescription(e.target.value)}
+                      placeholder="Detail your request here..."
+                      autoComplete="off"
+                      className="flex-1 p-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-primary-500 outline-none font-bold text-sm text-midnight"
+                    />
+                    <Button
+                      onClick={handleSubmitRequest}
+                      disabled={isSubmittingRequest}
+                      className="bg-midnight hover:bg-black text-white px-8 rounded-2xl font-black text-[10px] tracking-widest py-4"
+                    >
+                      {isSubmittingRequest ? <Loader2 className="animate-spin" size={16} /> : "SUBMIT"}
+                    </Button>
                   </div>
                 </div>
               </div>

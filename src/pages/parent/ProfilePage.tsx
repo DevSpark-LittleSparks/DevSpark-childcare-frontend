@@ -4,8 +4,10 @@ import {
   User, Mail, Phone, MapPin, Baby, Eye, EyeOff, Lock, Heart, ArrowLeft,
   Save, Edit2, Key, CheckCircle2, AlertCircle, Loader2, Camera, Send, ShieldCheck
 } from 'lucide-react';
+import { useAppSelector } from '../../store';
 import { Button } from '../../components/common/Button';
 import { apiClient } from '../../services/axiosInstance';
+import { UserProfile } from '../../types/user.types';
 
 interface ChildSummary {
   childId: string;
@@ -27,8 +29,9 @@ interface ParentProfileData {
   children: ChildSummary[];
 }
 
-const ParentProfilePage: React.FC = () => {
+const ParentProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
   const navigate = useNavigate();
+  const reduxUser = useAppSelector((state) => state.auth.user);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [user, setUser] = useState<ParentProfileData>({
     parentId: '',
@@ -132,18 +135,26 @@ const ParentProfilePage: React.FC = () => {
     }
   };
 
+
   const handleSubmitRequest = async () => {
     if (!requestType || !requestDescription.trim()) {
       setStatusMessage({ type: 'error', text: 'Please fill in all request fields.' });
       return;
     }
+    if (!reduxUser?.uid) return;
+
     setIsSubmittingRequest(true);
-    setTimeout(() => {
-      setIsSubmittingRequest(false);
+    try {
+      await apiClient.post(`/api/v1/notifications/submit-request?userId=${reduxUser.uid}&type=${requestType}`, requestDescription);
       setRequestType("");
       setRequestDescription("");
       setStatusMessage({ type: 'success', text: 'Request submitted to administration.' });
-    }, 1500);
+    } catch (err) {
+      console.error("Failed to submit request:", err);
+      setStatusMessage({ type: 'error', text: 'Failed to submit request.' });
+    } finally {
+      setIsSubmittingRequest(false);
+    }
   };
 
   return (
@@ -365,6 +376,7 @@ const ParentProfilePage: React.FC = () => {
                       value={requestDescription}
                       onChange={(e) => setRequestDescription(e.target.value)}
                       placeholder="Detail your request here..."
+                      autoComplete="off"
                       className="flex-1 p-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-primary-500 outline-none font-bold text-sm text-midnight"
                     />
                     <Button
