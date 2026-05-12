@@ -5,6 +5,8 @@ import authReducer from './slices/authSlice';
 import billingReducer from './slices/billingSlice';
 import healthReducer from './slices/healthSlice';
 import staffReducer from './slices/staffSlice';
+// Import the new attendance reducer
+import attendanceReducer from './slices/attendanceSlice';
 
 export const store = configureStore({
   reducer: {
@@ -13,6 +15,8 @@ export const store = configureStore({
     billing: billingReducer,
     health: healthReducer,
     staff: staffReducer,
+    // Add the attendance reducer to the global store
+    attendance: attendanceReducer,
   },
   devTools: true,
 });
@@ -20,6 +24,6 @@ export const store = configureStore({
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
-// මේ පේළි දෙක අනිවාර්යයෙන්ම තිබිය යුතුයි
+// Custom typed hooks - Always use these instead of plain useDispatch and useSelector
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
