@@ -42,6 +42,7 @@ const AdminProfilePage: React.FC = () => {
 
   const fetchProfile = async () => {
     try {
+      // Fetch admin profile
       const res = await apiClient.get('/api/v1/auth/admin/profile');
       if (res.data.success) {
         setUser(res.data.data);
@@ -104,6 +105,7 @@ const AdminProfilePage: React.FC = () => {
 
     setIsChangingPassword(true);
     try {
+      // Update security details
       const res = await apiClient.post('/api/v1/auth/admin/change-password', {
         currentPassword: passwords.current,
         newPassword: passwords.new

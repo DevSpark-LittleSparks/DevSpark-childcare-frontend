@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
   Users, Briefcase, MessageSquare, TrendingUp,
-  Search, Bell, Check, X, Calendar, MessageCircle, Sparkles, ShieldCheck, User
+  Search, Bell, Check, X, Calendar, MessageCircle, Sparkles, ShieldCheck, User, Megaphone
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
 import { Logo } from '../../components/common/Logo';
 import { apiClient } from '../../services/axiosInstance';
+import { useAppSelector } from '../../store';
 
 
 const AdminDashboard = () => {
@@ -19,10 +20,12 @@ const AdminDashboard = () => {
   const [announcement, setAnnouncement] = useState({ title: '', desc: '' });
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [showAdminNotifs, setShowAdminNotifs] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const reduxUser = useAppSelector((state) => state.auth.user);
 
   const loadData = async () => {
     try {
-      // Fetch real stats from backend
+      // Fetch summary stats
       const statsRes = await apiClient.get('/api/v1/auth/admin/stats');
       const stats = statsRes.data.data;
       setTotalStudents(stats.totalStudents || 0);
@@ -48,27 +51,32 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleBroadcast = async () => {
-    if (!announcement.title || !announcement.desc) {
-      alert("Please fill in both title and content.");
-      return;
-    }
-
-    setIsBroadcasting(true);
+  const fetchNotifications = async () => {
+    if (!reduxUser?.uid) return;
     try {
-      await apiClient.post(`/api/v1/auth/admin/broadcast?title=${encodeURIComponent(announcement.title)}&content=${encodeURIComponent(announcement.desc)}`);
-      alert("Announcement successfully sent to all registered parents!");
-      setAnnouncement({ title: '', desc: '' });
-    } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to send broadcast.");
-    } finally {
-      setIsBroadcasting(false);
+      const res = await apiClient.get(`/api/v1/notifications/my-alerts/${reduxUser.uid}?role=ADMIN`);
+      if (res.data.success) {
+        setNotifications(res.data.data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch admin notifications:", err);
+    }
+  };
+
+  const markAsRead = async (id: string) => {
+    try {
+      await apiClient.put(`/api/v1/notifications/${id}/read?userId=${reduxUser.uid}`);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    } catch (err) {
+      console.error("Error marking as read:", err);
     }
   };
 
 
+
   const handleApprove = async (request: any) => {
     try {
+      // Handle signup approval
       let endpoint = '';
       if (request.role === 'TEACHER') endpoint = `/api/v1/auth/admin/approve-teacher/${request.requestId}`;
       else if (request.role === 'PARENT') endpoint = `/api/v1/auth/admin/approve-parent/${request.requestId}`;
@@ -93,6 +101,7 @@ const AdminDashboard = () => {
       else if (request.role === 'PARENT') endpoint = `/api/v1/auth/admin/reject-parent/${request.requestId}`;
       else if (request.role === 'DIRECTOR') endpoint = `/api/v1/auth/admin/reject-director/${request.requestId}`;
 
+      // Handle signup rejection
       await apiClient.post(`${endpoint}?reason=${encodeURIComponent(reason)}`);
       alert("Request rejected and applicant notified.");
       setSelectedRequest(null);
@@ -104,9 +113,13 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 30000); // Polling every 30s
+    fetchNotifications();
+    const interval = setInterval(() => {
+      loadData();
+      fetchNotifications();
+    }, 30000); 
     return () => clearInterval(interval);
-  }, []);
+  }, [reduxUser?.uid]);
 
 
   return (
@@ -141,31 +154,64 @@ const AdminDashboard = () => {
 
             {/* ADMIN NOTIFICATION DROPDOWN */}
             {showAdminNotifs && (
-              <div className="absolute top-full right-0 mt-4 w-80 bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(10,6,55,0.15)] border border-slate-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+              <div className="absolute top-full right-0 mt-4 w-96 bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(10,6,55,0.15)] border border-slate-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                 <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
-                  <h3 className="text-[10px] font-black text-midnight uppercase tracking-widest">System Alerts</h3>
-                  <span className="text-[9px] font-black text-rose-500 bg-rose-50 px-3 py-1 rounded-full uppercase tracking-tighter">
-                    {pendingRequests.length} Critical
-                  </span>
+                  <h3 className="text-[10px] font-black text-midnight uppercase tracking-widest">Master Alerts</h3>
+                  <div className="flex gap-2">
+                    {pendingRequests.length > 0 && (
+                      <span className="text-[9px] font-black text-rose-500 bg-rose-50 px-3 py-1 rounded-full uppercase">
+                        {pendingRequests.length} Signup
+                      </span>
+                    )}
+                    {notifications.filter(n => !n.isRead).length > 0 && (
+                      <span className="text-[9px] font-black text-amber-500 bg-amber-50 px-3 py-1 rounded-full uppercase">
+                        {notifications.filter(n => !n.isRead).length} Inbox
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="max-h-[400px] overflow-y-auto no-scrollbar">
-                  {pendingRequests.length > 0 ? (
-                    pendingRequests.map((req) => (
-                      <div
-                        key={req.id}
-                        onClick={() => { setSelectedRequest(req); setShowAdminNotifs(false); }}
-                        className="p-5 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer group"
-                      >
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="h-2 w-2 rounded-full bg-rose-500"></div>
-                          <h4 className="text-[11px] font-black text-midnight uppercase tracking-tight">Pending {req.role} Request</h4>
-                        </div>
-                        <p className="text-[11px] text-slate-500 leading-tight">
-                          <span className="font-bold text-midnight">{req.fullName}</span> has submitted a new application for review.
-                        </p>
+                <div className="max-h-[450px] overflow-y-auto no-scrollbar">
+                  {/* Signup Requests */}
+                  {pendingRequests.map((req) => (
+                    <div
+                      key={req.requestId}
+                      onClick={() => { setSelectedRequest(req); setShowAdminNotifs(false); }}
+                      className="p-5 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer group bg-rose-50/20"
+                    >
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="h-2 w-2 rounded-full bg-rose-500"></div>
+                        <h4 className="text-[11px] font-black text-midnight uppercase tracking-tight">Pending {req.role} Signup</h4>
                       </div>
-                    ))
-                  ) : (
+                      <p className="text-[11px] text-slate-500 leading-tight">
+                        <span className="font-bold text-midnight">{req.fullName}</span> is waiting for approval.
+                      </p>
+                    </div>
+                  ))}
+
+                  {/* Admin Notifications / Requests */}
+                  {notifications.map((notif) => (
+                    <div
+                      key={notif.id}
+                      onClick={() => !notif.isRead && markAsRead(notif.id)}
+                      className={`p-5 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer group ${!notif.isRead ? 'bg-amber-50/10' : 'opacity-60'}`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <div className={`h-2 w-2 rounded-full ${notif.type === 'ADMIN_REQUEST' ? 'bg-primary-500' : 'bg-slate-400'}`}></div>
+                          <h4 className="text-[11px] font-black text-midnight uppercase tracking-tight">{notif.title}</h4>
+                        </div>
+                        <span className="text-[8px] font-bold text-slate-400">{new Date(notif.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 leading-relaxed whitespace-pre-wrap">{notif.body}</p>
+                      {!notif.isRead && (
+                        <button className="mt-3 text-[9px] font-black text-primary-500 uppercase tracking-widest hover:underline">
+                          Mark as Resolved
+                        </button>
+                      )}
+                    </div>
+                  ))}
+
+                  {pendingRequests.length === 0 && notifications.length === 0 && (
                     <div className="p-10 text-center text-slate-300 font-bold text-[10px] uppercase tracking-[0.2em]">
                       All systems normal
                     </div>
@@ -173,7 +219,7 @@ const AdminDashboard = () => {
                 </div>
                 <div className="p-4 bg-slate-50/80 text-center border-t border-slate-100">
                   <button className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-primary-500 transition-colors">
-                    View Maintenance Logs
+                    Security Logs System
                   </button>
                 </div>
               </div>
@@ -289,51 +335,32 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* --- ANNOUNCEMENT BROADCASTER --- */}
-          <div className="bg-gradient-to-br from-primary-500 to-indigo-600 rounded-[3rem] p-10 shadow-[0_25px_60px_rgba(6,197,212,0.3)] relative overflow-hidden group">
+          {/* Broadcast center link */}
+          <div className="bg-gradient-to-br from-primary-500 to-indigo-600 rounded-[3rem] p-10 shadow-[0_25px_60px_rgba(6,197,212,0.3)] relative overflow-hidden group cursor-pointer"
+               onClick={() => navigate('/admin/broadcast')}>
             {/* Abstract Decorative Circles */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
             <div className="absolute bottom-0 left-0 w-40 h-40 bg-indigo-400/20 rounded-full blur-2xl -ml-20 -mb-20"></div>
 
-            <div className="relative z-10">
-              <div className="flex items-center gap-5 mb-10">
-                <div className="p-4 bg-white/20 backdrop-blur-md border border-white/30 rounded-[1.5rem] text-white shadow-2xl">
-                  <Bell size={28} className="animate-bounce" />
+            <div className="relative z-10 flex flex-col h-full justify-between">
+              <div className="flex items-center gap-5">
+                <div className="p-4 bg-white/20 backdrop-blur-md border border-white/30 rounded-[1.5rem] text-white shadow-2xl group-hover:scale-110 transition-transform">
+                  <Megaphone size={28} className="animate-bounce" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black text-white uppercase tracking-[0.2em] leading-none">Broadcast Portal</h3>
-                  <p className="text-[10px] font-black text-white/70 uppercase mt-1.5 tracking-[0.3em]">Parent-Wide Transmission</p>
+                  <h3 className="text-xl font-black text-white uppercase tracking-[0.2em] leading-none">Broadcast Center</h3>
+                  <p className="text-[10px] font-black text-white/70 uppercase mt-1.5 tracking-[0.3em]">Institutional Communications</p>
                 </div>
               </div>
 
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-white uppercase tracking-[0.3em] ml-1 opacity-80">Announcement Title</label>
-                  <input
-                    type="text"
-                    placeholder=" eg: Special Announcement"
-                    value={announcement.title}
-                    onChange={(e) => setAnnouncement({ ...announcement, title: e.target.value })}
-                    className="w-full p-5 bg-white/10 border-2 border-white/20 rounded-2xl outline-none focus:border-white focus:bg-white/20 transition-all text-sm font-bold text-white placeholder:text-white/40 backdrop-blur-sm shadow-inner"
-                  />
+              <div className="mt-12">
+                <p className="text-white/80 font-medium text-sm leading-relaxed mb-6">
+                  Send high-priority alerts and announcements to Parents and Teachers instantly.
+                </p>
+                <div className="flex items-center gap-2 text-white font-black text-[10px] uppercase tracking-widest bg-white/10 w-fit px-4 py-2 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/20 transition-all">
+                  Launch Portal
+                  <TrendingUp size={12} className="rotate-45" />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-white uppercase tracking-[0.3em] ml-1 opacity-80">Message Content</label>
-                  <textarea
-                    placeholder="Enter the full message details here..."
-                    value={announcement.desc}
-                    onChange={(e) => setAnnouncement({ ...announcement, desc: e.target.value })}
-                    rows={4}
-                    className="w-full p-6 bg-white/10 border-2 border-white/20 rounded-[2.5rem] outline-none focus:border-white focus:bg-white/20 transition-all text-sm font-medium text-white placeholder:text-white/40 resize-none backdrop-blur-sm shadow-inner leading-relaxed"
-                  />
-                </div>
-                <Button
-                  onClick={handleBroadcast}
-                  disabled={isBroadcasting}
-                  className="w-full py-5 bg-midnight text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] shadow-[0_15px_30px_rgba(10,6,55,0.3)] hover:bg-midnight/90 hover:scale-[1.02] active:scale-[0.98] transition-all border-none"
-                >
-                  {isBroadcasting ? "Transmitting..." : "Send to All Parents"}
-                </Button>
               </div>
             </div>
           </div>

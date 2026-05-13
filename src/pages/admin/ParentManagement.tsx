@@ -13,6 +13,7 @@ const ParentManagement = () => {
 
   const loadParents = async () => {
     try {
+      // Fetch parent records
       const [parentsRes, childrenRes] = await Promise.all([
         apiClient.get('/api/v1/auth/admin/all-parents'),
         apiClient.get('/api/v1/auth/admin/all-children')
@@ -29,6 +30,7 @@ const ParentManagement = () => {
         const status = p.account?.status?.toLowerCase() === 'active' ? 'active' : 'inactive';
         
         parentsMap.set(email, {
+          // Map data to state
           parentId: p.parentId,
           email: email,
           fullName: p.fullName || "Unknown",
@@ -41,6 +43,7 @@ const ParentManagement = () => {
       });
 
       liveChildren.forEach((c: any) => {
+        // Link children to parents
         if (parentsMap.has(c.guardianEmail)) {
           parentsMap.get(c.guardianEmail).children.push({
             id: c.childId,

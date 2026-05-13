@@ -6,7 +6,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
 
-      {/* LEFT SIDE - FORM */}
+      {/* LEFT SIDE: The actual login form where users type their info */}
       <div className="w-full md:w-1/2 flex items-center justify-center px-6 bg-white">
         <LoginForm />
       </div>
@@ -14,7 +14,7 @@ export default function LoginPage() {
       {/* RIGHT SIDE - IMAGE */}
       <div className="hidden md:block w-1/2 relative overflow-hidden">
 
-        {/* Background Image */}
+        {/* This is the background image */}
         <div
           className="absolute inset-0 bg-cover bg-center animate-zoomSlow"
           style={{
@@ -22,13 +22,11 @@ export default function LoginPage() {
           }}
         />
 
-        {/* Dark overlay */}
+        {/* This makes the image look darker so it doesn't hurt the eyes */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
 
-        {/* Content */}
+        {/* Content area for extra text if needed */}
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-white px-10 text-center">
-          
-      
 
         </div>
 

@@ -64,6 +64,7 @@ const ChildViewPage = () => {
   useEffect(() => {
     const fetchChildData = async () => {
       try {
+        // Fetch profile data
         const res = await apiClient.get(`/api/v1/auth/admin/child/${studentId}`);
         if (res.data.success) {
           const data = res.data.data;
@@ -241,6 +242,7 @@ const ChildViewPage = () => {
                   <div className="h-8 w-8 bg-rose-50 rounded-lg flex items-center justify-center text-rose-500">
                     <Droplets size={16} />
                   </div>
+                  {/* Display health info */}
                   <h3 className="text-xs font-black text-midnight uppercase tracking-[0.2em]">Medical & Safety</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

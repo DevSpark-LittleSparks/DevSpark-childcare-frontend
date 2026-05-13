@@ -33,21 +33,21 @@ const ChildViewPage = () => {
   useEffect(() => {
     const fetchChildData = async () => {
       try {
-        const res = await apiClient.get(`/api/v1/auth/parent/child/${studentId}`);
+        const res = await apiClient.get(`/api/v1/parent/child/${studentId}`);
         if (res.data.success) {
           const data = res.data.data;
           setChild({
-            name: data.name,
-            fullName: data.fullName,
-            profileImage: data.profileImage || '',
+            name: data.firstName,
+            fullName: data.firstName + " " + data.lastName,
+            profileImage: data.profilePic || '',
             dob: data.dob,
             gender: data.gender,
             bloodGroup: data.bloodGroup,
-            height: data.height,
-            weight: data.weight,
+            height: data.height ? data.height.toString() : '---',
+            weight: data.weight ? data.weight.toString() : '---',
             address: data.address,
             specialNote: data.specialNote,
-            enrolledDate: data.enrolledDate
+            enrolledDate: data.enrolledDate || '---'
           });
         }
       } catch (err) {

@@ -25,6 +25,7 @@ const VerifyOtpPage: React.FC = () => {
     }
   }, [location.state, email]);
 
+  // This function sends the verification code (OTP) to the backend
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !otp) {
@@ -36,16 +37,19 @@ const VerifyOtpPage: React.FC = () => {
     setError(null);
 
     try {
+      // Send email and OTP to the backend to activate the account
       await apiClient.post("/api/v1/auth/signup/verify-otp", {
         email: email,
         otp: otp
       });
 
       setSuccess(true);
+      // Wait 2 seconds and then go to the login page
       setTimeout(() => {
         navigate("/login", { state: { message: "Account activated! Please login with your password." } });
       }, 2000);
     } catch (err: any) {
+      // If the code is wrong, show an error message
       setError(err.response?.data?.message || "Invalid or expired verification code.");
     } finally {
       setIsSubmitting(false);

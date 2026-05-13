@@ -2,22 +2,24 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 /**
  * User type stored in Redux auth state
+ * This defines what information we keep about the logged-in user
  */
 export interface AuthUser {
-  uid: string;
-  email: string | null;
-  displayName: string | null;
-  photoURL: string | null;
-  role?: string | null;
+  uid: string;           // Unique ID from Firebase
+  email: string | null;  // User's email address
+  displayName: string | null; // User's name
+  photoURL: string | null;    // User's profile picture link
+  role?: string | null;       // User's role (PARENT, TEACHER, or ADMIN)
 }
 
 /**
  * Auth state structure
+ * This defines the shape of our authentication data in the store
  */
 interface AuthState {
-  user: AuthUser | null;
-  isLoading: boolean;
-  error: string | null;
+  user: AuthUser | null;  // The current user (null if not logged in)
+  isLoading: boolean;     // True if we are currently logging in/out
+  error: string | null;   // Any error message from the last auth attempt
 }
 
 const initialState: AuthState = {
@@ -32,14 +34,16 @@ const authSlice = createSlice({
   reducers: {
     /**
      * Set logged-in user
+     * Saves the user's information to the global state
      */
     setUser: (state, action: PayloadAction<AuthUser | null>) => {
       state.user = action.payload;
-      state.error = null;
+      state.error = null; // Clear any previous errors
     },
 
     /**
      * Loading state for login/register
+     * Shows or hides the loading spinner
      */
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
@@ -47,6 +51,7 @@ const authSlice = createSlice({
 
     /**
      * Error handling
+     * Saves an error message to show to the user
      */
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
@@ -54,6 +59,7 @@ const authSlice = createSlice({
 
     /**
      * Logout user
+     * Clears all user data and resets the state
      */
     logout: (state) => {
       state.user = null;
