@@ -36,9 +36,10 @@ const LittleSparksLogo = () => (
   </div>
 );
 
+// This defines the rules for our login form (Validation)
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.string().email("Invalid email address"), // Email must be valid
+  password: z.string().min(6, "Password must be at least 6 characters"), // Password must be at least 6 characters
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -56,66 +57,73 @@ export function LoginForm() {
     resolver: zodResolver(loginSchema),
   });
 
+  // This function runs when the user clicks the "Sign In" button
   const onSubmit = async (data: LoginFormValues) => {
-    dispatch(setLoading(true));
-    dispatch(setError(null));
+    dispatch(setLoading(true)); // Start the loading spinner (shows "Signing in...")
+    dispatch(setError(null));   // Clear any old error messages
 
     try {
-      // 1. Check if input might be an OTP (6-digit number)
+      // STEP 1: Check if the user is trying to use an OTP code instead of a password
+      // If the password is exactly 6 numbers, it might be an activation code
       const isOtp = /^\d{6}$/.test(data.password);
 
       if (isOtp) {
         try {
+          // Send the OTP to the backend to activate the account
           await apiClient.post("/api/v1/auth/signup/verify-otp", {
             email: data.email,
             otpCode: data.password
           });
-          
+
           alert("✨ Account Activated Successfully! You can now log in using your permanent password.");
           dispatch(setLoading(false));
           return;
         } catch (otpErr: any) {
-          // If it wasn't an OTP or verification failed, continue to normal login
+          // If it wasn't an OTP or verification failed, we just continue to normal login
           console.log("Not an OTP or verification failed, trying normal login...");
         }
       }
 
-      // 2. Standard Firebase Auth
+      // STEP 2: Standard Login using Firebase
+      // This sends the email and password to Firebase for authentication
       const userCredential = await signInWithEmailAndPassword(
         firebaseAuth,
         data.email,
         data.password
       );
 
+      // STEP 3: Get user details and their role
       const { uid, email, displayName, photoURL } = userCredential.user;
-      
-      // Get role from Firebase Custom Claims (we set this in backend)
+
+
+      // The backend sets this role (ADMIN, TEACHER, or PARENT) when the account is created
       const idTokenResult = await userCredential.user.getIdTokenResult();
       const role = idTokenResult.claims.role as string;
 
+      // Save the user info (including role) in our Redux store so the whole app knows who is logged in
       dispatch(setUser({ uid, email, displayName, photoURL, role }));
-      
-      // Redirect based on role
+
+      // STEP 4: Send the user to the correct dashboard based on their role
       if (role === 'PARENT') navigate("/parent/dashboard");
       else if (role === 'TEACHER') navigate("/teacher/dashboard");
       else if (role === 'ADMIN') navigate("/admin/dashboard");
       else navigate("/");
 
     } catch (err: any) {
+      // If the account is disabled (not yet verified), send them to the OTP page
       if (err.code === 'auth/user-disabled') {
-        // Redirect to new verification page with email pre-filled
         navigate(`/verify-otp?email=${encodeURIComponent(data.email)}`);
         return;
       }
-      
+
+      // Handle other login errors (wrong password, etc.)
       let msg = "Invalid email or password.";
       if (err.response?.data?.message) {
         msg = err.response.data.message;
       }
-      dispatch(setError(msg));
+      dispatch(setError(msg)); // Show the error on the screen
     } finally {
-
-      dispatch(setLoading(false));
+      dispatch(setLoading(false)); // Stop the loading spinner
     }
   };
 

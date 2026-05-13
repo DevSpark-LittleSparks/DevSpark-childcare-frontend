@@ -13,6 +13,18 @@ const MyChildren = () => {
   const [childrenList, setChildrenList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const calculateAge = (dob: string) => {
+    if (!dob) return '---';
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age >= 0 ? age.toString() : '---';
+  };
+
   useEffect(() => {
     const fetchChildren = async () => {
       try {
@@ -22,7 +34,7 @@ const MyChildren = () => {
           setChildrenList(parentData.children.map((c: any) => ({
             id: c.childId,
             name: c.name,
-            age: '---', // Age calculation can be added if DOB is in summary
+            age: calculateAge(c.dob),
             gender: 'Enrolled',
             image: c.profilePic || ''
           })));

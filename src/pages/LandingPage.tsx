@@ -14,9 +14,9 @@ interface LogoProps {
   variant?: 'light' | 'dark';
 }
 
-const LittleSparksLogo: React.FC<LogoProps> = ({ 
-  className = '', 
-  iconClassName = 'w-10 h-10', 
+const LittleSparksLogo: React.FC<LogoProps> = ({
+  className = '',
+  iconClassName = 'w-10 h-10',
   textClassName = 'text-2xl',
   variant = 'dark'
 }) => {
@@ -38,7 +38,7 @@ const LittleSparksLogo: React.FC<LogoProps> = ({
           transform="translate(0.000000,280.000000) scale(0.100000,-0.100000)"
           fill={iconColor}
           stroke={iconColor}
-          strokeWidth="80" 
+          strokeWidth="80"
           strokeLinecap="round"
           strokeLinejoin="round"
         >
@@ -46,11 +46,11 @@ const LittleSparksLogo: React.FC<LogoProps> = ({
         </g>
       </svg>
       {/* Set Nunito font explicitly to restore your design */}
-      <span 
+      <span
         className={`font-bold tracking-tighter -ml-2 ${mainTextColor} ${textClassName}`}
         style={{ fontFamily: "'Nunito', sans-serif" }}
       >
-        Little<span style={{color: sparksColor}}>Sparks</span>
+        Little<span style={{ color: sparksColor }}>Sparks</span>
       </span>
     </div>
   );
@@ -63,15 +63,16 @@ interface CardProps {
   icon: ReactNode;
   title: string;
   text: string;
+  to?: string;
 }
 
-const Card: React.FC<CardProps> = ({ icon, title, text }) => {
+const Card: React.FC<CardProps> = ({ icon, title, text, to = "#" }) => {
   return (
-    <div className="card bg-gray-700 p-8 rounded-xl hover:bg-gray-600 transition-colors border border-gray-600 flex flex-col">
+    <Link to={to} className="card bg-gray-700 p-8 rounded-xl hover:bg-gray-600 transition-all border border-gray-600 flex flex-col hover:scale-105 transform cursor-pointer">
       <div className="card-ic mb-4 text-4xl">{icon}</div>
       <h3 className="text-xl font-semibold text-white mb-3">{title}</h3>
       <p className="text-gray-300">{text}</p>
-    </div>
+    </Link>
   );
 };
 
@@ -92,7 +93,7 @@ const LandingPage: React.FC = () => {
       <header className="lp-nav bg-white/70 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
           <div className="lp-brand">
-             <LittleSparksLogo iconClassName="w-16 h-16" textClassName="text-4xl" />
+            <LittleSparksLogo iconClassName="w-16 h-16" textClassName="text-4xl" />
           </div>
 
           <nav className="lp-menu hidden md:flex space-x-8">
@@ -186,9 +187,9 @@ const LandingPage: React.FC = () => {
           <div className="max-w-2xl">
             <h2 className="text-4xl font-bold text-white mb-6">Why Choose LITTLESPARKS?</h2>
             <p className="text-lg text-gray-100 mb-8">The nursery and childcare management app that does almost everything.</p>
-            <Button 
-              variant="primary" 
-              className="px-8 py-4 rounded-full w-fit" 
+            <Button
+              variant="primary"
+              className="px-8 py-4 rounded-full w-fit"
               onClick={() => navigate('/learn-more')}
             >
               Learn More
@@ -225,9 +226,9 @@ const LandingPage: React.FC = () => {
           <div>
             <h2 className="h2 text-4xl font-bold text-gray-900 mb-6">Safety & Compliance - Effortlessly Archived</h2>
             <p className="p text-lg text-gray-700 mb-4">Managing all of your reports in one place. Save countless hours on paperwork.</p>
-            <Button 
-              variant="primary" 
-              className="px-8 py-3 rounded-full" 
+            <Button
+              variant="primary"
+              className="px-8 py-3 rounded-full"
               onClick={() => navigate('/contact')}
             >
               Contact Us
@@ -243,7 +244,7 @@ const LandingPage: React.FC = () => {
           <h2 className="discover-title text-6xl font-bold text-white mb-8 flex justify-center items-center gap-0">
             Discover <LittleSparksLogo variant="dark" iconClassName="w-24 h-24" textClassName="text-7xl" />!
           </h2>
-          <button className="btn whitebtn bg-white text-purple-600 px-10 py-5 rounded-full text-xl font-bold active:scale-95 transform" onClick={() => navigate('/get-started')}>Try It Out</button>
+          <button className="btn whitebtn bg-white text-purple-600 px-10 py-5 rounded-full text-xl font-bold active:scale-95 transform" onClick={() => navigate('/signup-request')}>Try It Out</button>
         </div>
       </section>
 
@@ -252,23 +253,24 @@ const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-12 mb-8 items-start">
             <div className="col-span-1">
-               <LittleSparksLogo variant="light" iconClassName="w-12 h-12" textClassName="text-2xl" />
-               <p className="text-gray-500 mt-4 text-sm">Simplifying childcare management for the next generation.</p>
+              <LittleSparksLogo variant="light" iconClassName="w-12 h-12" textClassName="text-2xl" />
+              <p className="text-gray-500 mt-4 text-sm">Simplifying childcare management for the next generation.</p>
             </div>
             <div>
               <h4 className="font-semibold text-white mb-4">Resources</h4>
-              <a href="#hero" className="text-gray-400 hover:text-white transition-colors block mb-2">Getting Started</a>
-              <a href="#features" className="text-gray-400 hover:text-white transition-colors block mb-2">Pricing</a>
+              <Link to="/signup-request" className="text-gray-400 hover:text-white transition-colors block mb-2">Getting Started</Link>
+              <Link to="/billing" className="text-gray-400 hover:text-white transition-colors block mb-2">Pricing</Link>
             </div>
             <div>
               <h4 className="font-semibold text-white mb-4">Features</h4>
-              <a href="#features" className="text-gray-400 hover:text-white transition-colors block mb-2">Attendance</a>
-              <a href="#features" className="text-gray-400 hover:text-white block transition-colors">Reports</a>
+              <Link to="/attendance" className="text-gray-400 hover:text-white transition-colors block mb-2">Attendance Tracking</Link>
+              <Link to="/activities" className="text-gray-400 hover:text-white transition-colors block mb-2">Daily Reports</Link>
+              <Link to="/meals" className="text-gray-400 hover:text-white transition-colors block">Meal Planning</Link>
             </div>
             <div>
               <h4 className="font-semibold text-white mb-4">Company</h4>
-              <a href="#why" className="text-gray-400 hover:text-white block mb-2 transition-colors">About</a>
-              <a href="#discover" className="text-gray-400 hover:text-white block transition-colors">Contact</a>
+              <Link to="/about" className="text-gray-400 hover:text-white block mb-2 transition-colors">About Us</Link>
+              <Link to="/contact" className="text-gray-400 hover:text-white block transition-colors">Contact Support</Link>
             </div>
           </div>
           <div className="text-center text-gray-500 border-t border-gray-800 pt-8">©2026_LittleSparks.com — All rights reserved</div>

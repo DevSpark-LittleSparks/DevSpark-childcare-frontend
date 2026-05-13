@@ -25,7 +25,7 @@ const AdminDashboard = () => {
 
   const loadData = async () => {
     try {
-      // Fetch real stats from backend
+      // Fetch summary stats
       const statsRes = await apiClient.get('/api/v1/auth/admin/stats');
       const stats = statsRes.data.data;
       setTotalStudents(stats.totalStudents || 0);
@@ -76,6 +76,7 @@ const AdminDashboard = () => {
 
   const handleApprove = async (request: any) => {
     try {
+      // Handle signup approval
       let endpoint = '';
       if (request.role === 'TEACHER') endpoint = `/api/v1/auth/admin/approve-teacher/${request.requestId}`;
       else if (request.role === 'PARENT') endpoint = `/api/v1/auth/admin/approve-parent/${request.requestId}`;
@@ -100,6 +101,7 @@ const AdminDashboard = () => {
       else if (request.role === 'PARENT') endpoint = `/api/v1/auth/admin/reject-parent/${request.requestId}`;
       else if (request.role === 'DIRECTOR') endpoint = `/api/v1/auth/admin/reject-director/${request.requestId}`;
 
+      // Handle signup rejection
       await apiClient.post(`${endpoint}?reason=${encodeURIComponent(reason)}`);
       alert("Request rejected and applicant notified.");
       setSelectedRequest(null);
@@ -333,7 +335,7 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* --- BROADCAST CENTER LINK --- */}
+          {/* Broadcast center link */}
           <div className="bg-gradient-to-br from-primary-500 to-indigo-600 rounded-[3rem] p-10 shadow-[0_25px_60px_rgba(6,197,212,0.3)] relative overflow-hidden group cursor-pointer"
                onClick={() => navigate('/admin/broadcast')}>
             {/* Abstract Decorative Circles */}

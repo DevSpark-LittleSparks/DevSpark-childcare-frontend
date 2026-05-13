@@ -26,6 +26,7 @@ const Students = () => {
   React.useEffect(() => {
     const fetchStudents = async () => {
       try {
+        // Fetch student records
         const response = await apiClient.get('/api/v1/auth/admin/all-children');
         const liveData = response.data.data;
         
@@ -118,7 +119,7 @@ const Students = () => {
           </div>
         </div>
 
-        {/* --- GENDER SPLIT TABLES --- */}
+        {/* Split by gender */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)]">
           <CompactTable
             title="Female Sparks"

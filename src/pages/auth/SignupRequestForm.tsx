@@ -9,6 +9,7 @@ import directorDashboardImg from "../../assets/images/image_5.jpg";
 
 type UserRole = "director" | "teacher" | "parent";
 
+// This defines all the possible information we collect during registration
 interface FormData {
   firstName: string;
   lastName: string;
@@ -17,18 +18,23 @@ interface FormData {
   confirmPassword?: string;
   phone: string;
   address: string;
-  role: UserRole;
-  // Parent specific
+  role: UserRole; // Can be 'director', 'teacher', or 'parent'
+
+
+
+  // Fields specifically for Parents
   childName?: string;
   dob?: string;
   gender?: string;
   relationship?: string;
   nic?: string;
-  // Director specific
+
+  // Fields specifically for Directors (Center Owners)
   centerName?: string;
   centerAddress?: string;
   capacity?: string;
-  // Teacher specific
+
+  // Fields specifically for Teachers
   experience?: string;
   message: string;
 }
@@ -55,6 +61,7 @@ const SignupRequestForm: React.FC = () => {
     dob: "",
     gender: "male",
     message: "",
+
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -86,38 +93,40 @@ const SignupRequestForm: React.FC = () => {
     setErrors({});
   };
 
+  // This function checks if the user entered correct information before submitting
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    // Email
+    // 1. Check if Email is in the correct format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     if (!emailRegex.test(form.email)) newErrors.email = "Please enter a valid email address.";
 
-    // Password
+    // 2. Check if Password is at least 8 characters and matches the confirmation
     if (!form.password || form.password.length < 8)
       newErrors.password = "Password must be at least 8 characters.";
+
     if (form.password !== form.confirmPassword)
       newErrors.confirmPassword = "Passwords do not match.";
 
-    // Phone - Sri Lanka format (07X or +947X, 10 digits)
+    // 3. Check if Phone number is a valid Sri Lankan number
     const phoneRegex = /^(?:\+94|0)7[0-9]{8}$/;
     if (!phoneRegex.test(form.phone.replace(/\s/g, "")))
       newErrors.phone = "Enter a valid Sri Lanka phone number (e.g. 0771234567).";
 
-    // Role specific validations
+    // 4. Special checks for Parents
     if (role === "parent") {
-      // NIC - Old (9 digits + V/X) or New (12 digits)
+      // Validate NIC (Old or New format)
       const nicRegex = /^([0-9]{9}[vVxX]|[0-9]{12})$/;
       if (!form.nic || !nicRegex.test(form.nic.trim()))
         newErrors.nic = "Enter a valid Sri Lanka NIC (e.g. 199012345V or 200012345678).";
 
-      // Child DOB - must be between 0 and 10 years
+      // Validate Child's Date of Birth (must be a reasonable age)
       if (form.dob) {
         const dob = new Date(form.dob);
         const today = new Date();
         const minAge = new Date(today.getFullYear() - 10, today.getMonth(), today.getDate());
         const maxAge = new Date(today.getFullYear() - 3, today.getMonth(), today.getDate());
-        
+
         if (dob > today) {
           newErrors.dob = "Date of birth cannot be in the future.";
         } else if (dob > maxAge) {
@@ -130,6 +139,7 @@ const SignupRequestForm: React.FC = () => {
       }
     }
 
+    // 5. Special checks for Directors
     if (role === "director") {
       const cap = parseInt(form.capacity || "0");
       if (!form.capacity || cap < 1 || cap > 500)
@@ -137,30 +147,33 @@ const SignupRequestForm: React.FC = () => {
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return Object.keys(newErrors).length === 0; // Return true if no errors were found
   };
 
+  // This function sends the registration request to the backend
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) return; // Don't submit if there are validation errors
 
     setIsSubmitting(true);
     try {
-      // Send all data to the backend based on role
+      // Pick the correct API endpoint based on the selected role
       let endpoint = "/api/v1/auth/signup/parent/request";
       if (role === "teacher") endpoint = "/api/v1/auth/signup/teacher/request";
       if (role === "director") endpoint = "/api/v1/auth/signup/director/request";
 
+      // Send the data to the backend
       await apiClient.post(endpoint, {
         ...form,
         fullName: `${form.firstName} ${form.lastName}`
       });
 
+      // If successful, go to the confirmation page
       navigate("/request-confirmed");
     } catch (err: any) {
       const msg = err.response?.data?.message || "Something went wrong. Please try again.";
-      
-      // If backend says email is not registered as a guardian, show it on the email field
+
+      // Special case for parents: if they aren't pre-registered as guardians, show a helpful message
       if (msg.toLowerCase().includes("guardian") || msg.toLowerCase().includes("enrollment") || msg.toLowerCase().includes("pre-registered")) {
         setErrors(prev => ({ ...prev, email: msg }));
       } else {
@@ -168,8 +181,7 @@ const SignupRequestForm: React.FC = () => {
       }
 
     } finally {
-
-      setIsSubmitting(false);
+      setIsSubmitting(false); // Stop the loading state
     }
   };
 
@@ -293,6 +305,8 @@ const SignupRequestForm: React.FC = () => {
                       <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Child's Name</label>
                       <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500" type="text" name="childName" value={form.childName || ""} onChange={handleChange} required />
                     </div>
+
+                    {/* calendar */}
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Child's DOB</label>
@@ -300,7 +314,7 @@ const SignupRequestForm: React.FC = () => {
                           className={`w-full px-4 py-3 bg-slate-50 border ${errors.dob ? 'border-red-500' : 'border-slate-200 focus:border-cyan-500'} rounded-xl outline-none`}
                           type="date" name="dob"
                           max={new Date(new Date().setFullYear(new Date().getFullYear() - 3)).toISOString().split('T')[0]}
-                          min={new Date(new Date().setFullYear(new Date().getFullYear() - 6)).toISOString().split('T')[0]}
+                          min={new Date(new Date().setFullYear(new Date().getFullYear() - 10)).toISOString().split('T')[0]}
                           value={form.dob || ""} onChange={handleChange} required
                         />
                         {errors.dob && <p className="text-red-500 text-xs mt-1">{errors.dob}</p>}
@@ -364,6 +378,7 @@ const SignupRequestForm: React.FC = () => {
                 <textarea className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500 min-h-[100px] resize-none" name="message" value={form.message} onChange={handleChange} />
               </div>
 
+
               <Button variant="primary" className="w-full py-4 rounded-xl shadow-lg" type="submit" disabled={isSubmitting}>
                 {isSubmitting ? "Submitting..." : "Submit Application"}
               </Button>
@@ -398,5 +413,7 @@ const SignupRequestForm: React.FC = () => {
     </div>
   );
 };
+
+
 
 export default SignupRequestForm;

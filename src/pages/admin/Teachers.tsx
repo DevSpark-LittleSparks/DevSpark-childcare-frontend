@@ -28,6 +28,7 @@ const Teachers = () => {
 
   const loadTeachers = async () => {
     try {
+      // Fetch staff records
       const response = await apiClient.get('/api/v1/auth/admin/all-teachers');
       const liveData = response.data.data;
       
@@ -43,6 +44,7 @@ const Teachers = () => {
         joinedAt: t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'N/A'
       }));
       
+      // Sort by first name
       const sortedTeachers = mappedTeachers.sort((a: any, b: any) => 
         a.firstName.localeCompare(b.firstName)
       );

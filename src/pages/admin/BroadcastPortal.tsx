@@ -20,13 +20,14 @@ const BroadcastPortal: React.FC = () => {
     setStatus('idle');
 
     try {
-      await apiClient.post('/api/v1/auth/admin/broadcast', { 
-        title, 
-        body, 
-        priority, 
-        targetType 
+      // Send global alerts
+      await apiClient.post('/api/v1/auth/admin/broadcast', {
+        title,
+        body,
+        priority,
+        targetType
       });
-      
+
       setStatus('success');
       setTitle('');
       setBody('');
@@ -41,7 +42,7 @@ const BroadcastPortal: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
-      
+
       {/* --- HEADER SECTION --- */}
       <header className="max-w-7xl mx-auto px-6 pt-8 pb-4 flex items-center justify-between">
         <div className="flex items-center gap-6">
@@ -53,12 +54,9 @@ const BroadcastPortal: React.FC = () => {
           </button>
           <div>
             <div className="flex items-center gap-2 mb-0.5 text-primary-500">
-              <Sparkles size={14} className="fill-primary-500" />
-              <p className="text-[10px] font-black uppercase tracking-[0.3em]">Institutional</p>
+
             </div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight font-sans leading-none italic">
-              Broadcast Center
-            </h1>
+
           </div>
         </div>
 
@@ -74,7 +72,7 @@ const BroadcastPortal: React.FC = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 mt-6 grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fadeUp">
-        
+
         {/* Form Section */}
         <div className="lg:col-span-2">
           <div className="bg-white rounded-[2.5rem] p-10 shadow-[0_10px_40px_rgba(0,0,0,0.02)] border border-slate-100">
@@ -116,6 +114,7 @@ const BroadcastPortal: React.FC = () => {
                   <select
                     value={targetType}
                     onChange={(e) => setTargetType(e.target.value as any)}
+                    // Target specific audience
                     className="w-full px-6 py-5 rounded-[1.5rem] bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-primary-500/5 focus:bg-white focus:border-primary-500/20 transition-all font-black text-slate-700 outline-none cursor-pointer"
                   >
                     <option value="ALL">Everyone</option>
@@ -129,18 +128,16 @@ const BroadcastPortal: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setPriority('NORMAL')}
-                      className={`flex-1 py-3.5 rounded-xl text-xs font-black transition-all uppercase tracking-widest ${
-                        priority === 'NORMAL' ? 'bg-white shadow-sm text-primary-500 border border-slate-100' : 'text-slate-400'
-                      }`}
+                      className={`flex-1 py-3.5 rounded-xl text-xs font-black transition-all uppercase tracking-widest ${priority === 'NORMAL' ? 'bg-white shadow-sm text-primary-500 border border-slate-100' : 'text-slate-400'
+                        }`}
                     >
                       Normal
                     </button>
                     <button
                       type="button"
                       onClick={() => setPriority('HIGH')}
-                      className={`flex-1 py-3.5 rounded-xl text-xs font-black transition-all uppercase tracking-widest ${
-                        priority === 'HIGH' ? 'bg-white shadow-sm text-rose-500 border border-slate-100' : 'text-slate-400'
-                      }`}
+                      className={`flex-1 py-3.5 rounded-xl text-xs font-black transition-all uppercase tracking-widest ${priority === 'HIGH' ? 'bg-white shadow-sm text-rose-500 border border-slate-100' : 'text-slate-400'
+                        }`}
                     >
                       High
                     </button>
@@ -162,7 +159,7 @@ const BroadcastPortal: React.FC = () => {
             </form>
 
             {status === 'success' && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-8 p-5 rounded-[1.5rem] bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center gap-4 font-bold text-sm"
@@ -175,7 +172,7 @@ const BroadcastPortal: React.FC = () => {
             )}
 
             {status === 'error' && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-8 p-5 rounded-[1.5rem] bg-rose-50 text-rose-700 border border-rose-100 flex items-center gap-4 font-bold text-sm"
@@ -193,7 +190,7 @@ const BroadcastPortal: React.FC = () => {
         <div className="space-y-6">
           <div className="bg-midnight rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
-            
+
             <h3 className="text-lg font-black mb-8 flex items-center gap-3 tracking-tight italic">
               <History className="w-5 h-5 text-primary-500" />
               Communication Guidelines

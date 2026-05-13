@@ -32,7 +32,7 @@ const AdmissionsPage = () => {
     parentID: ''
   });
 
-  // Age Auto-calculation Logic
+  // Calculate child age
   useEffect(() => {
     if (formData.dob) {
       const birthDate = new Date(formData.dob);
@@ -78,13 +78,12 @@ const AdmissionsPage = () => {
       return false;
     }
 
-    // Mandatory Profile Picture check
     if (!previewImage) {
       alert("Registration failed! Child's Profile Picture is mandatory. Please upload an image.");
       return false;
     }
 
-    // 2. Child Age Validation (must be between 3 and 6 years old for childcare)
+    // 2. Child Age Validation (must be between 3 and 10 years old for childcare)
     if (formData.dob) {
       const dob = new Date(formData.dob);
       const today = new Date();
@@ -98,16 +97,16 @@ const AdmissionsPage = () => {
         alert("Child must be at least 3 years old to be registered.");
         return false;
       }
-      if (ageInYears > 6) {
-        alert("Child must be 6 years old or younger for childcare registration.");
+      if (ageInYears > 10) {
+        alert("Child must be 10 years old or younger for childcare registration.");
         return false;
       }
     }
 
-    // 3. Sri Lankan Mobile Number Validation (+94 + 9 digits)
+    // Validate phone number
     const slPhoneRegex = /^\+94\d{9}$/;
     if (!slPhoneRegex.test(formData.parentContact)) {
-      alert("Invalid Mobile Number! It must start with +94 followed by 9 numbers (e.g., +94701234567)");
+      alert("Invalid Mobile Number! It must start with +94 followed by 9 digits (e.g., +94701234567)");
       return false;
     }
 
@@ -151,6 +150,13 @@ const AdmissionsPage = () => {
             </button>
 
           </div>
+
+          <div className="hidden sm:flex items-center gap-4">
+            <div className="bg-white px-6 py-2.5 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center min-w-[120px]">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Capacity</span>
+              <span className="text-sm font-black text-midnight leading-none mt-1">85% Full</span>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -181,9 +187,9 @@ const AdmissionsPage = () => {
                   <p className="mt-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Child Photo</p>
                 </div>
 
-                <div className="md:col-span-3 space-y-5">
-                  <LittleInput label="Full Name" name="fullName" placeholder="Enter full legal name" onChange={handleInputChange} />
-                  <LittleInput label="Name with Initials" name="nameWithInitials" placeholder="e.g. A.B.C. Perera" onChange={handleInputChange} />
+                <div className="md:col-span-3 space-y-7">
+                  <LittleInput label="Full Legal Name" name="fullName" placeholder="As per birth certificate" onChange={handleInputChange} />
+                  <LittleInput label="Name with Initials" name="nameWithInitials" placeholder="A.B.C. Perera" onChange={handleInputChange} />
                 </div>
               </div>
 
@@ -191,10 +197,15 @@ const AdmissionsPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2 text-left">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Birthday</label>
-                  <input type="date" name="dob" onChange={handleInputChange}
-                    max={new Date(new Date().setFullYear(new Date().getFullYear() - 1)).toISOString().split('T')[0]}
-                    min={new Date(new Date().setFullYear(new Date().getFullYear() - 6)).toISOString().split('T')[0]}
-                    className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-2xl outline-none text-sm font-bold" />
+                  <input
+                    type="date"
+                    name="dob"
+                    onChange={handleInputChange}
+                    // 3 to 10 years limit
+                    max={new Date(new Date().setFullYear(new Date().getFullYear() - 3)).toISOString().split('T')[0]}
+                    min={new Date(new Date().setFullYear(new Date().getFullYear() - 10)).toISOString().split('T')[0]}
+                    className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-2xl outline-none text-sm font-bold shadow-sm transition-all"
+                  />
                 </div>
                 <div className="space-y-2 text-left">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
@@ -206,7 +217,11 @@ const AdmissionsPage = () => {
                 </div>
                 <div className="space-y-2 text-left">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Gender</label>
-                  <select name="gender" onChange={handleInputChange} className="w-full p-4 bg-slate-50 rounded-2xl outline-none text-sm font-bold appearance-none border-2 border-transparent focus:border-primary-500">
+                  <select
+                    name="gender"
+                    onChange={handleInputChange}
+                    className="w-full p-4 bg-slate-50 rounded-2xl outline-none text-sm font-bold appearance-none border-2 border-transparent focus:border-primary-500 shadow-sm transition-all"
+                  >
                     <option value="">Select Gender</option>
                     <option value="male">Male</option>
                     <option value="female">Female</option>
@@ -236,13 +251,33 @@ const AdmissionsPage = () => {
                 </div>
               </div>
 
-              {/* Notes & Address */}
-              <div className="mt-8 space-y-6 text-left">
-                <LittleInput label="Home Address" name="address" placeholder="No 123, Street, City" onChange={handleInputChange} />
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-1"><ClipboardList size={10} /> Special Notes / Allergies</label>
-                  <textarea name="specialNote" rows={2} placeholder="Any medical conditions or allergies..." onChange={handleInputChange} className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-primary-500 rounded-2xl outline-none text-sm font-bold transition-all" />
+              {/* Address Section */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Residential Address</label>
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-4 text-slate-300" size={18} />
+                  <textarea
+                    name="address"
+                    onChange={handleInputChange}
+                    placeholder="Current living address..."
+                    rows={2}
+                    className="w-full pl-12 p-4 bg-slate-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-2xl outline-none text-sm font-bold text-midnight min-h-[70px] transition-all resize-none"
+                  />
                 </div>
+              </div>
+
+              {/* Health Section */}
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+                  <ClipboardList size={12} className="text-primary-500" /> Health Notes / Allergies
+                </label>
+                <textarea
+                  name="specialNote"
+                  onChange={handleInputChange}
+                  placeholder="Enter any medical conditions or specific requirements..."
+                  rows={3}
+                  className="w-full p-6 bg-slate-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-[2rem] outline-none text-sm font-bold text-midnight transition-all resize-none"
+                />
               </div>
             </div>
           </div>
@@ -260,17 +295,18 @@ const AdmissionsPage = () => {
                     onChange={handleInputChange}
                     className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl outline-none text-sm font-bold text-white appearance-none focus:border-primary-500"
                   >
-                    <option value="" className="bg-midnight">Select Role</option>
+                    <option value="" className="bg-midnight">Select Relationship</option>
                     <option value="father" className="bg-midnight">Father</option>
                     <option value="mother" className="bg-midnight">Mother</option>
                     <option value="guardian" className="bg-midnight">Guardian</option>
                   </select>
                 </div>
 
-                <LittleInput dark label="Guardian Name" name="parentFullName" placeholder="Primary parent name" onChange={handleInputChange} />
-                <LittleInput dark label="Email Address" name="parentEmail" placeholder="auth@littlesparks.com" onChange={handleInputChange} />
-                <LittleInput dark label="Mobile (+94XXXXXXXXX)" name="parentContact" placeholder="+94701234567" onChange={handleInputChange} />
-                <LittleInput dark label="Identity Number" name="parentID" placeholder="NIC or Passport" onChange={handleInputChange} />
+                <LittleInput dark label={<span className="flex items-center gap-1"><Users size={10} /> Guardian Name</span>} name="parentFullName" placeholder="Primary parent name" onChange={handleInputChange} />
+                {/* Pre-register parent email */}
+                <LittleInput dark label={<span className="flex items-center gap-1"><Mail size={10} /> Email Address</span>} name="parentEmail" placeholder="auth@littlesparks.com" onChange={handleInputChange} />
+                <LittleInput dark label={<span className="flex items-center gap-1"><Phone size={10} /> Mobile (+94XXXXXXXXX)</span>} name="parentContact" placeholder="+94701234567" onChange={handleInputChange} />
+                <LittleInput dark label={<span className="flex items-center gap-1"><Hash size={10} /> Identity Number</span>} name="parentID" placeholder="NIC or Passport" onChange={handleInputChange} />
               </div>
             </div>
 

@@ -12,6 +12,8 @@ import RequestConfirmedPage from './pages/auth/RequestConfirmedPage';
 import LoginPage from './pages/auth/LoginPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import VerifyOtpPage from './pages/auth/VerifyOtpPage';
+import AboutUsPage from './pages/AboutUsPage';
+import ContactPage from './pages/ContactPage';
 
 
 // Admin Pages
@@ -64,6 +66,8 @@ export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
   { path: '/forgot-password', element: <ForgotPasswordPage /> },
   { path: '/verify-otp', element: <VerifyOtpPage /> },
+  { path: '/about', element: <AboutUsPage /> },
+  { path: '/contact', element: <ContactPage /> },
 
 
   // --- ADMIN SECTION ---
