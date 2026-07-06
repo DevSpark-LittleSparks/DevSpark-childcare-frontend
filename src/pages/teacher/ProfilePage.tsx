@@ -7,6 +7,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../store';
 import { Button } from '../../components/common/Button';
+import { PhoneInput } from '../../components/common/PhoneInput';
 import { apiClient } from '../../services/axiosInstance';
 import { UserProfile } from '../../types/user.types';
 
@@ -73,7 +74,10 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
   }, [statusMessage]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    if (name === 'phone') {
+      value = "+94" + value.replace(/^\+94\s?/, '');
+    }
     setUser(prev => ({ ...prev, [name]: value }));
   };
 
@@ -259,7 +263,17 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
                 <div className="space-y-6">
                   <TeacherInput label="Full Name" name="fullName" icon={User} value={user.fullName} onChange={handleInputChange} disabled={!isEditing} />
                   <TeacherInput label="Registered Email" name="email" icon={Mail} value={user.email} disabled={true} />
-                  <TeacherInput label="Primary Phone" name="phone" icon={Phone} value={user.phone} onChange={handleInputChange} disabled={!isEditing} />
+                  
+                  <div className="space-y-2 group">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Primary Phone</label>
+                    <PhoneInput 
+                      name="phone" 
+                      variant="profile"
+                      value={user.phone} 
+                      onChange={handleInputChange} 
+                      disabled={!isEditing}
+                    />
+                  </div>
                 </div>
               </div>
 

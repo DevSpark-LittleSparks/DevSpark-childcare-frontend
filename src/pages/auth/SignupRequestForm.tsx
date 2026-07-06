@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthHeader } from "../../shared/ui/AuthHeader/AuthHeader";
 import { Button } from "../../components/common/Button";
+import { PhoneInput } from "../../components/common/PhoneInput";
 import { apiClient } from "../../services/axiosInstance";
 import heroImg from "../../assets/images/hero.png";
 import requestSideImg from "../../assets/images/request-side.png";
@@ -50,7 +51,7 @@ const SignupRequestForm: React.FC = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    phone: "",
+    phone: "+94 ",
     address: "",
     role: "director",
     relationship: "MOTHER",
@@ -86,6 +87,14 @@ const SignupRequestForm: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+
+    if (name === "phone") {
+      const val = value.replace(/^\+94\s?/, '');
+      setForm((prev) => ({ ...prev, phone: `+94 ${val}` }));
+      setErrors(prev => ({ ...prev, phone: "" }));
+      return;
+    }
+
     setForm((prev) => ({ ...prev, [name]: value }));
     setErrors(prev => ({ ...prev, [name]: "" }));
   };
@@ -112,9 +121,9 @@ const SignupRequestForm: React.FC = () => {
       newErrors.confirmPassword = "Passwords do not match.";
 
     // 3. Check if Phone number is a valid Sri Lankan number
-    const phoneRegex = /^(?:\+94|0)7[0-9]{8}$/;
-    if (!phoneRegex.test(form.phone.replace(/\s/g, "")))
-      newErrors.phone = "Enter a valid Sri Lanka phone number (e.g. 0771234567).";
+    const phoneRegex = /^\+94\s7[0-9]{8}$/;
+    if (!phoneRegex.test(form.phone))
+      newErrors.phone = "Enter a valid Sri Lanka phone number (e.g. +94 771234567).";
 
     // 4. Special checks for Parents
     if (role === "parent") {
@@ -319,11 +328,14 @@ const SignupRequestForm: React.FC = () => {
                 {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Phone</label>
-                <input className={`w-full px-4 py-3 bg-slate-50 border ${errors.phone ? 'border-red-500' : 'border-slate-200 focus:border-cyan-500'} rounded-xl outline-none transition-all`} type="text" name="phone" placeholder="0771234567" value={form.phone} onChange={handleChange} required />
-                {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
-              </div>
+                <PhoneInput
+                  label="Phone"
+                  name="phone"
+                  value={form.phone}
+                  onChange={handleChange}
+                  error={errors.phone}
+                  required
+                />
 
               {/* Dynamic Role Fields */}
               <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-500">

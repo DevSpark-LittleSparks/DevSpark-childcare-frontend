@@ -6,6 +6,7 @@ import {
   ClipboardList, Users, Mail, Phone, Hash
 } from 'lucide-react';
 import { Button } from '../../components/common/Button';
+import { PhoneInput } from '../../components/common/PhoneInput';
 import { apiClient } from '../../services/axiosInstance';
 
 const AdmissionsPage = () => {
@@ -47,7 +48,10 @@ const AdmissionsPage = () => {
   }, [formData.dob]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    if (name === "parentContact") {
+      value = "+94" + value.replace(/^\+94\s?/, '');
+    }
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -305,7 +309,20 @@ const AdmissionsPage = () => {
                 <LittleInput dark label={<span className="flex items-center gap-1"><Users size={10} /> Guardian Name</span>} name="parentFullName" placeholder="Primary parent name" onChange={handleInputChange} />
                 {/* Pre-register parent email */}
                 <LittleInput dark label={<span className="flex items-center gap-1"><Mail size={10} /> Email Address</span>} name="parentEmail" placeholder="auth@littlesparks.com" onChange={handleInputChange} />
-                <LittleInput dark label={<span className="flex items-center gap-1"><Phone size={10} /> Mobile (+94XXXXXXXXX)</span>} name="parentContact" placeholder="+94701234567" onChange={handleInputChange} />
+                
+                <div className="space-y-2 text-left">
+                  <label className="text-[10px] font-black uppercase tracking-widest ml-1 text-slate-400 flex items-center gap-1">
+                    <Phone size={10} /> Mobile
+                  </label>
+                  <PhoneInput 
+                    name="parentContact" 
+                    variant="dark"
+                    onChange={handleInputChange} 
+                    value={formData.parentContact} 
+                    className="border-white/10"
+                  />
+                </div>
+
                 <LittleInput dark label={<span className="flex items-center gap-1"><Hash size={10} /> Identity Number</span>} name="parentID" placeholder="NIC or Passport" onChange={handleInputChange} />
               </div>
             </div>

@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useAppSelector } from '../../store';
 import { Button } from '../../components/common/Button';
+import { PhoneInput } from '../../components/common/PhoneInput';
 import { apiClient } from '../../services/axiosInstance';
 import { UserProfile } from '../../types/user.types';
 
@@ -81,7 +82,10 @@ const ParentProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
   }, [statusMessage]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    if (name === 'phone') {
+      value = "+94" + value.replace(/^\+94\s?/, '');
+    }
     setUser(prev => ({ ...prev, [name]: value }));
   };
 
@@ -271,7 +275,16 @@ const ParentProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
                   <ParentInput label="Relationship" name="relationship" icon={Heart} value={user.relationship} disabled={true} />
                   <ParentInput label="Registered Email" name="email" icon={Mail} value={user.email} disabled={true} />
                   <div className="grid grid-cols-2 gap-4">
-                    <ParentInput label="Primary Phone" name="phone" icon={Phone} value={user.phone} onChange={handleInputChange} disabled={!isEditing} />
+                    <div className="space-y-2 group">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Primary Phone</label>
+                      <PhoneInput 
+                        name="phone" 
+                        variant="profile"
+                        value={user.phone} 
+                        onChange={handleInputChange} 
+                        disabled={!isEditing}
+                      />
+                    </div>
                     <ParentInput label="National ID / NIC" name="nic" icon={Lock} value={user.nic} onChange={handleInputChange} disabled={!isEditing} />
                   </div>
                 </div>
