@@ -234,7 +234,7 @@ const SignupRequestForm: React.FC = () => {
                   type="button"
                   onClick={() => handleRoleChange(r)}
                   className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 capitalize ${role === r
-                    ? "bg-white text-cyan-600 shadow-md transform scale-[1.02]"
+                    ? "bg-cyan-600 text-white shadow-md transform scale-[1.02]"
                     : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
                     }`}
                 >
