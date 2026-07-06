@@ -22,6 +22,7 @@ const Students = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const [students, setStudents] = useState<StudentData[]>([]);
+  const [filter, setFilter] = useState<'all' | 'male' | 'female'>('all');
 
   React.useEffect(() => {
     const fetchStudents = async () => {
@@ -66,9 +67,11 @@ const Students = () => {
     }
   };
 
-  const filtered = students.filter(s =>
-    `${s.firstName} ${s.lastName}`.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filtered = students.filter(s => {
+    const matchesSearch = `${s.firstName} ${s.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filter === 'all' || s.gender.toLowerCase() === filter.toLowerCase();
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
@@ -117,22 +120,53 @@ const Students = () => {
             />
             <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
           </div>
+
+          <div className="flex items-center gap-3 mt-6">
+            <button
+              onClick={() => setFilter('all')}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === 'all' ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20' : 'bg-[#F8FAFC] text-slate-400 hover:bg-slate-100'}`}
+            >
+              All Sparks
+            </button>
+            <button
+              onClick={() => setFilter('male')}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === 'male' ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20' : 'bg-sky-50 text-sky-400 hover:bg-sky-100'}`}
+            >
+              Male Sparks
+            </button>
+            <button
+              onClick={() => setFilter('female')}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === 'female' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'bg-rose-50 text-rose-400 hover:bg-rose-100'}`}
+            >
+              Female Sparks
+            </button>
+          </div>
         </div>
 
-        {/* Split by gender */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)]">
-          <CompactTable
-            title="Female Sparks"
-            data={filtered.filter(s => s.gender === 'Female')}
-            primaryColor="rose"
-            onDelete={handleDelete}
-          />
-          <CompactTable
-            title="Male Sparks"
-            data={filtered.filter(s => s.gender === 'Male')}
-            primaryColor="sky"
-            onDelete={handleDelete}
-          />
+        {/* Unified Table View */}
+        <div className="space-y-8 animate-fadeUp">
+          {filter !== 'female' && filtered.filter(s => s.gender === 'Male').length > 0 && (
+            <CompactTable
+              title="Male Sparks"
+              data={filtered.filter(s => s.gender === 'Male')}
+              primaryColor="sky"
+              onDelete={handleDelete}
+            />
+          )}
+          {filter !== 'male' && filtered.filter(s => s.gender === 'Female').length > 0 && (
+            <CompactTable
+              title="Female Sparks"
+              data={filtered.filter(s => s.gender === 'Female')}
+              primaryColor="rose"
+              onDelete={handleDelete}
+            />
+          )}
+          {filtered.length === 0 && (
+            <div className="bg-white p-12 rounded-[2.5rem] border border-slate-100 text-center shadow-sm">
+              <Sparkles className="mx-auto text-slate-200 mb-4" size={40} />
+              <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">No matching students found</p>
+            </div>
+          )}
         </div>
       </main>
     </div>
@@ -161,6 +195,14 @@ const CompactTable = ({ title, data, primaryColor, onDelete }: any) => {
 
       <div className="overflow-x-auto">
         <table className="w-full text-left">
+          <thead>
+            <tr className="bg-slate-50/50 border-b border-slate-100">
+              <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Student</th>
+              <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Age</th>
+              <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
+              <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+            </tr>
+          </thead>
           <tbody className="divide-y divide-slate-50">
             {data.map((s: StudentData) => (
                 <tr 
@@ -174,23 +216,28 @@ const CompactTable = ({ title, data, primaryColor, onDelete }: any) => {
                         {s.firstName[0]}{s.lastName[0]}
                       </div>
                       <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-bold text-slate-900 tracking-tight">{s.firstName} {s.lastName}</p>
-                          {s.status === 'BIG_SCHOOL_READY' && (
-                            <span className="animate-pulse flex h-2 w-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <p className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter border ${
-                            s.status === 'BIG_SCHOOL_READY' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                            s.status === 'ALUMNI' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                            'bg-blue-50 text-blue-600 border-blue-100'
-                          }`}>
-                            {s.status?.replace(/_/g, ' ') || 'ENROLLED'}
-                          </p>
-                        </div>
+                        <p className="font-bold text-slate-900 tracking-tight">{s.firstName} {s.lastName}</p>
+                        <span className="text-[8px] font-bold text-slate-300 uppercase tracking-[0.2em]">
+                          Guardian: {s.parentName}
+                        </span>
                       </div>
                     </div>
+                  </td>
+
+                  <td className="px-8 py-5 text-center">
+                    <span className={`text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest border shadow-sm ${styles.bg} ${styles.text} ${styles.border}`}>
+                      {s.age} {s.age === 1 ? 'Year' : 'Years'}
+                    </span>
+                  </td>
+
+                  <td className="px-8 py-5 text-center">
+                    <p className={`inline-block text-[9px] font-black px-2.5 py-1 rounded-lg uppercase tracking-widest border shadow-sm ${
+                      s.status === 'BIG_SCHOOL_READY' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                      s.status === 'ALUMNI' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                      'bg-indigo-50 text-indigo-600 border-indigo-100'
+                    }`}>
+                      {s.status?.replace(/_/g, ' ') || 'ENROLLED'}
+                    </p>
                   </td>
 
                   <td className="px-8 py-5 text-right relative" onClick={e => e.stopPropagation()}>

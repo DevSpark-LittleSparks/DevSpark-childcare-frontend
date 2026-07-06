@@ -26,26 +26,19 @@ const ParentDashboard = () => {
   const reduxUser = useSelector(selectUser);
   const [childrenCount, setChildrenCount] = useState(0);
   const [children, setChildren] = useState<any[]>([]);
-  const [firstChildImage, setFirstChildImage] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [selectedNotif, setSelectedNotif] = useState<any>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
-
-  const fetchNotifications = async () => {
-    if (!reduxUser?.uid) {
-      return;
-    }
+  const [dismissedIds, setDismissedIds] = useState<string[]>(() => {
     try {
-      const res = await apiClient.get(`/api/v1/notifications/my-alerts/${reduxUser.uid}?role=PARENT`);
-      if (res.data.success) {
-        // Map backend isRead to frontend unread for easier logic if desired, 
-        // or just use !n.isRead directly.
-        setNotifications(res.data.data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch notifications:", err);
+      const saved = localStorage.getItem('dismissed_notifications');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
     }
-  };
+  });
+
+
 
   const formatTimeAgo = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -61,8 +54,19 @@ const ParentDashboard = () => {
   };
 
   const markAsRead = async (id: string) => {
+    console.log("DEBUG markAsRead called with id:", id);
+    // Save to local storage immediately so it won't show up again
+    setDismissedIds(prev => {
+      const updated = [...prev.filter(dId => dId !== id), id].slice(-100);
+      console.log("DEBUG updating local storage dismissed_notifications to:", updated);
+      localStorage.setItem('dismissed_notifications', JSON.stringify(updated));
+      return updated;
+    });
+
     try {
-      await apiClient.put(`/api/v1/notifications/${id}/read?userId=${reduxUser.uid}`);
+      const url = `/api/v1/notifications/${id}/read?userId=${reduxUser.uid}`;
+      console.log("DEBUG sending PUT request to url:", url);
+      await apiClient.put(url);
       setNotifications(prev => prev.map(n => 
         n.id === id ? { ...n, isRead: true } : n
       ));
@@ -102,9 +106,22 @@ const ParentDashboard = () => {
       }
     };
 
+    const fetchNotifications = async () => {
+      if (!reduxUser?.uid) return;
+      try {
+        const res = await apiClient.get(`/api/v1/notifications/my-alerts/${reduxUser.uid}?role=PARENT`);
+        if (res.data.success) {
+          setNotifications(res.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch notifications:", err);
+      }
+    };
+
     if (reduxUser?.email) {
       fetchChildren();
       fetchNotifications();
+
       const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
       return () => clearInterval(interval);
     }
@@ -122,6 +139,7 @@ const ParentDashboard = () => {
               <Sparkles size={14} className="fill-primary-500" />
               <p className="text-[10px] font-black uppercase tracking-[0.3em]">LittleSparks</p>
             </div>
+          
             <h1 className="text-3xl font-black text-slate-900 tracking-tight font-sans leading-none">
               Hello, {reduxUser?.displayName?.split(' ')[0] || 'Parent'} 👋
             </h1>
@@ -205,7 +223,7 @@ const ParentDashboard = () => {
       
       {/* --- ALERT BANNER FOR BROADCASTS --- */}
       <AlertBanner 
-        notifications={notifications.filter(n => n.type === 'BROADCAST' && !n.isRead)} 
+        notifications={notifications.filter(n => n.type === 'BROADCAST' && !n.isRead && !dismissedIds.includes(n.id))} 
         onRead={markAsRead}
       />
 
@@ -259,10 +277,12 @@ const ParentDashboard = () => {
                   onClick={() => navigate('/parent/progress')}
                   className="bg-primary-500 hover:bg-primary-600 text-white px-8 py-6 rounded-2xl group/btn transition-all"
                 >
-                  <span className="text-xs font-black uppercase tracking-widest">View Progress</span>
+                  <span className="text-xs font-black  uppercase tracking-widest">View Progress</span>
                   <ArrowRight size={18} className="ml-3 group-hover/btn:translate-x-1 transition-transform" />
                 </Button>
               </div>
+
+
 
               {/* RIGHT SIDE: MULTIPLE CHILD IMAGES & LOGO */}
               <div className="relative z-10 shrink-0 hidden md:block">

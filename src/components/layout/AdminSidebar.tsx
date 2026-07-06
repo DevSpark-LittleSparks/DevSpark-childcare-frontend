@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { 
-  MdDashboard, MdAssignmentInd, MdPeople, MdManageAccounts, 
-  MdCreditCard, MdPayments, MdChat, MdRestaurant, MdSecurity, MdHistory, 
+import {
+  MdDashboard, MdAssignmentInd, MdPeople, MdManageAccounts,
+  MdCreditCard, MdPayments, MdChat, MdRestaurant, MdSecurity, MdHistory,
   MdLogout, MdSettings, MdPerson, MdKeyboardArrowUp,
   MdMenuOpen, MdMenu, MdCampaign
 } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
 import { logout, selectUser } from "../../features/auth/model/authSlice";
+import adminAvatar from "../../assets/images/admin-avatar.jpeg";
 
 /**
  * SidebarProps Interface
@@ -36,7 +37,7 @@ const LittleSparksLogo = ({ isCollapsed }: { isCollapsed: boolean }) => (
         transform="translate(0.000000,280.000000) scale(0.100000,-0.100000)"
         fill="#1F2937"
         stroke="#1F2937"
-        strokeWidth="80" 
+        strokeWidth="80"
         strokeLinecap="round"
         strokeLinejoin="round"
       >
@@ -45,7 +46,7 @@ const LittleSparksLogo = ({ isCollapsed }: { isCollapsed: boolean }) => (
     </svg>
     {!isCollapsed && (
       <span className="font-bold tracking-tighter -ml-2 text-2xl text-[#1F2937]" style={{ fontFamily: "'Nunito', sans-serif" }}>
-        Little<span style={{color: '#06C5D4'}}>Sparks</span>
+        Little<span style={{ color: '#06C5D4' }}>Sparks</span>
       </span>
     )}
   </div>
@@ -75,27 +76,26 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, onOpenSettin
   };
 
   return (
-    <aside 
-      className={`h-screen bg-[#E4F7F7] flex flex-col fixed left-0 top-0 z-[1000] border-r border-cyan-100 shadow-sm transition-all duration-300 ease-in-out ${
-        isCollapsed ? "w-[80px]" : "w-[280px]"
-      }`}
+    <aside
+      className={`h-screen bg-[#E4F7F7] flex flex-col fixed left-0 top-0 z-[1000] border-r border-cyan-100 shadow-sm transition-all duration-300 ease-in-out ${isCollapsed ? "w-[80px]" : "w-[280px]"
+        }`}
     >
       {/* BRAND & TOGGLE */}
       <div className={`p-4 flex items-center border-b border-cyan-200/30 mb-2 ${isCollapsed ? 'flex-col gap-4' : 'justify-between'}`}>
         <LittleSparksLogo isCollapsed={isCollapsed} />
-      <button 
-  onClick={() => setIsCollapsed(!isCollapsed)}
-  // Logic: Uses text-slate-500 to match the other navigation icons
-  // Added hover:text-slate-700 to match the hover behavior of the links
-  className="p-2 rounded-xl text-slate-500 hover:text-slate-700 hover:bg-white/60 transition-all duration-300"
-  title={isCollapsed ? "Expand" : "Collapse"}
->
-  {isCollapsed ? (
-    <MdMenu className="text-2xl" />
-  ) : (
-    <MdMenuOpen className="text-2xl" />
-  )}
-</button>
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          // Logic: Uses text-slate-500 to match the other navigation icons
+          // Added hover:text-slate-700 to match the hover behavior of the links
+          className="p-2 rounded-xl text-slate-500 hover:text-slate-700 hover:bg-white/60 transition-all duration-300"
+          title={isCollapsed ? "Expand" : "Collapse"}
+        >
+          {isCollapsed ? (
+            <MdMenu className="text-2xl" />
+          ) : (
+            <MdMenuOpen className="text-2xl" />
+          )}
+        </button>
       </div>
 
       {/* NAVIGATION */}
@@ -112,10 +112,11 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, onOpenSettin
           <SidebarLink to="/admin/teachers" icon={<MdManageAccounts />} label="Staff" isCollapsed={isCollapsed} />
         </NavGroup>
 
-        <NavGroup title="Management" isCollapsed={isCollapsed}>
+        <NavGroup title="Supervision" isCollapsed={isCollapsed}>
           <SidebarLink to="/admin/schedules" icon={<MdCreditCard />} label="Schedules" isCollapsed={isCollapsed} />
           <SidebarLink to="/admin/learning" icon={<MdPayments />} label="Learning" isCollapsed={isCollapsed} />
           <SidebarLink to="/admin/meals" icon={<MdRestaurant />} label="Meals" isCollapsed={isCollapsed} />
+          <SidebarLink to="/admin/messages" icon={<MdChat />} label="Messages" isCollapsed={isCollapsed} />
         </NavGroup>
 
         <NavGroup title="System" isCollapsed={isCollapsed}>
@@ -143,22 +144,19 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, onOpenSettin
         )}
 
         {/* User Badge/Trigger */}
-        <div 
-          className={`flex items-center gap-3 p-2 rounded-2xl cursor-pointer transition-all border ${profileOpen ? 'bg-white shadow-md border-cyan-200' : 'hover:bg-white/50 border-transparent'} ${isCollapsed ? 'justify-center' : ''}`} 
+        <div
+          className={`flex items-center gap-3 p-2 rounded-2xl cursor-pointer transition-all border ${profileOpen ? 'bg-white shadow-md border-cyan-200' : 'hover:bg-white/50 border-transparent'} ${isCollapsed ? 'justify-center' : ''}`}
           onClick={() => setProfileOpen(!profileOpen)}
         >
-          {user?.photoURL ? (
-            <img 
-              src={user?.photoURL} 
-              alt="Profile" 
-              className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-sm shrink-0" 
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-hero-purple flex items-center justify-center text-white font-black text-lg shrink-0 shadow-sm border-2 border-white">
-              {user?.displayName ? user.displayName.charAt(0).toUpperCase() : 'A'}
-            </div>
-          )}
-          
+          <img
+            src={user?.photoURL && user.photoURL !== "null" && user.photoURL.trim() !== "" ? user.photoURL : adminAvatar}
+            alt="Profile"
+            className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-sm shrink-0"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = adminAvatar;
+            }}
+          />
+
           {!isCollapsed && (
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-slate-800 truncate">{user?.displayName || "Admin"}</p>
@@ -174,13 +172,12 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, onOpenSettin
 }
 
 const SidebarLink = ({ to, icon, label, isCollapsed }: { to: string, icon: any, label: string, isCollapsed: boolean }) => (
-  <NavLink 
-    to={to} 
-    className={({ isActive }) => 
-      `flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-bold transition-all relative group ${
-        isActive 
-          ? "bg-[#CFFAFE] text-[#0891B2] shadow-sm" 
-          : "text-slate-500 hover:bg-white/60 hover:text-slate-700"
+  <NavLink
+    to={to}
+    className={({ isActive }) =>
+      `flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-bold transition-all relative group ${isActive
+        ? "bg-[#CFFAFE] text-[#0891B2] shadow-sm"
+        : "text-slate-500 hover:bg-white/60 hover:text-slate-700"
       } ${isCollapsed ? "justify-center px-0" : ""}`
     }
   >

@@ -148,7 +148,7 @@ const LandingPage: React.FC = () => {
       >
         <div className="wrap hero-grid max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div className="hero-left">
-            <p className="badge text-sm text-gray-600 mb-4"> An Early Childhood Platform</p>
+            <p className="badge text-sm text-gray-600 mb-4"> Early Childhood Platform</p>
             <h1 className="hero-title text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
               Less Paperwork,<br />More Playtime
             </h1>
@@ -208,7 +208,7 @@ const LandingPage: React.FC = () => {
             <Card icon={<Zap size={32} className="text-yellow-400" />} title="Easy to use" text="Intuitive design that anyone can master." />
             <Card icon={<Heart size={32} className="text-pink-400" />} title="Child-Centered" text="Built with children's wellbeing at heart." />
           </div>
-          <Link className="btn whitebtn bg-white text-gray-800 px-8 py-3 rounded-full font-bold hover:bg-gray-50 transition-all shadow-md active:scale-95 transform inline-block" to="/features">See All</Link>
+          <Link className="btn whitebtn bg-white text-gray-800 px-8 py-3 rounded-full font-bold hover:bg-gray-50 transition-all shadow-md active:scale-95 transform inline-block" to="/signup-request">See All</Link>
         </div>
       </section>
 
@@ -217,7 +217,7 @@ const LandingPage: React.FC = () => {
         <div className="wrap two-col max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div className="dash">
             <div className="dash-top bg-gray-100 p-6 rounded-t-2xl">
-              <span className="dash-label text-sm text-gray-600">27th Of February 2026</span>
+              <span className="dash-label text-sm text-gray-600">13th Of MAY 2026</span>
               <div className="dash-stat flex gap-2 mt-4"><div className="dash-val text-4xl font-bold text-gray-900">75%</div><div className="dash-sub text-sm text-gray-600">Attendance Rate</div></div>
             </div>
             <img className="dash-img w-full h-64 object-cover" src="https://images.unsplash.com/photo-1759752394755-1241472b589d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1200" alt="Dashboard" />

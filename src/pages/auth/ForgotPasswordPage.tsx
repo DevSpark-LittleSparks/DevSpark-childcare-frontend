@@ -7,7 +7,8 @@ import { Card } from "../../components/common/Card";
 import { AuthHeader } from "../../shared/ui/AuthHeader/AuthHeader";
 
 
-import { apiClient } from "../../services/axiosInstance";
+import { firebaseAuth } from "../../lib/firebase";
+import { sendPasswordResetEmail } from "firebase/auth";
 
 const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = React.useState("");
@@ -22,16 +23,25 @@ const ForgotPasswordPage: React.FC = () => {
     setMessage(null);
 
     try {
-      await apiClient.post(`/api/v1/auth/forgot-password?email=${encodeURIComponent(email)}`);
+      // Use Firebase SDK directly to send reset email
+      await sendPasswordResetEmail(firebaseAuth, email);
+      
       setMessage({
         type: 'success',
-        text: "Success! If an account exists for this email, you will receive a password reset link shortly."
+        text: "Success! A password reset link has been sent to your email address."
       });
       setEmail("");
     } catch (err: any) {
+      console.error("Firebase reset error:", err);
+      let errorText = "An error occurred. Please try again later.";
+      
+      if (err.code === 'auth/user-not-found') {
+        errorText = "No account found with this email address.";
+      }
+
       setMessage({
         type: 'error',
-        text: "An error occurred while processing your request. Please try again later."
+        text: errorText
       });
     } finally {
       setIsSubmitting(false);

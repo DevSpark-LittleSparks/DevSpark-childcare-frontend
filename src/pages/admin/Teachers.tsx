@@ -25,13 +25,14 @@ const Teachers = () => {
   const [teachers, setTeachers] = useState<TeacherData[]>([]);
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
   const [viewingTeacher, setViewingTeacher] = useState<TeacherData | null>(null);
+  const [filter, setFilter] = useState<'all' | 'senior' | 'junior'>('all');
 
   const loadTeachers = async () => {
     try {
       // Fetch staff records
       const response = await apiClient.get('/api/v1/auth/admin/all-teachers');
       const liveData = response.data.data;
-      
+
       const mappedTeachers = liveData.map((t: any) => ({
         id: t.id || t.teacherId || t.email,
         firstName: t.firstName,
@@ -43,9 +44,9 @@ const Teachers = () => {
         address: t.address || 'N/A',
         joinedAt: t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'N/A'
       }));
-      
+
       // Sort by first name
-      const sortedTeachers = mappedTeachers.sort((a: any, b: any) => 
+      const sortedTeachers = mappedTeachers.sort((a: any, b: any) =>
         a.firstName.localeCompare(b.firstName)
       );
       setTeachers(sortedTeachers);
@@ -95,9 +96,11 @@ const Teachers = () => {
     }
   };
 
-  const filteredTeachers = teachers.filter(t =>
-    `${t.firstName} ${t.lastName} ${t.email}`.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTeachers = teachers.filter(t => {
+    const matchesSearch = `${t.firstName} ${t.lastName} ${t.email}`.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filter === 'all' || t.role.toLowerCase() === filter.toLowerCase();
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
@@ -140,7 +143,8 @@ const Teachers = () => {
 
       <main className="max-w-7xl mx-auto px-6 mt-6 space-y-8 animate-fadeUp">
 
-        {/* --- SEARCH BAR --- */}
+
+        {/* --- SEARCH BAR for junior and senior teachers --- */}
         <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)]">
           <div className="relative">
             <input
@@ -151,6 +155,27 @@ const Teachers = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
+          </div>
+
+          <div className="flex items-center gap-3 mt-6">
+            <button
+              onClick={() => setFilter('all')}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === 'all' ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+            >
+              All Staff
+            </button>
+            <button
+              onClick={() => setFilter('senior')}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === 'senior' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+            >
+              Senior
+            </button>
+            <button
+              onClick={() => setFilter('junior')}
+              className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === 'junior' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+            >
+              Junior
+            </button>
           </div>
         </div>
 
@@ -205,8 +230,8 @@ const Teachers = () => {
                     <button
                       onClick={() => toggleStatus(t.id)}
                       className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${t.status === 'active'
-                          ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100'
-                          : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200'
+                        ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100'
+                        : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200'
                         }`}
                     >
                       {t.status === 'active' ? 'Active' : 'Inactive'}

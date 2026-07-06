@@ -6,6 +6,7 @@ import { apiClient } from "../../services/axiosInstance";
 import heroImg from "../../assets/images/hero.png";
 import requestSideImg from "../../assets/images/request-side.png";
 import directorDashboardImg from "../../assets/images/image_5.jpg";
+import { Eye, EyeOff } from "lucide-react";
 
 type UserRole = "director" | "teacher" | "parent";
 
@@ -64,6 +65,8 @@ const SignupRequestForm: React.FC = () => {
 
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Password strength calculator
   const getPasswordStrength = (pw: string): { label: string; color: string; width: string } => {
@@ -264,7 +267,24 @@ const SignupRequestForm: React.FC = () => {
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Password</label>
-                <input className={`w-full px-4 py-3 bg-slate-50 border ${errors.password ? 'border-red-500' : 'border-slate-200 focus:border-cyan-500'} rounded-xl outline-none transition-all`} type="password" name="password" placeholder="••••••••" value={form.password} onChange={handleChange} required />
+                <div className="relative">
+                  <input
+                    className={`w-full pl-4 pr-12 py-3 bg-slate-50 border ${errors.password ? 'border-red-500' : 'border-slate-200 focus:border-cyan-500'} rounded-xl outline-none transition-all`}
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="••••••••"
+                    value={form.password}
+                    onChange={handleChange}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
                 {form.password && (
                   <div className="mt-1">
                     <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
@@ -278,7 +298,24 @@ const SignupRequestForm: React.FC = () => {
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Confirm Password</label>
-                <input className={`w-full px-4 py-3 bg-slate-50 border ${errors.confirmPassword ? 'border-red-500' : 'border-slate-200 focus:border-cyan-500'} rounded-xl outline-none transition-all`} type="password" name="confirmPassword" placeholder="••••••••" value={form.confirmPassword} onChange={handleChange} required />
+                <div className="relative">
+                  <input
+                    className={`w-full pl-4 pr-12 py-3 bg-slate-50 border ${errors.confirmPassword ? 'border-red-500' : 'border-slate-200 focus:border-cyan-500'} rounded-xl outline-none transition-all`}
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    placeholder="••••••••"
+                    value={form.confirmPassword}
+                    onChange={handleChange}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
+                  >
+                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
                 {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
               </div>
 

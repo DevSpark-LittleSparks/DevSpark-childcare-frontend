@@ -18,23 +18,24 @@ interface AlertBannerProps {
 
 const AlertBanner: React.FC<AlertBannerProps> = ({ notifications, onRead }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
 
-  if (!isVisible || notifications.length === 0) return null;
+  if (notifications.length === 0) return null;
 
-  const current = notifications[currentIndex];
+  // Clamp index in case notifications shrink after a dismiss
+  const safeIndex = Math.min(currentIndex, notifications.length - 1);
+  const current = notifications[safeIndex];
   const isHighPriority = current.priority === 'HIGH';
 
   const handleClose = () => {
-    if (onRead && current.id) {
+    if (onRead && current?.id) {
       onRead(current.id);
-    } else {
-      setIsVisible(false);
     }
   };
 
   const nextAlert = () => {
     setCurrentIndex((prev) => (prev + 1) % notifications.length);
+    // Reset to 0 if out of bounds after dismissals
+    if (safeIndex >= notifications.length - 1) setCurrentIndex(0);
   };
 
   return (
@@ -48,11 +49,10 @@ const AlertBanner: React.FC<AlertBannerProps> = ({ notifications, onRead }) => {
         <div className="max-w-4xl mx-auto pointer-events-auto">
           <motion.div
             layout
-            className={`relative overflow-hidden rounded-2xl shadow-2xl border border-white/20 backdrop-blur-xl ${
-              isHighPriority 
-                ? 'bg-gradient-to-br from-rose-600/90 via-red-600/90 to-orange-600/90' 
-                : 'bg-gradient-to-br from-indigo-600/90 via-blue-600/90 to-cyan-600/90'
-            } text-white`}
+            className={`relative overflow-hidden rounded-2xl shadow-2xl border border-white/20 backdrop-blur-xl ${isHighPriority
+              ? 'bg-gradient-to-br from-rose-600/90 via-red-600/90 to-orange-600/90'
+              : 'bg-gradient-to-br from-indigo-600/90 via-blue-600/90 to-cyan-600/90'
+              } text-white`}
           >
             {/* Ambient Background Glow */}
             <div className="absolute -top-24 -left-24 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
@@ -75,7 +75,7 @@ const AlertBanner: React.FC<AlertBannerProps> = ({ notifications, onRead }) => {
                     </span>
                   )}
                 </div>
-                
+
                 <div className="flex flex-col">
                   <div className="flex items-center gap-3 mb-0.5">
                     <span className="font-extrabold text-xs tracking-widest uppercase text-white/80">
@@ -95,7 +95,7 @@ const AlertBanner: React.FC<AlertBannerProps> = ({ notifications, onRead }) => {
 
               <div className="flex items-center gap-3 ml-6">
                 {notifications.length > 1 && (
-                  <button 
+                  <button
                     onClick={nextAlert}
                     className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-all border border-white/10 active:scale-95"
                   >
@@ -103,8 +103,8 @@ const AlertBanner: React.FC<AlertBannerProps> = ({ notifications, onRead }) => {
                     <Bell className="w-4 h-4 group-hover:rotate-12 transition-transform" />
                   </button>
                 )}
-                <button 
-                  onClick={() => setIsVisible(false)}
+                <button
+                  onClick={handleClose}
                   className="p-2.5 rounded-xl bg-black/10 hover:bg-black/20 transition-all border border-white/5 active:scale-90"
                   title="Dismiss"
                 >
@@ -116,7 +116,7 @@ const AlertBanner: React.FC<AlertBannerProps> = ({ notifications, onRead }) => {
             {/* Progress Bar for High Priority */}
             {isHighPriority && (
               <div className="h-1 w-full bg-white/10">
-                <motion.div 
+                <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: '100%' }}
                   transition={{ duration: 8, repeat: Infinity, ease: "linear" }}

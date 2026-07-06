@@ -117,7 +117,7 @@ const AdminDashboard = () => {
     const interval = setInterval(() => {
       loadData();
       fetchNotifications();
-    }, 30000); 
+    }, 30000);
     return () => clearInterval(interval);
   }, [reduxUser?.uid]);
 
@@ -138,7 +138,7 @@ const AdminDashboard = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          
+
 
           <div className="relative">
             <Button
@@ -282,7 +282,7 @@ const AdminDashboard = () => {
         {/* --- Middle Row: Requests & Schedule --- */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          {/* Management Requests Section */}
+          {/* Admin approve / reject requests section */}
           <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)]">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-xl font-black text-slate-900 tracking-tight">Management Requests</h2>
@@ -337,7 +337,7 @@ const AdminDashboard = () => {
 
           {/* Broadcast center link */}
           <div className="bg-gradient-to-br from-primary-500 to-indigo-600 rounded-[3rem] p-10 shadow-[0_25px_60px_rgba(6,197,212,0.3)] relative overflow-hidden group cursor-pointer"
-               onClick={() => navigate('/admin/broadcast')}>
+            onClick={() => navigate('/admin/broadcast')}>
             {/* Abstract Decorative Circles */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
             <div className="absolute bottom-0 left-0 w-40 h-40 bg-indigo-400/20 rounded-full blur-2xl -ml-20 -mb-20"></div>
@@ -447,7 +447,7 @@ const AdminDashboard = () => {
 
             {/* Modal Footer with Actions */}
             <div className="p-6 bg-slate-50 flex items-center justify-end gap-3 border-t border-slate-100">
-               <button
+              <button
                 onClick={() => { handleReject(selectedRequest); }}
                 className="px-6 py-3 bg-white border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-50 transition-all shadow-sm"
               >

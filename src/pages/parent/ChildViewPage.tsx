@@ -95,7 +95,7 @@ const ChildViewPage = () => {
           <div className="flex-[1.5] p-8 md:p-12 lg:p-16">
             <div className="mb-12">
               <div className="flex items-center gap-2 mb-3 text-primary-500">
-                <Sparkles size={16} className="fill-primary-500" />
+               
                 <p className="text-[10px] font-black uppercase tracking-[0.3em]">Student Profile</p>
               </div>
               <h1 className="text-3xl font-black text-slate-900 tracking-tight font-sans uppercase">
