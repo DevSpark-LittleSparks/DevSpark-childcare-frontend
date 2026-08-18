@@ -1,34 +1,31 @@
 import { LoginForm } from "../../features/auth/ui/LoginForm";
-import loginImg from "../../assets/images/login.png";
-
+import loginImg from "../../assets/images/login-dark.png";
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-slate-950">
 
       {/* LEFT SIDE: The actual login form where users type their info */}
-      <div className="w-full md:w-1/2 flex items-center justify-center px-6 bg-white">
+      <div className="w-full md:w-1/2 flex items-center justify-center px-6 bg-white animate-in fade-in slide-in-from-left-4 duration-1000 z-10 shadow-2xl">
         <LoginForm />
       </div>
 
       {/* RIGHT SIDE - IMAGE */}
-      <div className="hidden md:block w-1/2 relative overflow-hidden">
+      <div className="hidden md:block w-1/2 relative overflow-hidden bg-slate-900">
 
-        {/* This is the background image */}
+        {/* This is the background image with a smooth zoom out animation */}
         <div
-          className="absolute inset-0 bg-cover bg-center animate-zoomSlow"
+          className="absolute inset-0 bg-cover bg-center animate-zoomOutSlow opacity-90"
           style={{
             backgroundImage: `url(${loginImg})`,
           }}
         />
 
-        {/* This makes the image look darker so it doesn't hurt the eyes */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+        {/* A subtle dark gradient overlay to make it look premium and blend with the black theme */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
         {/* Content area for extra text if needed */}
-        <div className="relative z-10 h-full flex flex-col items-center justify-center text-white px-10 text-center">
-
-        </div>
 
       </div>
     </div>

@@ -35,8 +35,12 @@ const ForgotPasswordPage: React.FC = () => {
       console.error("Firebase reset error:", err);
       let errorText = "An error occurred. Please try again later.";
       
-      if (err.code === 'auth/user-not-found') {
-        errorText = "No account found with this email address.";
+      // Firebase may silently succeed for non-existent emails for security reasons
+      // auth/user-not-found is deprecated in newer Firebase SDK versions
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-email') {
+        errorText = "Please enter a valid email address.";
+      } else if (err.code === 'auth/too-many-requests') {
+        errorText = "Too many attempts. Please try again later.";
       }
 
       setMessage({
