@@ -9,7 +9,7 @@ import {
   useTransform,
   useInView,
 } from 'framer-motion';
-import land2Img from '../assets/images/land2.jfif';
+import land2Img from '../assets/images/hero-navy2.png';
 import land3Img from '../assets/images/land3.jfif';
 import land4Img from '../assets/images/land4.png';
 import c1Img from '../assets/images/c1.jpg';
@@ -157,6 +157,7 @@ const heroSlides = [
     sub: 'Keep safety - incident reports, and parent communication organized in one secure place , always ready when you need them.',
     cta: 'Request Form',
   },
+  
 ];
 
 const HeroCarousel: React.FC<{ onCta: (idx: number) => void }> = ({ onCta }) => {
