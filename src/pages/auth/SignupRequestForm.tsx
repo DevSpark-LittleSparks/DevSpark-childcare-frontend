@@ -22,8 +22,6 @@ interface FormData {
   address: string;
   role: UserRole; // Can be 'director', 'teacher', or 'parent'
 
-
-
   // Fields specifically for Parents
   childName?: string;
   dob?: string;
@@ -63,7 +61,6 @@ const SignupRequestForm: React.FC = () => {
     dob: "",
     gender: "male",
     message: "",
-
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
@@ -95,6 +92,14 @@ const SignupRequestForm: React.FC = () => {
       return;
     }
 
+    // Capitalize first letter of each word for names
+    if (name === "firstName" || name === "lastName" || name === "childName") {
+      const capitalized = value.replace(/\b\w/g, char => char.toUpperCase());
+      setForm((prev) => ({ ...prev, [name]: capitalized }));
+      setErrors(prev => ({ ...prev, [name]: "" }));
+      return;
+    }
+
     setForm((prev) => ({ ...prev, [name]: value }));
     setErrors(prev => ({ ...prev, [name]: "" }));
   };
@@ -109,30 +114,32 @@ const SignupRequestForm: React.FC = () => {
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    // 1. Check if Email is in the correct format
+    if (!form.firstName.trim()) newErrors.firstName = "First Name is required.";
+    if (!form.lastName.trim()) newErrors.lastName = "Last Name is required.";
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-    if (!emailRegex.test(form.email)) newErrors.email = "Please enter a valid email address.";
+    if (!form.email) newErrors.email = "Email Address is required.";
+    else if (!emailRegex.test(form.email)) newErrors.email = "Please enter a valid email address.";
 
-    // 2. Check if Password is at least 8 characters and matches the confirmation
-    if (!form.password || form.password.length < 8)
-      newErrors.password = "Password must be at least 8 characters.";
+    if (!form.password) newErrors.password = "Password is required.";
+    else if (form.password.length < 8) newErrors.password = "Password must be at least 8 characters.";
 
-    if (form.password !== form.confirmPassword)
-      newErrors.confirmPassword = "Passwords do not match.";
+    if (!form.confirmPassword) newErrors.confirmPassword = "Confirm Password is required.";
+    else if (form.password !== form.confirmPassword) newErrors.confirmPassword = "Passwords do not match.";
 
-    // 3. Check if Phone number is a valid Sri Lankan number
     const phoneRegex = /^\+94\s7[0-9]{8}$/;
     if (!phoneRegex.test(form.phone))
       newErrors.phone = "Enter a valid Sri Lanka phone number (e.g. +94 771234567).";
 
-    // 4. Special checks for Parents
     if (role === "parent") {
-      // Validate NIC (Old or New format)
-      const nicRegex = /^([0-9]{9}[vVxX]|[0-9]{12})$/;
-      if (!form.nic || !nicRegex.test(form.nic.trim()))
-        newErrors.nic = "Enter a valid Sri Lanka NIC (e.g. 199012345V or 200012345678).";
+      if (!form.address.trim()) newErrors.address = "Address is required.";
 
-      // Validate Child's Date of Birth (must be a reasonable age)
+      const nicRegex = /^([0-9]{9}[vVxX]|[0-9]{12})$/;
+      if (!form.nic) newErrors.nic = "NIC Number is required.";
+      else if (!nicRegex.test(form.nic.trim())) newErrors.nic = "Enter a valid Sri Lanka NIC (e.g. 199012345V).";
+
+      if (!form.childName?.trim()) newErrors.childName = "Child's Name is required.";
+
       if (form.dob) {
         const dob = new Date(form.dob);
         const today = new Date();
@@ -151,15 +158,21 @@ const SignupRequestForm: React.FC = () => {
       }
     }
 
-    // 5. Special checks for Directors
     if (role === "director") {
+      if (!form.centerName?.trim()) newErrors.centerName = "Center Name is required.";
+      if (!form.centerAddress?.trim()) newErrors.centerAddress = "Center Address is required.";
+
       const cap = parseInt(form.capacity || "0");
-      if (!form.capacity || cap < 1 || cap > 500)
-        newErrors.capacity = "Capacity must be between 1 and 500.";
+      if (!form.capacity) newErrors.capacity = "Capacity is required.";
+      else if (cap < 1 || cap > 500) newErrors.capacity = "Capacity must be between 1 and 500.";
+    }
+
+    if (role === "teacher") {
+      if (!form.address.trim()) newErrors.address = "Address is required.";
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0; // Return true if no errors were found
+    return Object.keys(newErrors).length === 0;
   };
 
   // This function sends the registration request to the backend
@@ -221,6 +234,9 @@ const SignupRequestForm: React.FC = () => {
     }
   };
 
+  const getInputStyle = (errorField?: string) =>
+    `w-full px-4 py-3 bg-slate-50 border ${errorField ? 'border-red-500 focus:border-red-500' : 'border-slate-200 focus:border-cyan-500'} rounded-xl outline-none transition-all`;
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <AuthHeader backLink="/" />
@@ -252,39 +268,36 @@ const SignupRequestForm: React.FC = () => {
               ))}
             </div>
 
-            <form className="space-y-6" onSubmit={handleSubmit}>
+            <form className="space-y-6" onSubmit={handleSubmit} noValidate>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">First Name</label>
-                  <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500 transition-all" type="text" name="firstName" placeholder="Ann" value={form.firstName} onChange={handleChange} required />
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">First Name <RequiredAsterisk /></label>
+                  <input className={getInputStyle(errors.firstName)} type="text" name="firstName" placeholder="Ann" value={form.firstName} onChange={handleChange} />
+                  <ErrorMessage message={errors.firstName} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Last Name</label>
-                  <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500 transition-all" type="text" name="lastName" placeholder="Fonseka" value={form.lastName} onChange={handleChange} required />
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Last Name <RequiredAsterisk /></label>
+                  <input className={getInputStyle(errors.lastName)} type="text" name="lastName" placeholder="Fonseka" value={form.lastName} onChange={handleChange} />
+                  <ErrorMessage message={errors.lastName} />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Email Address</label>
-                <input
-                  className={`w-full px-4 py-3 bg-slate-50 border ${errors.email ? 'border-red-500' : 'border-slate-200 focus:border-cyan-500'} rounded-xl outline-none transition-all`}
-                  type="email" name="email" placeholder="ann@example.com"
-                  value={form.email} onChange={handleChange} required
-                />
-                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Email Address <RequiredAsterisk /></label>
+                <input className={getInputStyle(errors.email)} type="email" name="email" placeholder="ann@example.com" value={form.email} onChange={handleChange} />
+                <ErrorMessage message={errors.email} />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Password</label>
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Password <RequiredAsterisk /></label>
                 <div className="relative">
                   <input
-                    className={`w-full pl-4 pr-12 py-3 bg-slate-50 border ${errors.password ? 'border-red-500' : 'border-slate-200 focus:border-cyan-500'} rounded-xl outline-none transition-all`}
+                    className={`${getInputStyle(errors.password)} pl-4 pr-12`}
                     type={showPassword ? "text" : "password"}
                     name="password"
                     placeholder="••••••••"
                     value={form.password}
                     onChange={handleChange}
-                    required
                   />
                   <button
                     type="button"
@@ -294,7 +307,7 @@ const SignupRequestForm: React.FC = () => {
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
-                {form.password && (
+                {form.password && !errors.password && (
                   <div className="mt-1">
                     <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
                       <div className={`h-full rounded-full transition-all duration-500 ${strength.color}`} style={{ width: strength.width }} />
@@ -302,20 +315,19 @@ const SignupRequestForm: React.FC = () => {
                     <p className={`text-xs mt-1 font-semibold ${strength.color.replace('bg-', 'text-')}`}>{strength.label}</p>
                   </div>
                 )}
-                {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+                <ErrorMessage message={errors.password} />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Confirm Password</label>
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Confirm Password <RequiredAsterisk /></label>
                 <div className="relative">
                   <input
-                    className={`w-full pl-4 pr-12 py-3 bg-slate-50 border ${errors.confirmPassword ? 'border-red-500' : 'border-slate-200 focus:border-cyan-500'} rounded-xl outline-none transition-all`}
+                    className={`${getInputStyle(errors.confirmPassword)} pl-4 pr-12`}
                     type={showConfirmPassword ? "text" : "password"}
                     name="confirmPassword"
                     placeholder="••••••••"
                     value={form.confirmPassword}
                     onChange={handleChange}
-                    required
                   />
                   <button
                     type="button"
@@ -325,61 +337,64 @@ const SignupRequestForm: React.FC = () => {
                     {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
-                {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
+                <ErrorMessage message={errors.confirmPassword} />
               </div>
 
-                <PhoneInput
-                  label="Phone"
-                  name="phone"
-                  value={form.phone}
-                  onChange={handleChange}
-                  error={errors.phone}
-                  required
-                />
+              <PhoneInput
+                label={<>Phone <RequiredAsterisk /></>}
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+                error={errors.phone}
+                required={false}
+              />
+              <ErrorMessage message={errors.phone} />
 
               {/* Dynamic Role Fields */}
               <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-500">
                 {role === "parent" && (
                   <>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Address</label>
-                      <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500 transition-all" type="text" name="address" placeholder="Residential Address" value={form.address} onChange={handleChange} required />
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Address <RequiredAsterisk /></label>
+                      <input className={getInputStyle(errors.address)} type="text" name="address" placeholder="Residential Address" value={form.address} onChange={handleChange} />
+                      <ErrorMessage message={errors.address} />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">NIC Number</label>
-                      <input className={`w-full px-4 py-3 bg-slate-50 border ${errors.nic ? 'border-red-500' : 'border-slate-200 focus:border-cyan-500'} rounded-xl outline-none transition-all`} type="text" name="nic" placeholder="199012345V or 200012345678" value={form.nic || ""} onChange={handleChange} required />
-                      {errors.nic && <p className="text-red-500 text-xs mt-1">{errors.nic}</p>}
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">NIC Number <RequiredAsterisk /></label>
+                      <input className={getInputStyle(errors.nic)} type="text" name="nic" placeholder="199012345V or 200012345678" value={form.nic || ""} onChange={handleChange} />
+                      <ErrorMessage message={errors.nic} />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Child's Name</label>
-                      <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500" type="text" name="childName" value={form.childName || ""} onChange={handleChange} required />
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Child's Name <RequiredAsterisk /></label>
+                      <input className={getInputStyle(errors.childName)} type="text" name="childName" value={form.childName || ""} onChange={handleChange} />
+                      <ErrorMessage message={errors.childName} />
                     </div>
 
-                    {/* calendar */}
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Child's DOB</label>
+                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Child's DOB <RequiredAsterisk /></label>
                         <input
-                          className={`w-full px-4 py-3 bg-slate-50 border ${errors.dob ? 'border-red-500' : 'border-slate-200 focus:border-cyan-500'} rounded-xl outline-none`}
+                          className={getInputStyle(errors.dob)}
                           type="date" name="dob"
                           max={new Date(new Date().setFullYear(new Date().getFullYear() - 3)).toISOString().split('T')[0]}
                           min={new Date(new Date().setFullYear(new Date().getFullYear() - 10)).toISOString().split('T')[0]}
-                          value={form.dob || ""} onChange={handleChange} required
+                          value={form.dob || ""} onChange={handleChange}
                         />
-                        {errors.dob && <p className="text-red-500 text-xs mt-1">{errors.dob}</p>}
+                        <ErrorMessage message={errors.dob} />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Gender</label>
-                        <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500" name="gender" value={form.gender || ""} onChange={handleChange} required>
+                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Gender <RequiredAsterisk /></label>
+                        <select className={getInputStyle(errors.gender)} name="gender" value={form.gender || ""} onChange={handleChange}>
                           <option value="" disabled>Select Gender</option>
                           <option value="male">Male</option>
                           <option value="female">Female</option>
                         </select>
+                        <ErrorMessage message={errors.gender} />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Relationship</label>
-                      <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500" name="relationship" value={form.relationship || "MOTHER"} onChange={handleChange} required>
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Relationship <RequiredAsterisk /></label>
+                      <select className={getInputStyle()} name="relationship" value={form.relationship || "MOTHER"} onChange={handleChange}>
                         <option value="MOTHER">Mother</option>
                         <option value="FATHER">Father</option>
                         <option value="GUARDIAN">Guardian</option>
@@ -390,29 +405,32 @@ const SignupRequestForm: React.FC = () => {
                 {role === "director" && (
                   <>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Center Name</label>
-                      <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500" type="text" name="centerName" value={form.centerName || ""} onChange={handleChange} required />
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Center Name <RequiredAsterisk /></label>
+                      <input className={getInputStyle(errors.centerName)} type="text" name="centerName" value={form.centerName || ""} onChange={handleChange} />
+                      <ErrorMessage message={errors.centerName} />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Center Address</label>
-                      <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500" type="text" name="centerAddress" value={form.centerAddress || ""} onChange={handleChange} required />
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Center Address <RequiredAsterisk /></label>
+                      <input className={getInputStyle(errors.centerAddress)} type="text" name="centerAddress" value={form.centerAddress || ""} onChange={handleChange} />
+                      <ErrorMessage message={errors.centerAddress} />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Capacity</label>
-                      <input className={`w-full px-4 py-3 bg-slate-50 border ${errors.capacity ? 'border-red-500' : 'border-slate-200 focus:border-cyan-500'} rounded-xl outline-none`} type="number" name="capacity" min="1" max="500" value={form.capacity || ""} onChange={handleChange} required />
-                      {errors.capacity && <p className="text-red-500 text-xs mt-1">{errors.capacity}</p>}
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Capacity <RequiredAsterisk /></label>
+                      <input className={getInputStyle(errors.capacity)} type="number" name="capacity" min="1" max="500" value={form.capacity || ""} onChange={handleChange} />
+                      <ErrorMessage message={errors.capacity} />
                     </div>
                   </>
                 )}
                 {role === "teacher" && (
                   <>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Address</label>
-                      <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500 transition-all" type="text" name="address" placeholder="Residential Address" value={form.address} onChange={handleChange} required />
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Address <RequiredAsterisk /></label>
+                      <input className={getInputStyle(errors.address)} type="text" name="address" placeholder="Residential Address" value={form.address} onChange={handleChange} />
+                      <ErrorMessage message={errors.address} />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Experience</label>
-                      <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500" name="experience" value={form.experience || "1-5"} onChange={handleChange} required>
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Experience <RequiredAsterisk /></label>
+                      <select className={getInputStyle()} name="experience" value={form.experience || "1-5"} onChange={handleChange}>
                         <option value="< 1">Less than 1 year</option>
                         <option value="1-5">1 - 5 years</option>
                         <option value="> 5">More than 5 years</option>
@@ -424,7 +442,7 @@ const SignupRequestForm: React.FC = () => {
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Message</label>
-                <textarea className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500 min-h-[100px] resize-none" name="message" value={form.message} onChange={handleChange} />
+                <textarea className={getInputStyle()} name="message" value={form.message} onChange={handleChange} />
               </div>
 
 
@@ -462,7 +480,5 @@ const SignupRequestForm: React.FC = () => {
     </div>
   );
 };
-
-
 
 export default SignupRequestForm;
