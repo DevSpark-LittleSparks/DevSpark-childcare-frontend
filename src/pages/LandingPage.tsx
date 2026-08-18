@@ -757,18 +757,33 @@ const LandingPage: React.FC = () => {
               </p>
             </div>
             <div>
-              <h4 className="font-black text-white mb-5 text-sm uppercase tracking-widest">Resources</h4>
+              <div className="mb-5">
+                <h4 className="font-black text-white text-sm uppercase tracking-widest">Resources</h4>
+                <div className="w-12 h-1 bg-[#f05060] mt-3 rounded-full"></div>
+              </div>
               <Link to="/signup-request" className="text-slate-500 hover:text-primary-500 transition-colors block mb-3 text-sm">Getting Started</Link>
               <Link to="/billing" className="text-slate-500 hover:text-primary-500 transition-colors block mb-3 text-sm">Pricing</Link>
             </div>
             <div>
-              <h4 className="font-black text-white mb-5 text-sm uppercase tracking-widest">Features</h4>
-              <Link to="/attendance" className="text-slate-500 hover:text-primary-500 transition-colors block mb-3 text-sm">Attendance Tracking</Link>
-              <Link to="/activities" className="text-slate-500 hover:text-primary-500 transition-colors block mb-3 text-sm">Daily Reports</Link>
-              <Link to="/meals" className="text-slate-500 hover:text-primary-500 transition-colors block text-sm">Meal Planning</Link>
+              <div className="mb-5">
+                <h4 className="font-black text-white text-sm uppercase tracking-widest">Features</h4>
+                <div className="w-12 h-1 bg-[#f05060] mt-3 rounded-full"></div>
+              </div>
+              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Billing/Payments</span>
+              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Payroll</span>
+              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Feature Overview</span>
+              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Attendance tracking</span>
+              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Communication</span>
+              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Center Management</span>
+              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Daily Activity Report</span>
+              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Meal Planning</span>
+              <span className="text-slate-500 block text-sm font-medium cursor-default">Lesson Plans</span>
             </div>
             <div>
-              <h4 className="font-black text-white mb-5 text-sm uppercase tracking-widest">Company</h4>
+              <div className="mb-5">
+                <h4 className="font-black text-white text-sm uppercase tracking-widest">Company</h4>
+                <div className="w-12 h-1 bg-[#f05060] mt-3 rounded-full"></div>
+              </div>
               <Link to="/about" className="text-slate-500 hover:text-primary-500 transition-colors block mb-3 text-sm">About Us</Link>
               <Link to="/contact" className="text-slate-500 hover:text-primary-500 transition-colors block text-sm">Contact Support</Link>
             </div>
