@@ -1,22 +1,54 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { apiClient } from '@/services/axiosInstance';
 
-const initialInvoices = [
-  { id: '#INV-2026-002', date: 'Mar 01, 2026', description: 'March - Leo', amount: 20000.00, status: 'Pending' },
-  { id: '#INV-2026-001', date: 'Feb 01, 2026', description: 'February - Leo', amount: 20000.00, status: 'Paid' },
-  { id: '#INV-2025-012', date: 'Jan 01, 2026', description: 'January - Leo', amount: 20000.00, status: 'Paid' },
-  { id: '#INV-2025-011', date: 'Dec 01, 2025', description: 'December - Leo', amount: 19500.00, status: 'Paid' },
-  { id: '#INV-2025-010', date: 'Nov 01, 2025', description: 'November - Leo', amount: 19500.00, status: 'Paid' },
-  { id: '#INV-2025-009', date: 'Oct 01, 2025', description: 'October - Leo', amount: 19500.00, status: 'Paid' },
-];
+const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-export const useInvoices = () => {
-  const [invoices, setInvoices] = useState(initialInvoices);
-
-  const markAsPaid = (id) => {
-    setInvoices(prev => prev.map(inv => 
-      inv.id === id ? { ...inv, status: 'Paid' } : inv
-    ));
+const mapPayment = (payment) => {
+  const [year, month] = payment.billingMonth.split('-');
+  const monthLabel = MONTH_LABELS[Number(month) - 1];
+  return {
+    id: `#PAY-${payment.paymentId.slice(0, 8).toUpperCase()}`,
+    paymentId: payment.paymentId,
+    date: `${monthLabel} 01, ${year}`,
+    description: payment.description || `${monthLabel} ${year} — Billing`,
+    amount: payment.amount,
+    status: payment.status === 'PAYED' ? 'Paid' : 'Pending',
   };
+};
+
+export const useInvoices = (parentId) => {
+  const [invoices, setInvoices] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchInvoices = useCallback(async () => {
+    if (!parentId) {
+      setInvoices([]);
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await apiClient.get(`/api/v1/payments/parent/${parentId}`);
+      setInvoices((res.data?.data ?? []).map(mapPayment));
+    } catch (err) {
+      setError('Unable to load invoices right now.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [parentId]);
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      if (!isMounted) return;
+      await fetchInvoices();
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchInvoices]);
 
   const outstandingBalance = invoices
     .filter(inv => inv.status === 'Pending')
@@ -26,8 +58,10 @@ export const useInvoices = () => {
 
   return {
     invoices,
-    markAsPaid,
+    refetch: fetchInvoices,
     outstandingBalance,
-    lastPayment
+    lastPayment,
+    isLoading,
+    error,
   };
 };

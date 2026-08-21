@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal } from '@/shared/ui/Modal/Modal';
 import { formatCurrency } from '@/shared/lib/formatCurrency';
 
-export const ConfirmPaymentModal = ({ isOpen, onClose, invoice, paymentMethod, onConfirm }) => {
+export const ConfirmPaymentModal = ({ isOpen, onClose, invoice, paymentMethod, onConfirm, isSubmitting }) => {
   if (!isOpen || !invoice) return null;
 
   return (
@@ -31,11 +31,17 @@ export const ConfirmPaymentModal = ({ isOpen, onClose, invoice, paymentMethod, o
       </div>
 
       <div className="modal-actions" style={{ justifyContent: 'space-between' }}>
-        <button type="button" className="btn-outline" onClick={onClose} style={{ flex: 1, justifyContent: 'center' }}>
+        <button type="button" className="btn-outline" onClick={onClose} disabled={isSubmitting} style={{ flex: 1, justifyContent: 'center' }}>
           Cancel
         </button>
-        <button type="button" className="btn-primary" onClick={() => onConfirm(invoice.id)} style={{ flex: 1, justifyContent: 'center' }}>
-          Confirm Payment
+        <button
+          type="button"
+          className="btn-primary"
+          onClick={() => onConfirm(invoice)}
+          disabled={isSubmitting}
+          style={{ flex: 1, justifyContent: 'center' }}
+        >
+          {isSubmitting ? 'Processing...' : 'Confirm Payment'}
         </button>
       </div>
     </Modal>

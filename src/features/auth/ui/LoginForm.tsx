@@ -92,8 +92,24 @@ export function LoginForm() {
         data.password
       );
       const { uid, email, displayName, photoURL } = userCredential.user;
-      dispatch(setUser({ uid, email, displayName, photoURL, role: null }));
-      navigate("/");
+
+      // The backend sets a "role" custom claim (ADMIN/TEACHER/PARENT) on the
+      // Firebase account at signup/approval time - read it from the ID token
+      // rather than hardcoding null, so role-gated UI works after real login.
+      const tokenResult = await userCredential.user.getIdTokenResult();
+      const role = (tokenResult.claims.role as string | undefined) ?? null;
+
+      dispatch(setUser({ uid, email, displayName, photoURL, role }));
+
+      if (role?.toLowerCase() === "admin") {
+        navigate("/admin/dashboard");
+      } else if (role?.toLowerCase() === "teacher") {
+        navigate("/teacher/dashboard");
+      } else if (role?.toLowerCase() === "parent") {
+        navigate("/parent/dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (err: any) {
       dispatch(setError(err.message || "Failed to login. Invalid credentials."));
     } finally {

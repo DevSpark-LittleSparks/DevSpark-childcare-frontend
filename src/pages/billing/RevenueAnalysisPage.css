@@ -1,0 +1,54 @@
+.back-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 12px;
+}
+
+.back-link:hover {
+  color: #06b6d4;
+}
+
+.growth-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.growth-badge.inline {
+  display: inline-flex;
+}
+
+.growth-badge.positive {
+  color: #059669;
+}
+
+.growth-badge.negative {
+  color: #dc2626;
+}
+
+.revenue-access-denied {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 60px 24px;
+  color: #dc2626;
+  text-align: center;
+}
+
+.revenue-access-denied .section-title {
+  color: #1f2937;
+}
+

@@ -8,4 +8,9 @@ export default defineConfig({
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },
   },
+  define: {
+    // sockjs-client (used by the messaging feature) references Node's
+    // `global`, which the browser doesn't have.
+    global: 'globalThis',
+  },
 });

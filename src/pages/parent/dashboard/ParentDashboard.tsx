@@ -188,7 +188,7 @@ const ParentDashboard = () => {
             label="UNREAD MESSAGES"
             value="2"
             iconBg="bg-blue-50"
-            onClick={() => navigate('/parent/messaging')}
+            onClick={() => navigate('/parent/messages')}
           />
         </div>
 

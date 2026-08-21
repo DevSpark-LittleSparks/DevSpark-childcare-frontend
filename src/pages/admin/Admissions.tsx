@@ -6,6 +6,7 @@ import {
   ClipboardList, Users, Mail, Phone, Hash
 } from 'lucide-react';
 import { Button } from '../../components/common/Button';
+import { apiClient } from '../../services/axiosInstance';
 
 const AdmissionsPage = () => {
   const navigate = useNavigate();
@@ -84,26 +85,36 @@ const AdmissionsPage = () => {
     return true;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      setIsSubmitting(true);
+    if (!validateForm()) return;
 
-      // Save data to localStorage
-      const existingData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
-      const newChild = {
-        id: 'c' + Date.now(),
-        ...formData,
-        profileImage: previewImage || 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80',
-        enrolledDate: new Date().toISOString().split('T')[0]
-      };
-      localStorage.setItem('admissionsData', JSON.stringify([...existingData, newChild]));
+    setIsSubmitting(true);
+    try {
+      await apiClient.post('/api/v1/child/register', {
+        fullName: formData.fullName,
+        nameWithInitials: formData.nameWithInitials,
+        dob: formData.dob,
+        gender: formData.gender,
+        bloodGroup: formData.bloodGroup,
+        height: formData.height ? Number(formData.height) : null,
+        weight: formData.weight ? Number(formData.weight) : null,
+        address: formData.address,
+        specialNote: formData.specialNote,
+        relationship: formData.relationship,
+        parentFullName: formData.parentFullName,
+        parentEmail: formData.parentEmail,
+        parentContact: formData.parentContact,
+        parentID: formData.parentID,
+        profilePic: previewImage,
+      });
 
-      setTimeout(() => {
-        setIsSubmitting(false);
-        alert("Registration Successful! Data has been stored in LittleSparks.");
-        navigate('/admin/dashboard');
-      }, 2000);
+      alert("Registration Successful! The parent can now sign up using the registered email.");
+      navigate('/admin/dashboard');
+    } catch (err: any) {
+      alert(err?.response?.data?.message || "Registration failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

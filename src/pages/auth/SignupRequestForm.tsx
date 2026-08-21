@@ -18,6 +18,7 @@ interface FormData {
   address: string;
   role: UserRole;
   // Parent specific
+  nic?: string;
   childName?: string;
   dob?: string;
   gender?: string;
@@ -43,6 +44,7 @@ const SignupRequestForm: React.FC = () => {
     phone: "",
     address: "",
     role: "director",
+    nic: "",
     relationship: "MOTHER",
     experience: "1-5",
     centerName: "",
@@ -195,6 +197,10 @@ const SignupRequestForm: React.FC = () => {
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Address</label>
                       <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500 transition-all" type="text" name="address" placeholder="Residential Address" value={form.address} onChange={handleChange} required />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">NIC / Identity Number</label>
+                      <input className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-500 transition-all" type="text" name="nic" placeholder="200307110663" value={form.nic || ""} onChange={handleChange} required />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Child's Name</label>

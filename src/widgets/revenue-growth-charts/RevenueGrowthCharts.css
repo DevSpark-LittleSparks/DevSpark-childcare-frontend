@@ -1,0 +1,98 @@
+.revenue-charts {
+  min-width: 0;
+}
+
+.revenue-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.revenue-analysis-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background-color: transparent;
+  color: #06b6d4;
+  border: 1px solid #06b6d4;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.revenue-analysis-btn:hover {
+  background-color: #ecfeff;
+}
+
+.revenue-toggle {
+  display: flex;
+  gap: 4px;
+  background-color: #f3f4f6;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.revenue-toggle-btn {
+  border: none;
+  background: transparent;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.revenue-toggle-btn:hover {
+  color: #1f2937;
+}
+
+.revenue-toggle-btn.active {
+  background-color: #ffffff;
+  color: #0891b2;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.revenue-chart-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.revenue-status {
+  font-size: 14px;
+  color: #6b7280;
+  padding: 40px 0;
+  text-align: center;
+}
+
+.revenue-status-error {
+  color: #dc2626;
+}
+
+.revenue-tooltip {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.revenue-tooltip-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0 0 4px 0;
+}
+
+.revenue-tooltip-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}

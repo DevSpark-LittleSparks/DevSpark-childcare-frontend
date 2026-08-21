@@ -9,6 +9,8 @@ export interface AuthUser {
   displayName: string | null;
   photoURL: string | null;
   role?: string | null;
+  parentId?: string | null;
+  accountId?: string | null;
 }
 
 /**

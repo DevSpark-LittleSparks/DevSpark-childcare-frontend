@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { 
-  MdDashboard, MdAssignmentInd, MdPeople, MdManageAccounts, 
-  MdCreditCard, MdPayments, MdChat, MdRestaurant, MdSecurity, MdHistory, 
+  MdDashboard, MdAssignmentInd, MdPeople, MdManageAccounts,
+  MdCreditCard, MdPayments, MdChat, MdRestaurant, MdSecurity, MdHistory,
   MdLogout, MdSettings, MdPerson, MdKeyboardArrowUp,
-  MdMenuOpen, MdMenu 
+  MdMenuOpen, MdMenu, MdAttachMoney
 } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
 import { logout, selectUser } from "../../features/auth/model/authSlice";
+import { useAccountId } from "../../entities/auth/model/useAccountId";
+import { useUnreadMessageCount } from "../../entities/chat/model/useUnreadMessageCount";
 
 /**
  * SidebarProps Interface
@@ -57,6 +59,8 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, onOpenSettin
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { accountId } = useAccountId();
+  const unreadCount = useUnreadMessageCount(accountId);
 
   /** Handle clicking outside to close the dropdown */
   useEffect(() => {
@@ -115,6 +119,11 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, onOpenSettin
           <SidebarLink to="/admin/schedules" icon={<MdCreditCard />} label="Schedules" isCollapsed={isCollapsed} />
           <SidebarLink to="/admin/learning" icon={<MdPayments />} label="Learning" isCollapsed={isCollapsed} />
           <SidebarLink to="/admin/meals" icon={<MdRestaurant />} label="Meals" isCollapsed={isCollapsed} />
+          <SidebarLink to="/admin/billing" icon={<MdAttachMoney />} label="Billing" isCollapsed={isCollapsed} />
+        </NavGroup>
+
+        <NavGroup title="Communication" isCollapsed={isCollapsed}>
+          <SidebarLink to="/admin/messages" icon={<MdChat />} label="Messages" isCollapsed={isCollapsed} badge={unreadCount} />
         </NavGroup>
 
         <NavGroup title="System" isCollapsed={isCollapsed}>
@@ -166,18 +175,27 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, onOpenSettin
   );
 }
 
-const SidebarLink = ({ to, icon, label, isCollapsed }: { to: string, icon: any, label: string, isCollapsed: boolean }) => (
-  <NavLink 
-    to={to} 
-    className={({ isActive }) => 
+const SidebarLink = ({ to, icon, label, isCollapsed, badge }: { to: string, icon: any, label: string, isCollapsed: boolean, badge?: number }) => (
+  <NavLink
+    to={to}
+    className={({ isActive }) =>
       `flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-bold transition-all relative group ${
-        isActive 
-          ? "bg-[#CFFAFE] text-[#0891B2] shadow-sm" 
+        isActive
+          ? "bg-[#CFFAFE] text-[#0891B2] shadow-sm"
           : "text-slate-500 hover:bg-white/60 hover:text-slate-700"
       } ${isCollapsed ? "justify-center px-0" : ""}`
     }
   >
-    <span className="text-2xl shrink-0">{icon}</span>
+    <span className="text-2xl shrink-0 relative">
+      {icon}
+      {!!badge && (
+        <span className={`absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full flex items-center justify-center font-bold ${
+          badge > 9 ? "text-[9px] min-w-[16px] h-4 px-1" : "text-[9px] w-4 h-4"
+        }`}>
+          {badge > 9 ? "9+" : badge}
+        </span>
+      )}
+    </span>
     <span className={`transition-all duration-300 overflow-hidden whitespace-nowrap ${isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"}`}>
       {label}
     </span>

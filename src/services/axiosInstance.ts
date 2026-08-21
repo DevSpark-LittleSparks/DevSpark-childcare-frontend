@@ -1,5 +1,6 @@
 import axios from "axios";
 import { env } from "@/shared/config/env";
+import { firebaseAuth } from "@/lib/firebase";
 
 export const apiClient = axios.create({
   baseURL: env.apiBaseUrl,
@@ -7,5 +8,11 @@ export const apiClient = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-//We will add the token we need to send here when we create Redux later.
-//For now, this is the base.
+apiClient.interceptors.request.use(async (config) => {
+  const currentUser = firebaseAuth.currentUser;
+  if (currentUser) {
+    const token = await currentUser.getIdToken();
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});

@@ -51,6 +51,12 @@ export default {
           purple: '#F3E8FF',
           pink: '#FCE7F3',
         },
+        // Parent <-> Staff messaging colors
+        chat: {
+          bubbleRight: '#00a8cc',
+          bubbleLeft: '#ffffff',
+          bg: '#8ba6b6',
+        },
       },
       fontFamily: {
         // Updated font to Inter

@@ -5,6 +5,7 @@ import authReducer from './slices/authSlice';
 import billingReducer from './slices/billingSlice';
 import healthReducer from './slices/healthSlice';
 import staffReducer from './slices/staffSlice';
+import messagingReducer from '../features/messaging/model/messagingSlice';
 
 export const store = configureStore({
   reducer: {
@@ -13,6 +14,7 @@ export const store = configureStore({
     billing: billingReducer,
     health: healthReducer,
     staff: staffReducer,
+    messaging: messagingReducer,
   },
   devTools: true,
 });
