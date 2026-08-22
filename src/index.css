@@ -13,7 +13,7 @@
      * The 'Inter' font is automatically applied globally via Tailwind's default sans configuration.
      * 'antialiased' makes the text render smoother.
      */
-    @apply bg-surface-secondary text-slate-900 antialiased;
+    @apply bg-surface-secondary text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
 
     /* Hide scrollbar for Firefox */
     scrollbar-width: none;
