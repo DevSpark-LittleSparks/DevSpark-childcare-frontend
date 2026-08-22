@@ -39,6 +39,9 @@ interface FormData {
   message: string;
 }
 
+const RequiredAsterisk = () => <span className="text-black ml-1">*</span>;
+const ErrorMessage = ({ message }: { message?: string }) => message ? <p className="text-red-500 text-xs mt-1">{message}</p> : null;
+
 const SignupRequestForm: React.FC = () => {
   const navigate = useNavigate();
   const [role, setRole] = useState<UserRole>("director");
@@ -198,13 +201,17 @@ const SignupRequestForm: React.FC = () => {
     } catch (err: any) {
       const msg = err.response?.data?.message || "Something went wrong. Please try again.";
 
+      // Handle duplicate email entries gracefully
+      const lowerMsg = msg.toLowerCase();
+      if ((lowerMsg.includes("duplicate entry") || lowerMsg.includes("email_exists") || lowerMsg.includes("already exists")) && lowerMsg.includes("email")) {
+        setErrors(prev => ({ ...prev, email: "An account or request with this email already exists." }));
+      }
       // Special case for parents: if they aren't pre-registered as guardians, show a helpful message
-      if (msg.toLowerCase().includes("guardian") || msg.toLowerCase().includes("enrollment") || msg.toLowerCase().includes("pre-registered")) {
+      else if (lowerMsg.includes("guardian") || lowerMsg.includes("enrollment") || lowerMsg.includes("pre-registered")) {
         setErrors(prev => ({ ...prev, email: msg }));
       } else {
         alert(msg);
       }
-
     } finally {
       setIsSubmitting(false); // Stop the loading state
     }
@@ -235,20 +242,20 @@ const SignupRequestForm: React.FC = () => {
   };
 
   const getInputStyle = (errorField?: string) =>
-    `w-full px-4 py-3 bg-slate-50 border ${errorField ? 'border-red-500 focus:border-red-500' : 'border-slate-200 focus:border-cyan-500'} rounded-xl outline-none transition-all`;
+    `w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border ${errorField ? 'border-red-500 focus:border-red-500' : 'border-slate-200 dark:border-slate-700/60 focus:border-cyan-500'} rounded-xl outline-none transition-all`;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-800/40 flex flex-col font-sans">
       <AuthHeader backLink="/" />
 
       <div className="flex-1 flex flex-col lg:flex-row w-full overflow-hidden">
-        <section className="flex-1 p-8 lg:p-12 xl:p-20 bg-white overflow-y-auto flex items-center justify-center lg:justify-end">
+        <section className="flex-1 p-8 lg:p-12 xl:p-20 bg-white dark:bg-[#0f172a] overflow-y-auto flex items-center justify-center lg:justify-end">
           <div className="w-full max-w-md lg:mr-12 xl:mr-24">
 
-            <h1 className="text-3xl font-extrabold text-slate-900 mb-2 tracking-tight">
+            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">
               {content[role].leftTitle}
             </h1>
-            <p className="text-slate-500 mb-10 text-lg">
+            <p className="text-slate-500 dark:text-slate-400 mb-10 text-lg">
               {content[role].leftSubtitle}
             </p>
 
@@ -260,7 +267,7 @@ const SignupRequestForm: React.FC = () => {
                   onClick={() => handleRoleChange(r)}
                   className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 capitalize ${role === r
                     ? "bg-cyan-600 text-white shadow-md transform scale-[1.02]"
-                    : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300 hover:bg-slate-200/50"
                     }`}
                 >
                   {r}
@@ -271,25 +278,25 @@ const SignupRequestForm: React.FC = () => {
             <form className="space-y-6" onSubmit={handleSubmit} noValidate>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">First Name <RequiredAsterisk /></label>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">First Name <RequiredAsterisk /></label>
                   <input className={getInputStyle(errors.firstName)} type="text" name="firstName" placeholder="Ann" value={form.firstName} onChange={handleChange} />
                   <ErrorMessage message={errors.firstName} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Last Name <RequiredAsterisk /></label>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Last Name <RequiredAsterisk /></label>
                   <input className={getInputStyle(errors.lastName)} type="text" name="lastName" placeholder="Fonseka" value={form.lastName} onChange={handleChange} />
                   <ErrorMessage message={errors.lastName} />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Email Address <RequiredAsterisk /></label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Email Address <RequiredAsterisk /></label>
                 <input className={getInputStyle(errors.email)} type="email" name="email" placeholder="ann@example.com" value={form.email} onChange={handleChange} />
                 <ErrorMessage message={errors.email} />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Password <RequiredAsterisk /></label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Password <RequiredAsterisk /></label>
                 <div className="relative">
                   <input
                     className={`${getInputStyle(errors.password)} pl-4 pr-12`}
@@ -302,7 +309,7 @@ const SignupRequestForm: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:text-slate-300 focus:outline-none transition-colors"
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
@@ -319,7 +326,7 @@ const SignupRequestForm: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Confirm Password <RequiredAsterisk /></label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Confirm Password <RequiredAsterisk /></label>
                 <div className="relative">
                   <input
                     className={`${getInputStyle(errors.confirmPassword)} pl-4 pr-12`}
@@ -332,7 +339,7 @@ const SignupRequestForm: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:text-slate-300 focus:outline-none transition-colors"
                   >
                     {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
@@ -355,24 +362,24 @@ const SignupRequestForm: React.FC = () => {
                 {role === "parent" && (
                   <>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Address <RequiredAsterisk /></label>
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Address <RequiredAsterisk /></label>
                       <input className={getInputStyle(errors.address)} type="text" name="address" placeholder="Residential Address" value={form.address} onChange={handleChange} />
                       <ErrorMessage message={errors.address} />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">NIC Number <RequiredAsterisk /></label>
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">NIC Number <RequiredAsterisk /></label>
                       <input className={getInputStyle(errors.nic)} type="text" name="nic" placeholder="199012345V or 200012345678" value={form.nic || ""} onChange={handleChange} />
                       <ErrorMessage message={errors.nic} />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Child's Name <RequiredAsterisk /></label>
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Child's Name <RequiredAsterisk /></label>
                       <input className={getInputStyle(errors.childName)} type="text" name="childName" value={form.childName || ""} onChange={handleChange} />
                       <ErrorMessage message={errors.childName} />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Child's DOB <RequiredAsterisk /></label>
+                        <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Child's DOB <RequiredAsterisk /></label>
                         <input
                           className={getInputStyle(errors.dob)}
                           type="date" name="dob"
@@ -383,7 +390,7 @@ const SignupRequestForm: React.FC = () => {
                         <ErrorMessage message={errors.dob} />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Gender <RequiredAsterisk /></label>
+                        <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Gender <RequiredAsterisk /></label>
                         <select className={getInputStyle(errors.gender)} name="gender" value={form.gender || ""} onChange={handleChange}>
                           <option value="" disabled>Select Gender</option>
                           <option value="male">Male</option>
@@ -393,7 +400,7 @@ const SignupRequestForm: React.FC = () => {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Relationship <RequiredAsterisk /></label>
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Relationship <RequiredAsterisk /></label>
                       <select className={getInputStyle()} name="relationship" value={form.relationship || "MOTHER"} onChange={handleChange}>
                         <option value="MOTHER">Mother</option>
                         <option value="FATHER">Father</option>
@@ -405,17 +412,17 @@ const SignupRequestForm: React.FC = () => {
                 {role === "director" && (
                   <>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Center Name <RequiredAsterisk /></label>
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Center Name <RequiredAsterisk /></label>
                       <input className={getInputStyle(errors.centerName)} type="text" name="centerName" value={form.centerName || ""} onChange={handleChange} />
                       <ErrorMessage message={errors.centerName} />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Center Address <RequiredAsterisk /></label>
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Center Address <RequiredAsterisk /></label>
                       <input className={getInputStyle(errors.centerAddress)} type="text" name="centerAddress" value={form.centerAddress || ""} onChange={handleChange} />
                       <ErrorMessage message={errors.centerAddress} />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Capacity <RequiredAsterisk /></label>
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Capacity <RequiredAsterisk /></label>
                       <input className={getInputStyle(errors.capacity)} type="number" name="capacity" min="1" max="500" value={form.capacity || ""} onChange={handleChange} />
                       <ErrorMessage message={errors.capacity} />
                     </div>
@@ -424,12 +431,12 @@ const SignupRequestForm: React.FC = () => {
                 {role === "teacher" && (
                   <>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Address <RequiredAsterisk /></label>
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Address <RequiredAsterisk /></label>
                       <input className={getInputStyle(errors.address)} type="text" name="address" placeholder="Residential Address" value={form.address} onChange={handleChange} />
                       <ErrorMessage message={errors.address} />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Experience <RequiredAsterisk /></label>
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Experience <RequiredAsterisk /></label>
                       <select className={getInputStyle()} name="experience" value={form.experience || "1-5"} onChange={handleChange}>
                         <option value="< 1">Less than 1 year</option>
                         <option value="1-5">1 - 5 years</option>
@@ -441,7 +448,7 @@ const SignupRequestForm: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Message</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Message</label>
                 <textarea className={getInputStyle()} name="message" value={form.message} onChange={handleChange} />
               </div>
 
@@ -458,14 +465,14 @@ const SignupRequestForm: React.FC = () => {
         </section>
 
         <section className="hidden lg:flex flex-1 bg-gradient-to-br from-cyan-600 to-blue-700 p-12 items-center justify-center relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+          <div className="absolute top-0 left-0 w-96 h-96 bg-white dark:bg-[#0f172a]/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
           <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-cyan-400/20 rounded-full blur-3xl translate-x-1/4 translate-y-1/4" />
 
           <div className="relative z-10 w-full flex flex-col items-center">
             <div className="w-full max-w-[540px] mb-12 relative group transition-all duration-700 transform hover:scale-[1.02]">
               <div className="absolute inset-0 bg-black/40 rounded-[3rem] blur-3xl translate-y-12 scale-90 opacity-60" />
               <div className="relative bg-slate-900 p-4 rounded-[3.2rem] shadow-2xl border-[10px] border-slate-800/90 overflow-hidden aspect-[4/3] flex items-center justify-center">
-                <div className="relative w-full h-full bg-white rounded-[2.5rem] overflow-hidden shadow-inner">
+                <div className="relative w-full h-full bg-white dark:bg-[#0f172a] rounded-[2.5rem] overflow-hidden shadow-inner">
                   <img src={content[role].image} alt="Preview" className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110" />
                 </div>
               </div>

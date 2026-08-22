@@ -41,17 +41,17 @@ const AlertBanner: React.FC<AlertBannerProps> = ({ notifications, onRead }) => {
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: -20, opacity: 0 }}
-        className="fixed top-20 left-0 right-0 z-[40] px-4 pointer-events-none"
+        initial={{ y: -20, opacity: 0, height: 0, marginBottom: 0 }}
+        animate={{ y: 0, opacity: 1, height: 'auto', marginBottom: 24 }}
+        exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+        className="px-6 max-w-7xl mx-auto"
       >
-        <div className="max-w-4xl mx-auto pointer-events-auto">
+        <div className="w-full pointer-events-auto">
           <motion.div
             layout
-            className={`relative overflow-hidden rounded-2xl shadow-2xl border border-white/20 backdrop-blur-xl ${isHighPriority
-              ? 'bg-gradient-to-br from-rose-600/90 via-red-600/90 to-orange-600/90'
-              : 'bg-gradient-to-br from-indigo-600/90 via-blue-600/90 to-cyan-600/90'
+            className={`relative overflow-hidden rounded-[2rem] shadow-2xl border backdrop-blur-xl ${isHighPriority
+              ? 'bg-slate-900 dark:bg-black border-amber-500/30 shadow-[0_20px_50px_rgba(245,158,11,0.15)]'
+              : 'bg-gradient-to-br from-indigo-600/90 via-blue-600/90 to-cyan-600/90 border-white/20'
               } text-white`}
           >
             {/* Ambient Background Glow */}
@@ -61,25 +61,25 @@ const AlertBanner: React.FC<AlertBannerProps> = ({ notifications, onRead }) => {
             <div className="px-6 py-4 flex items-center justify-between relative z-10">
               <div className="flex items-center gap-5 flex-1">
                 <div className="relative">
-                  <div className={`p-3 rounded-2xl bg-white/20 backdrop-blur-md shadow-xl border border-white/30`}>
+                  <div className={`p-3 rounded-2xl ${isHighPriority ? 'bg-amber-500/20 border-amber-500/30' : 'bg-white/20 border-white/30'} backdrop-blur-md shadow-xl border`}>
                     {isHighPriority ? (
-                      <AlertTriangle className="w-6 h-6 text-white animate-bounce" />
+                      <Bell className={`w-6 h-6 ${isHighPriority ? 'text-amber-400' : 'text-white'} animate-bounce`} />
                     ) : (
                       <Megaphone className="w-6 h-6 text-white" />
                     )}
                   </div>
                   {isHighPriority && (
                     <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+                      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${isHighPriority ? 'bg-amber-400' : 'bg-white'} opacity-75`}></span>
+                      <span className={`relative inline-flex rounded-full h-3 w-3 ${isHighPriority ? 'bg-amber-500' : 'bg-white'}`}></span>
                     </span>
                   )}
                 </div>
 
                 <div className="flex flex-col">
                   <div className="flex items-center gap-3 mb-0.5">
-                    <span className="font-extrabold text-xs tracking-widest uppercase text-white/80">
-                      {current.title || (isHighPriority ? 'Urgent Update' : 'Announcement')}
+                    <span className={`font-extrabold text-[10px] tracking-widest uppercase ${isHighPriority ? 'text-amber-400/90' : 'text-white/80'}`}>
+                      {current.title || (isHighPriority ? 'Important Notice' : 'Announcement')}
                     </span>
                     {notifications.length > 1 && (
                       <span className="px-2 py-0.5 rounded-full bg-black/20 text-[10px] font-bold border border-white/10">
@@ -87,7 +87,7 @@ const AlertBanner: React.FC<AlertBannerProps> = ({ notifications, onRead }) => {
                       </span>
                     )}
                   </div>
-                  <p className="text-base font-semibold leading-relaxed tracking-wide">
+                  <p className="text-[15px] font-medium leading-relaxed tracking-wide text-slate-200">
                     {current.body}
                   </p>
                 </div>
@@ -115,12 +115,12 @@ const AlertBanner: React.FC<AlertBannerProps> = ({ notifications, onRead }) => {
 
             {/* Progress Bar for High Priority */}
             {isHighPriority && (
-              <div className="h-1 w-full bg-white/10">
+              <div className="h-1 w-full bg-white/5">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: '100%' }}
                   transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                  className="h-full bg-white/40"
+                  className="h-full bg-amber-500/50"
                 />
               </div>
             )}

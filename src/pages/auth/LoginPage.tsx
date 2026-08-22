@@ -6,7 +6,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex bg-slate-950">
 
       {/* LEFT SIDE: The actual login form where users type their info */}
-      <div className="w-full md:w-1/2 flex items-center justify-center px-6 bg-white animate-in fade-in slide-in-from-left-4 duration-1000 z-10 shadow-2xl">
+      <div className="w-full md:w-1/2 flex items-center justify-center px-6 bg-white dark:bg-[#0f172a] animate-in fade-in slide-in-from-left-4 duration-1000 z-10 shadow-2xl">
         <LoginForm />
       </div>
 

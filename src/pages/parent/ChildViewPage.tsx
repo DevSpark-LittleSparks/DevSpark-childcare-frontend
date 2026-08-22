@@ -74,22 +74,22 @@ const ChildViewPage = () => {
   }, [child.dob]);
 
   return (
-    <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
+    <div className="min-h-screen w-full bg-surface-secondary dark:bg-slate-950 transition-colors duration-300 font-sans text-slate-900 dark:text-slate-100 pb-10">
       <header className="max-w-7xl mx-auto px-6 pt-8 pb-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-6">
             <button 
               onClick={() => navigate(-1)}
-              className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 transition-all group"
+              className="p-3 bg-white dark:bg-[#0f172a] rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50 transition-all group"
             >
-              <ArrowLeft className="text-slate-400 group-hover:text-primary-500" size={20} />
+              <ArrowLeft className="text-slate-400 dark:text-slate-500 dark:text-slate-400 group-hover:text-primary-500" size={20} />
             </button>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-6 mt-6 space-y-8 animate-fadeUp">
-        <div className="bg-white rounded-[3rem] shadow-[0_20px_50px_rgba(10,6,55,0.02)] border border-slate-100 overflow-hidden flex flex-col lg:flex-row">
+        <div className="bg-white dark:bg-[#0f172a] rounded-[3rem] shadow-[0_20px_50px_rgba(10,6,55,0.02)] border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 overflow-hidden flex flex-col lg:flex-row">
           
           {/* --- CONTENT SECTION --- */}
           <div className="flex-[1.5] p-8 md:p-12 lg:p-16">
@@ -98,14 +98,14 @@ const ChildViewPage = () => {
                
                 <p className="text-[10px] font-black uppercase tracking-[0.3em]">Student Profile</p>
               </div>
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight font-sans uppercase">
+              <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight font-sans uppercase">
                 {child.name}
               </h1>
             </div>
 
             <div className="space-y-12">
               <section className="space-y-6">
-                <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-3">
+                <h3 className="text-[11px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] flex items-center gap-3">
                   <div className="w-10 h-[3px] bg-primary-500 rounded-full"></div> Personal Identity
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -117,7 +117,7 @@ const ChildViewPage = () => {
               </section>
 
               <section className="space-y-6">
-                <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-3">
+                <h3 className="text-[11px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] flex items-center gap-3">
                   <div className="w-10 h-[3px] bg-secondary-500 rounded-full"></div> Growth & Health
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -134,17 +134,17 @@ const ChildViewPage = () => {
                     <ClipboardList size={18} />
                     <span className="text-[10px] font-black uppercase tracking-widest">Medical Notes</span>
                   </div>
-                  <p className="text-sm font-bold text-slate-600 leading-relaxed italic">
+                  <p className="text-sm font-bold text-slate-600 dark:text-slate-300 leading-relaxed italic">
                     \"{child.specialNote || "No medical alerts for this student."}\"
                   </p>
                 </div>
 
-                <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100">
+                <div className="p-8 bg-slate-50 dark:bg-slate-800/40 rounded-[2.5rem] border border-slate-100">
                   <div className="flex items-center gap-3 mb-4 text-slate-400">
                     <MapPin size={18} />
                     <span className="text-[10px] font-black uppercase tracking-widest">Home Address</span>
                   </div>
-                  <p className="text-sm font-bold text-midnight leading-relaxed">
+                  <p className="text-sm font-bold text-midnight dark:text-white leading-relaxed">
                     {child.address}
                   </p>
                 </div>
@@ -171,13 +171,13 @@ const ChildViewPage = () => {
               />
             </div>
 
-            <div className="absolute bottom-6 right-8 z-20 bg-white/95 backdrop-blur-md p-4 rounded-[2.2rem] shadow-2xl flex items-center gap-4 transition-all hover:scale-105 border border-white">
+            <div className="absolute bottom-6 right-8 z-20 bg-white dark:bg-[#0f172a]/95 backdrop-blur-md p-4 rounded-[2.2rem] shadow-2xl flex items-center gap-4 transition-all hover:scale-105 border border-white">
                <div className="h-12 w-12 bg-primary-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/30">
                   <Fingerprint size={24} />
                </div>
 
                <div className="pr-4 text-left">
-                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-0.5">
+                  <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-0.5">
                       Verified Student
                   </p>
                   <Logo 
@@ -196,17 +196,17 @@ const ChildViewPage = () => {
 
 const InfoItem = ({ label, value }: { label: string; value: string }) => (
   <div className="space-y-1">
-    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
-    <p className="text-base font-bold text-midnight tracking-tight">{value}</p>
+    <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">{label}</p>
+    <p className="text-base font-bold text-midnight dark:text-white tracking-tight">{value}</p>
   </div>
 );
 
 const StatCard = ({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string; color: string }) => (
-  <div className="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col items-center text-center space-y-2">
+  <div className="bg-white dark:bg-[#0f172a] p-5 rounded-[2rem] border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 shadow-sm flex flex-col items-center text-center space-y-2">
     <div className={`${color} opacity-80`}>{icon}</div>
     <div className="space-y-0.5">
       <p className="text-[8px] font-black text-slate-300 uppercase tracking-tighter">{label}</p>
-      <p className="text-xs font-black text-midnight">{value}</p>
+      <p className="text-xs font-black text-midnight dark:text-white">{value}</p>
     </div>
   </div>
 );

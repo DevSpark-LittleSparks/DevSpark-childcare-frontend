@@ -115,7 +115,7 @@ const TeamMember = ({
         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
       />
     </div>
-    <h4 className="text-lg font-black text-slate-800 tracking-tight font-sans mb-1">{name}</h4>
+    <h4 className="text-lg font-black text-slate-800 dark:text-slate-200 tracking-tight font-sans mb-1">{name}</h4>
     <p className="text-xs font-bold text-cyan-600 uppercase tracking-widest">{role}</p>
   </motion.div>
 );
@@ -129,7 +129,7 @@ const AboutUsPage: React.FC = () => {
   const { scrollYProgress } = useScroll({ target: pageRef });
 
   return (
-    <div ref={pageRef} className="min-h-screen bg-white font-sans text-slate-800 overflow-x-hidden">
+    <div ref={pageRef} className="min-h-screen bg-white dark:bg-[#0f172a] font-sans text-slate-800 dark:text-slate-200 overflow-x-hidden">
 
       {/* ── Scroll progress bar ── */}
       <motion.div
@@ -186,7 +186,7 @@ const AboutUsPage: React.FC = () => {
       {/* ══════════════════════════════════════
           1. HERO SECTION 
       ══════════════════════════════════════ */}
-      <section className="relative py-12 px-6 lg:px-8 bg-white">
+      <section className="relative py-12 px-6 lg:px-8 bg-white dark:bg-[#0f172a]">
         <div className="max-w-7xl mx-auto relative bg-[#eef8f8] rounded-3xl overflow-hidden shadow-sm min-h-[500px] flex items-center justify-center py-20 px-6">
 
           {/* Top Left Cyan Shape */}
@@ -203,11 +203,11 @@ const AboutUsPage: React.FC = () => {
 
           {/* Decorative Marks */}
           {/* Top Left Small Lines */}
-          <svg className="absolute left-[20%] top-[25%] w-10 h-10 text-slate-800 transform rotate-12" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+          <svg className="absolute left-[20%] top-[25%] w-10 h-10 text-slate-800 dark:text-slate-200 transform rotate-12" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
             <path d="M6 18L10 14M12 22V16M18 18L14 14" />
           </svg>
           {/* Top Right Small Lines */}
-          <svg className="absolute right-[20%] top-[25%] w-10 h-10 text-slate-800 transform -rotate-[30deg]" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+          <svg className="absolute right-[20%] top-[25%] w-10 h-10 text-slate-800 dark:text-slate-200 transform -rotate-[30deg]" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
             <path d="M6 18L10 14M12 22V16M18 18L14 14" />
           </svg>
           {/* Bottom Left Sparkle */}
@@ -215,7 +215,7 @@ const AboutUsPage: React.FC = () => {
             <path d="M12 2C12 7 17 12 22 12C17 12 12 17 12 22C12 17 7 17 2 12C7 12 12 7 12 2Z" />
           </svg>
           {/* Bottom Right Sparkle */}
-          <svg className="absolute right-[10%] bottom-[20%] w-12 h-12 text-slate-800 transform rotate-45" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="absolute right-[10%] bottom-[20%] w-12 h-12 text-slate-800 dark:text-slate-200 transform rotate-45" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2C12 7 17 12 22 12C17 12 12 17 12 22C12 17 7 17 2 12C7 12 12 7 12 2Z" />
             <path d="M19 4C19 6 21 8 23 8C21 8 19 10 19 12C19 10 17 10 15 8C17 8 19 6 19 4Z" />
           </svg>
@@ -227,16 +227,16 @@ const AboutUsPage: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="relative z-10 max-w-4xl mx-auto flex flex-col items-center text-center"
           >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-800 tracking-tight leading-tight mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-800 dark:text-slate-200 tracking-tight leading-tight mb-6">
               About Us<br className="hidden md:block" />
 
             </h1>
-            <p className="text-lg md:text-xl text-slate-600 leading-relaxed max-w-3xl mb-10 px-4">
+            <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl mb-10 px-4">
               Want to know a lil' more about LittleSparks? Discover the "why" behind our mission and meet the amazing team who makes it possible.
             </p>
             <Button
               variant="primary"
-              className="bg-[#ffd03b] hover:bg-[#f0c020] text-slate-900 border-none px-8 py-3 rounded-md text-lg font-bold shadow-sm"
+              className="bg-[#ffd03b] hover:bg-[#f0c020] text-slate-900 dark:text-white border-none px-8 py-3 rounded-md text-lg font-bold shadow-sm"
               onClick={() => navigate('/contact')}
             >
               Get In Touch
@@ -248,10 +248,10 @@ const AboutUsPage: React.FC = () => {
       {/* ══════════════════════════════════════
           2. WHAT INSPIRES US
       ══════════════════════════════════════ */}
-      <section className="py-20 relative bg-white">
+      <section className="py-20 relative bg-white dark:bg-[#0f172a]">
         <div className="max-w-6xl mx-auto px-6">
           <ScrollReveal direction="up">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 text-center mb-16 tracking-tight">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-slate-200 text-center mb-16 tracking-tight">
               What inspires us
             </h2>
           </ScrollReveal>
@@ -261,7 +261,7 @@ const AboutUsPage: React.FC = () => {
               <div className="w-20 h-20 rounded-xl bg-[#00d0b0] flex items-center justify-center mb-6 shadow-sm">
                 <Leaf size={40} className="text-white" strokeWidth={1.5} />
               </div>
-              <p className="text-slate-600 text-sm md:text-base leading-relaxed px-4">
+              <p className="text-slate-600 dark:text-slate-300 text-sm md:text-base leading-relaxed px-4">
                 The first five years of a child's life are the most critical for physical, intellectual, and social emotional development.
               </p>
             </motion.div>
@@ -270,7 +270,7 @@ const AboutUsPage: React.FC = () => {
               <div className="w-20 h-20 rounded-xl bg-[#ffd03b] flex items-center justify-center mb-6 shadow-sm">
                 <Scale size={40} className="text-slate-800" strokeWidth={1.5} />
               </div>
-              <p className="text-slate-600 text-sm md:text-base leading-relaxed px-4">
+              <p className="text-slate-600 dark:text-slate-300 text-sm md:text-base leading-relaxed px-4">
                 The field of early childhood education deserves resources and support worthy of the importance of this time in child development and learning.
               </p>
             </motion.div>
@@ -279,7 +279,7 @@ const AboutUsPage: React.FC = () => {
               <div className="w-20 h-20 rounded-xl bg-[#f05060] flex items-center justify-center mb-6 shadow-sm">
                 <Users size={40} className="text-white" strokeWidth={1.5} />
               </div>
-              <p className="text-slate-600 text-sm md:text-base leading-relaxed px-4">
+              <p className="text-slate-600 dark:text-slate-300 text-sm md:text-base leading-relaxed px-4">
                 Early childhood educators are doing some of the most important work there is in nurturing and caring for the next generation of lifelong learners.
               </p>
             </motion.div>
@@ -290,10 +290,10 @@ const AboutUsPage: React.FC = () => {
       {/* ══════════════════════════════════════
           3. OUR BUILDING BLOCKS (VISION & MISSION)
       ══════════════════════════════════════ */}
-      <section className="py-20 relative bg-white">
+      <section className="py-20 relative bg-white dark:bg-[#0f172a]">
         <div className="max-w-5xl mx-auto px-6">
           <ScrollReveal>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 text-center mb-16 tracking-tight">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-slate-200 text-center mb-16 tracking-tight">
               Our Building Blocks
             </h2>
           </ScrollReveal>
@@ -307,10 +307,10 @@ const AboutUsPage: React.FC = () => {
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                 </svg>
 
-                <h3 className="text-2xl md:text-3xl font-semibold text-slate-800 mb-4">
+                <h3 className="text-2xl md:text-3xl font-semibold text-slate-800 dark:text-slate-200 mb-4">
                   Our Vision
                 </h3>
-                <p className="text-slate-600 text-base md:text-lg max-w-2xl">
+                <p className="text-slate-600 dark:text-slate-300 text-base md:text-lg max-w-2xl">
                   We believe early childhood educators have the power to change children’s lives and ultimately, the world.
                 </p>
               </div>
@@ -322,10 +322,10 @@ const AboutUsPage: React.FC = () => {
                 {/* Decorative Red Triangle on the right */}
                 <div className="absolute -right-8 top-10 w-24 h-24 bg-[#f05060] rotate-45 transform origin-center" />
 
-                <h3 className="text-2xl md:text-3xl font-semibold text-slate-800 mb-4">
+                <h3 className="text-2xl md:text-3xl font-semibold text-slate-800 dark:text-slate-200 mb-4">
                   Our Mission
                 </h3>
-                <p className="text-slate-600 text-base md:text-lg max-w-3xl">
+                <p className="text-slate-600 dark:text-slate-300 text-base md:text-lg max-w-3xl">
                   To elevate early childhood programs with innovative design, quality content, and professional growth opportunities, delivering joyful learning experiences for all children.
                 </p>
               </div>
@@ -337,10 +337,10 @@ const AboutUsPage: React.FC = () => {
       {/* ══════════════════════════════════════
           4. LEADERSHIP TEAM SECTION
       ══════════════════════════════════════ */}
-      <section className="py-24 relative bg-slate-50 border-t border-slate-100">
+      <section className="py-24 relative bg-slate-50 dark:bg-slate-800/40 border-t border-slate-100">
         <div className="max-w-6xl mx-auto px-6">
           <ScrollReveal>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 text-center mb-16 tracking-tight">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-slate-200 text-center mb-16 tracking-tight">
               Meet Our Team
             </h2>
           </ScrollReveal>
@@ -362,7 +362,7 @@ const AboutUsPage: React.FC = () => {
           <div className="grid md:grid-cols-4 gap-12 mb-12 items-start">
             <div className="col-span-1">
               <Logo variant="light" iconClassName="w-10 h-10" textClassName="text-xl" />
-              <p className="text-slate-500 mt-4 text-sm leading-relaxed">
+              <p className="text-slate-500 dark:text-slate-400 mt-4 text-sm leading-relaxed">
                 Simplifying childcare management for the next generation of educators.
               </p>
             </div>
@@ -371,34 +371,34 @@ const AboutUsPage: React.FC = () => {
                 <h4 className="font-bold text-white text-sm uppercase tracking-widest">Resources</h4>
                 <div className="w-12 h-1 bg-[#f05060] mt-3 rounded-full"></div>
               </div>
-              <Link to="/signup-request" className="text-slate-500 hover:text-primary-500 transition-colors block mb-3 text-sm">Getting Started</Link>
-              <Link to="/billing" className="text-slate-500 hover:text-primary-500 transition-colors block mb-3 text-sm">Pricing</Link>
+              <Link to="/signup-request" className="text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-colors block mb-3 text-sm">Getting Started</Link>
+              <Link to="/billing" className="text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-colors block mb-3 text-sm">Pricing</Link>
             </div>
             <div>
               <div className="mb-5">
                 <h4 className="font-bold text-white text-sm uppercase tracking-widest">Features</h4>
                 <div className="w-12 h-1 bg-[#f05060] mt-3 rounded-full"></div>
               </div>
-              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Billing/Payments</span>
-              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Payroll</span>
-              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Feature Overview</span>
-              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Attendance tracking</span>
-              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Communication</span>
-              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Center Management</span>
-              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Daily Activity Report</span>
-              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Meal Planning</span>
-              <span className="text-slate-500 block text-sm font-medium cursor-default">Lesson Plans</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Billing/Payments</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Payroll</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Feature Overview</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Attendance tracking</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Communication</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Center Management</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Daily Activity Report</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Meal Planning</span>
+              <span className="text-slate-500 dark:text-slate-400 block text-sm font-medium cursor-default">Lesson Plans</span>
             </div>
             <div>
               <div className="mb-5">
                 <h4 className="font-bold text-white text-sm uppercase tracking-widest">Company</h4>
                 <div className="w-12 h-1 bg-[#f05060] mt-3 rounded-full"></div>
               </div>
-              <Link to="/about" className="text-slate-500 hover:text-primary-500 transition-colors block mb-3 text-sm">About Us</Link>
-              <Link to="/contact" className="text-slate-500 hover:text-primary-500 transition-colors block text-sm">Contact Support</Link>
+              <Link to="/about" className="text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-colors block mb-3 text-sm">About Us</Link>
+              <Link to="/contact" className="text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-colors block text-sm">Contact Support</Link>
             </div>
           </div>
-          <div className="text-center text-slate-600 border-t border-white/5 pt-8 text-sm">
+          <div className="text-center text-slate-600 dark:text-slate-300 border-t border-white/5 pt-8 text-sm">
             ©2026 LittleSparks.com — All rights reserved
           </div>
         </div>

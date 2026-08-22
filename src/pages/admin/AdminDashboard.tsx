@@ -8,6 +8,7 @@ import { Button } from '../../components/common/Button';
 import { Logo } from '../../components/common/Logo';
 import { apiClient } from '../../services/axiosInstance';
 import { useAppSelector } from '../../store';
+import { useWebSocket } from '../../hooks/useWebSocket';
 
 
 const AdminDashboard = () => {
@@ -22,6 +23,7 @@ const AdminDashboard = () => {
   const [showAdminNotifs, setShowAdminNotifs] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const reduxUser = useAppSelector((state) => state.auth.user);
+  const stompClient = useWebSocket('ADMIN');
 
   const loadData = async () => {
     try {
@@ -54,9 +56,9 @@ const AdminDashboard = () => {
   const fetchNotifications = async () => {
     if (!reduxUser?.uid) return;
     try {
-      const res = await apiClient.get(`/api/v1/notifications/my-alerts/${reduxUser.uid}?role=ADMIN`);
+      const res = await apiClient.get(`/api/v1/notifications/my-alerts/${reduxUser.uid}?role=ADMIN&size=20`);
       if (res.data.success) {
-        setNotifications(res.data.data);
+        setNotifications(res.data.data.content || []);
       }
     } catch (err) {
       console.error("Failed to fetch admin notifications:", err);
@@ -115,15 +117,27 @@ const AdminDashboard = () => {
     loadData();
     fetchNotifications();
     const interval = setInterval(() => {
-      loadData();
-      fetchNotifications();
+      if (reduxUser?.uid) {
+        loadData();
+        fetchNotifications();
+      }
     }, 30000);
     return () => clearInterval(interval);
-  }, [reduxUser?.uid]);
+  }, [reduxUser]);
+
+  useEffect(() => {
+    if (stompClient && stompClient.connected) {
+      const sub = stompClient.subscribe('/topic/broadcasts', (message) => {
+        const notif = JSON.parse(message.body);
+        setNotifications((prev) => [notif, ...prev]);
+      });
+      return () => sub.unsubscribe();
+    }
+  }, [stompClient]);
 
 
   return (
-    <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
+    <div className="min-h-screen w-full bg-surface-secondary dark:bg-slate-950 transition-colors duration-300 font-sans text-slate-900 dark:text-slate-100 pb-10">
       {/* --- Top Header Section --- */}
       <header className="max-w-7xl mx-auto px-6 pt-8 pb-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -133,7 +147,7 @@ const AdminDashboard = () => {
               <ShieldCheck size={14} className="fill-primary-500" />
               <p className="text-[10px] font-black uppercase tracking-[0.3em]">Master Control</p>
             </div>
-            <p className="text-slate-500 text-xs font-bold mt-1 uppercase tracking-wider opacity-60">Admin Console</p>
+            <p className="text-slate-500 dark:text-slate-400 text-xs font-bold mt-1 uppercase tracking-wider opacity-60">Admin Console</p>
           </div>
         </div>
 
@@ -144,9 +158,9 @@ const AdminDashboard = () => {
             <Button
               variant="secondary"
               onClick={() => setShowAdminNotifs(!showAdminNotifs)}
-              className={`p-2.5 bg-white border border-slate-100 rounded-xl transition-all shadow-sm relative ${showAdminNotifs ? 'ring-2 ring-primary-500/20 border-primary-500' : ''}`}
+              className={`p-2.5 bg-white border border-slate-100 dark:border-slate-800/60 rounded-xl transition-all shadow-sm relative ${showAdminNotifs ? 'ring-2 ring-primary-500/20 border-primary-500' : ''}`}
             >
-              <Bell size={20} className={showAdminNotifs ? 'text-primary-500' : 'text-slate-400'} />
+              <Bell size={20} className={showAdminNotifs ? 'text-primary-500' : 'text-slate-400 dark:text-slate-500 dark:text-slate-400'} />
               {pendingRequests.length > 0 && (
                 <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
               )}
@@ -154,17 +168,17 @@ const AdminDashboard = () => {
 
             {/* ADMIN NOTIFICATION DROPDOWN */}
             {showAdminNotifs && (
-              <div className="absolute top-full right-0 mt-4 w-96 bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(10,6,55,0.15)] border border-slate-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-                <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
-                  <h3 className="text-[10px] font-black text-midnight uppercase tracking-widest">Master Alerts</h3>
+              <div className="absolute top-full right-0 mt-4 w-96 bg-white dark:bg-[#0f172a] rounded-[2rem] shadow-[0_20px_50px_rgba(10,6,55,0.15)] border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                <div className="p-6 border-b border-slate-50 dark:border-slate-800/60 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40/50">
+                  <h3 className="text-[10px] font-black text-midnight dark:text-white uppercase tracking-widest">Master Alerts</h3>
                   <div className="flex gap-2">
                     {pendingRequests.length > 0 && (
-                      <span className="text-[9px] font-black text-rose-500 bg-rose-50 px-3 py-1 rounded-full uppercase">
+                      <span className="text-[9px] font-black text-rose-500 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10 px-3 py-1 rounded-full uppercase">
                         {pendingRequests.length} Signup
                       </span>
                     )}
                     {notifications.filter(n => !n.isRead).length > 0 && (
-                      <span className="text-[9px] font-black text-amber-500 bg-amber-50 px-3 py-1 rounded-full uppercase">
+                      <span className="text-[9px] font-black text-amber-500 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-3 py-1 rounded-full uppercase">
                         {notifications.filter(n => !n.isRead).length} Inbox
                       </span>
                     )}
@@ -176,14 +190,14 @@ const AdminDashboard = () => {
                     <div
                       key={req.requestId}
                       onClick={() => { setSelectedRequest(req); setShowAdminNotifs(false); }}
-                      className="p-5 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer group bg-rose-50/20"
+                      className="p-5 border-b border-slate-50 dark:border-slate-800/60 hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group bg-rose-50/20 dark:bg-rose-500/5"
                     >
                       <div className="flex items-center gap-3 mb-2">
                         <div className="h-2 w-2 rounded-full bg-rose-500"></div>
-                        <h4 className="text-[11px] font-black text-midnight uppercase tracking-tight">Pending {req.role} Signup</h4>
+                        <h4 className="text-[11px] font-black text-midnight dark:text-white uppercase tracking-tight">Pending {req.role} Signup</h4>
                       </div>
-                      <p className="text-[11px] text-slate-500 leading-tight">
-                        <span className="font-bold text-midnight">{req.fullName}</span> is waiting for approval.
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
+                        <span className="font-bold text-midnight dark:text-white">{req.fullName}</span> is waiting for approval.
                       </p>
                     </div>
                   ))}
@@ -193,16 +207,16 @@ const AdminDashboard = () => {
                     <div
                       key={notif.id}
                       onClick={() => !notif.isRead && markAsRead(notif.id)}
-                      className={`p-5 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer group ${!notif.isRead ? 'bg-amber-50/10' : 'opacity-60'}`}
+                      className={`p-5 border-b border-slate-50 dark:border-slate-800/60 hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group ${!notif.isRead ? 'bg-amber-50/10 dark:bg-amber-500/5' : 'opacity-60'}`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-3">
                           <div className={`h-2 w-2 rounded-full ${notif.type === 'ADMIN_REQUEST' ? 'bg-primary-500' : 'bg-slate-400'}`}></div>
-                          <h4 className="text-[11px] font-black text-midnight uppercase tracking-tight">{notif.title}</h4>
+                          <h4 className="text-[11px] font-black text-midnight dark:text-white uppercase tracking-tight">{notif.title}</h4>
                         </div>
                         <span className="text-[8px] font-bold text-slate-400">{new Date(notif.createdAt).toLocaleDateString()}</span>
                       </div>
-                      <p className="text-[11px] text-slate-600 leading-relaxed whitespace-pre-wrap">{notif.body}</p>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{notif.body}</p>
                       {!notif.isRead && (
                         <button className="mt-3 text-[9px] font-black text-primary-500 uppercase tracking-widest hover:underline">
                           Mark as Resolved
@@ -217,8 +231,8 @@ const AdminDashboard = () => {
                     </div>
                   )}
                 </div>
-                <div className="p-4 bg-slate-50/80 text-center border-t border-slate-100">
-                  <button className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-primary-500 transition-colors">
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/40/80 text-center border-t border-slate-100">
+                  <button className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest hover:text-primary-500 transition-colors">
                     Security Logs System
                   </button>
                 </div>
@@ -246,7 +260,7 @@ const AdminDashboard = () => {
             value={totalStudents.toString()}
             trend="+3 this week"
             trendColor="text-emerald-500"
-            iconBg="bg-primary-50"
+            iconBg="bg-primary-50 dark:bg-primary-500/10"
             onClick={() => navigate('/admin/students')}
           />
 
@@ -257,7 +271,7 @@ const AdminDashboard = () => {
             value={totalStaff.toString()}
             trend="Active now"
             trendColor="text-emerald-500"
-            iconBg="bg-indigo-50"
+            iconBg="bg-indigo-50 dark:bg-indigo-500/10"
             onClick={() => navigate('/admin/teachers')}
           />
           <StatCard
@@ -266,7 +280,7 @@ const AdminDashboard = () => {
             value={totalParents.toString()}
             trend="Verified"
             trendColor="text-emerald-500"
-            iconBg="bg-orange-50"
+            iconBg="bg-orange-50 dark:bg-orange-500/10"
             onClick={() => navigate('/admin/parents')}
           />
           <StatCard
@@ -275,7 +289,7 @@ const AdminDashboard = () => {
             value="Rs 1.2M"
             trend="Monthly"
             trendColor="text-emerald-500"
-            iconBg="bg-fuchsia-50"
+            iconBg="bg-fuchsia-50 dark:bg-fuchsia-500/10"
           />
         </div>
 
@@ -283,10 +297,10 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
           {/* Admin approve / reject requests section */}
-          <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)]">
+          <div className="lg:col-span-2 bg-white dark:bg-[#0f172a] rounded-[2.5rem] p-8 border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 shadow-[0_10px_40px_rgba(0,0,0,0.02)]">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-xl font-black text-slate-900 tracking-tight">Management Requests</h2>
-              <button className="text-sm font-bold text-slate-500 hover:text-primary-500">View All</button>
+              <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Management Requests</h2>
+              <button className="text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-primary-500">View All</button>
             </div>
 
             <div className="space-y-6">
@@ -296,7 +310,7 @@ const AdminDashboard = () => {
                 pendingRequests.map((req) => (
                   <div
                     key={req.requestId}
-                    className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-2xl cursor-pointer transition-all border border-transparent hover:border-slate-100"
+                    className="flex items-center justify-between p-3 hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50 rounded-2xl cursor-pointer transition-all border border-transparent hover:border-slate-100"
                     onClick={() => setSelectedRequest(req)}
                   >
                     <div className="flex items-center gap-4">
@@ -305,12 +319,12 @@ const AdminDashboard = () => {
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-slate-900">{req.fullName}</h4>
-                          <span className="px-2 py-0.5 bg-cyan-50 text-[10px] font-black text-cyan-600 uppercase rounded-md tracking-wider">
+                          <h4 className="font-bold text-slate-900 dark:text-white">{req.fullName}</h4>
+                          <span className="px-2 py-0.5 bg-cyan-50 dark:bg-cyan-500/10 text-[10px] font-black text-cyan-600 dark:text-cyan-400 uppercase rounded-md tracking-wider">
                             {req.role}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-400 font-medium">{req.email}</p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 font-medium">{req.email}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -324,7 +338,7 @@ const AdminDashboard = () => {
                       <Button
                         variant="outline"
                         onClick={(e) => { e.stopPropagation(); handleReject(req); }}
-                        className="px-6 py-2.5 text-xs font-bold rounded-xl border-slate-200 text-slate-500 hover:bg-slate-50"
+                        className="px-6 py-2.5 text-xs font-bold rounded-xl border-slate-200 dark:border-slate-700/60 text-slate-500 dark:text-slate-400 hover:bg-slate-50"
                       >
                         Reject
                       </Button>
@@ -339,12 +353,12 @@ const AdminDashboard = () => {
           <div className="bg-gradient-to-br from-primary-500 to-indigo-600 rounded-[3rem] p-10 shadow-[0_25px_60px_rgba(6,197,212,0.3)] relative overflow-hidden group cursor-pointer"
             onClick={() => navigate('/admin/broadcast')}>
             {/* Abstract Decorative Circles */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white dark:bg-[#0f172a]/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
             <div className="absolute bottom-0 left-0 w-40 h-40 bg-indigo-400/20 rounded-full blur-2xl -ml-20 -mb-20"></div>
 
             <div className="relative z-10 flex flex-col h-full justify-between">
               <div className="flex items-center gap-5">
-                <div className="p-4 bg-white/20 backdrop-blur-md border border-white/30 rounded-[1.5rem] text-white shadow-2xl group-hover:scale-110 transition-transform">
+                <div className="p-4 bg-white/20 dark:bg-[#0f172a]/20 backdrop-blur-md border border-white/30 rounded-[1.5rem] text-white shadow-2xl group-hover:scale-110 transition-transform">
                   <Megaphone size={28} className="animate-bounce" />
                 </div>
                 <div>
@@ -357,7 +371,7 @@ const AdminDashboard = () => {
                 <p className="text-white/80 font-medium text-sm leading-relaxed mb-6">
                   Send high-priority alerts and announcements to Parents and Teachers instantly.
                 </p>
-                <div className="flex items-center gap-2 text-white font-black text-[10px] uppercase tracking-widest bg-white/10 w-fit px-4 py-2 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/20 transition-all">
+                <div className="flex items-center gap-2 text-white font-black text-[10px] uppercase tracking-widest bg-white/20 dark:bg-[#0f172a]/10 w-fit px-4 py-2 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/30 transition-all">
                   Launch Portal
                   <TrendingUp size={12} className="rotate-45" />
                 </div>
@@ -366,8 +380,8 @@ const AdminDashboard = () => {
           </div>
 
           {/* Upcoming Schedule Section */}
-          <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)]">
-            <h2 className="text-xl font-black text-slate-900 tracking-tight mb-8">Upcoming Schedule</h2>
+          <div className="bg-white dark:bg-[#0f172a] rounded-[2.5rem] p-8 border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 shadow-[0_10px_40px_rgba(0,0,0,0.02)]">
+            <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight mb-8">Upcoming Schedule</h2>
             <div className="space-y-6">
               <ScheduleItem date="08" month="FEB" title="Morning Circle Time" time="09:00 AM - 10:30 AM" />
               <ScheduleItem date="08" month="FEB" title="Staff Meeting" time="12:30 PM - 01:30 PM" />
@@ -380,11 +394,11 @@ const AdminDashboard = () => {
         <div className="bg-midnight rounded-[2.5rem] p-8 text-white flex items-center justify-between relative overflow-hidden group">
           <div className="relative z-10">
             <h3 className="text-lg font-black tracking-tight mb-1">Daily Status</h3>
-            <p className="text-slate-400 text-sm font-medium">Everything is running smoothly! Keep up the great work.</p>
+            <p className="text-slate-400 dark:text-slate-500 dark:text-slate-400 text-sm font-medium">Everything is running smoothly! Keep up the great work.</p>
           </div>
           <Button
             variant="primary"
-            className="relative z-10 flex items-center gap-3 px-8 py-4 bg-logo-sparks text-midnight rounded-[1.5rem] font-black tracking-tight hover:scale-105 active:scale-95 border-none"
+            className="relative z-10 flex items-center gap-3 px-8 py-4 bg-logo-sparks text-midnight dark:text-white rounded-[1.5rem] font-black tracking-tight hover:scale-105 active:scale-95 border-none"
           >
             <MessageCircle size={18} />
             Chat with Team
@@ -399,13 +413,13 @@ const AdminDashboard = () => {
       {selectedRequest && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setSelectedRequest(null)}>
           <div
-            className="bg-white rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl"
+            className="bg-white dark:bg-[#0f172a] rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="p-6 pb-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-xl font-black text-slate-900">Request Details</h3>
-              <button onClick={() => setSelectedRequest(null)} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-full transition-all">
+            <div className="p-6 pb-4 border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
+              <h3 className="text-xl font-black text-slate-900 dark:text-white">Request Details</h3>
+              <button onClick={() => setSelectedRequest(null)} className="p-2 text-slate-400 dark:text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 rounded-full transition-all">
                 <X size={20} />
               </button>
             </div>
@@ -415,30 +429,30 @@ const AdminDashboard = () => {
               {/* Display all details depending on role */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Full Name</p>
-                  <p className="font-bold text-slate-900">{selectedRequest.fullName}</p>
+                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider">Full Name</p>
+                  <p className="font-bold text-slate-900 dark:text-white">{selectedRequest.fullName}</p>
                 </div>
                 <div className="col-span-2">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Email</p>
-                  <p className="font-bold text-slate-900">{selectedRequest.email}</p>
+                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email</p>
+                  <p className="font-bold text-slate-900 dark:text-white">{selectedRequest.email}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Role</p>
-                  <span className="inline-block mt-1 px-2 py-0.5 bg-cyan-50 text-[10px] font-black text-cyan-600 uppercase rounded-md tracking-wider">
+                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider">Role</p>
+                  <span className="inline-block mt-1 px-2 py-0.5 bg-cyan-50 dark:bg-cyan-500/10 text-[10px] font-black text-cyan-600 dark:text-cyan-400 uppercase rounded-md tracking-wider">
                     {selectedRequest.role}
                   </span>
                 </div>
 
                 <div className="col-span-2">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Additional Information</p>
-                  <p className="font-medium text-slate-700 bg-slate-50 p-3 rounded-xl mt-1 text-sm border border-slate-100">
+                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider">Additional Information</p>
+                  <p className="font-medium text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl mt-1 text-sm border border-slate-100 dark:border-slate-800/60">
                     {selectedRequest.extraInfo || 'No additional details provided.'}
                   </p>
                 </div>
 
                 <div className="col-span-2">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Submitted At</p>
-                  <p className="font-bold text-slate-900">
+                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider">Submitted At</p>
+                  <p className="font-bold text-slate-900 dark:text-white">
                     {selectedRequest.submittedAt ? new Date(selectedRequest.submittedAt).toLocaleString() : 'N/A'}
                   </p>
                 </div>
@@ -446,10 +460,10 @@ const AdminDashboard = () => {
             </div>
 
             {/* Modal Footer with Actions */}
-            <div className="p-6 bg-slate-50 flex items-center justify-end gap-3 border-t border-slate-100">
+            <div className="p-6 bg-slate-50 dark:bg-slate-800/40 flex items-center justify-end gap-3 border-t border-slate-100">
               <button
                 onClick={() => { handleReject(selectedRequest); }}
-                className="px-6 py-3 bg-white border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-50 transition-all shadow-sm"
+                className="px-6 py-3 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50 transition-all shadow-sm"
               >
                 Reject
               </button>
@@ -472,7 +486,7 @@ const AdminDashboard = () => {
 const StatCard = ({ icon, label, value, trend, trendColor, iconBg, onClick }: any) => (
   <div
     onClick={onClick}
-    className={`bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)] group hover:border-primary-500/20 transition-all ${onClick ? 'cursor-pointer active:scale-[0.98]' : ''}`}
+    className={`bg-white dark:bg-[#0f172a] p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800/60 shadow-[0_10px_40px_rgba(0,0,0,0.02)] group hover:border-primary-500/20 transition-all ${onClick ? 'cursor-pointer active:scale-[0.98]' : ''}`}
   >
     <div className="flex items-start justify-between mb-6">
       <div className={`h-14 w-14 ${iconBg} rounded-[1.2rem] flex items-center justify-center group-hover:scale-110 transition-transform`}>
@@ -480,8 +494,8 @@ const StatCard = ({ icon, label, value, trend, trendColor, iconBg, onClick }: an
       </div>
     </div>
     <div>
-      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">{label}</p>
-      <h3 className="text-3xl font-black text-slate-900 tracking-tighter mb-1 font-sans">{value}</h3>
+      <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-2">{label}</p>
+      <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter mb-1 font-sans">{value}</h3>
       <p className={`text-xs font-black ${trendColor} tracking-tight`}>{trend}</p>
     </div>
   </div>
@@ -489,13 +503,13 @@ const StatCard = ({ icon, label, value, trend, trendColor, iconBg, onClick }: an
 
 const ScheduleItem = ({ date, month, title, time }: any) => (
   <div className="flex items-center gap-4 group cursor-pointer">
-    <div className="bg-slate-50 border border-slate-100 rounded-2xl p-3 flex flex-col items-center justify-center min-w-[70px] group-hover:bg-primary-50 group-hover:border-primary-100 transition-all">
-      <span className="text-lg font-black text-slate-900">{date}</span>
+    <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 rounded-2xl p-3 flex flex-col items-center justify-center min-w-[70px] group-hover:bg-primary-50 group-hover:border-primary-100 transition-all">
+      <span className="text-lg font-black text-slate-900 dark:text-white">{date}</span>
       <span className="text-[10px] font-black text-slate-400">{month}</span>
     </div>
     <div>
-      <h4 className="font-bold text-slate-900 text-sm group-hover:text-primary-600 transition-colors">{title}</h4>
-      <p className="text-xs text-slate-400 font-medium mt-0.5">{time}</p>
+      <h4 className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-primary-600 transition-colors">{title}</h4>
+      <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 font-medium mt-0.5">{time}</p>
     </div>
   </div>
 );

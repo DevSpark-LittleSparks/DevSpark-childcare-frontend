@@ -53,13 +53,13 @@ const ForgotPasswordPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-800/40 flex flex-col font-sans">
       { <AuthHeader backLink="/login" /> }
 
       <main className="flex-1 flex flex-col max-w-[1440px] mx-auto w-full items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 shadow-2xl border-t-4 border-t-cyan-500 bg-white/80 backdrop-blur-sm">
+        <Card className="w-full max-w-md p-8 shadow-2xl border-t-4 border-t-cyan-500 bg-white dark:bg-[#0f172a]/80 backdrop-blur-sm">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-extrabold text-slate-900">Reset Password</h2>
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">Reset Password</h2>
             <p className="mt-2 text-sm text-slate-500">
               Enter your email to receive a password reset link.
             </p>
@@ -93,7 +93,7 @@ const ForgotPasswordPage: React.FC = () => {
             </Button>
           </form>
 
-          <div className="mt-8 text-center text-sm border-t border-slate-100 pt-6">
+          <div className="mt-8 text-center text-sm border-t border-slate-100 dark:border-slate-800/60 pt-6">
             <span className="text-slate-500">Remember your password? </span>
             <Link 
               to="/login" 

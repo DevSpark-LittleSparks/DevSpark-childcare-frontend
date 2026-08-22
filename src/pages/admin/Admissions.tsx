@@ -141,24 +141,24 @@ const AdmissionsPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
+    <div className="min-h-screen w-full bg-surface-secondary dark:bg-slate-950 transition-colors duration-300 font-sans text-slate-900 dark:text-slate-100 pb-10">
       {/* Header Section */}
       <header className="max-w-7xl mx-auto px-6 pt-8 pb-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-6">
             <button
               onClick={() => navigate('/admin/dashboard')}
-              className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 transition-all group"
+              className="p-3 bg-white dark:bg-[#0f172a] rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50 transition-all group"
             >
-              <ArrowLeft className="text-slate-400 group-hover:text-primary-500" size={20} />
+              <ArrowLeft className="text-slate-400 dark:text-slate-500 dark:text-slate-400 group-hover:text-primary-500" size={20} />
             </button>
 
           </div>
 
           <div className="hidden sm:flex items-center gap-4">
-            <div className="bg-white px-6 py-2.5 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center min-w-[120px]">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Capacity</span>
-              <span className="text-sm font-black text-midnight leading-none mt-1">85% Full</span>
+            <div className="bg-white dark:bg-[#0f172a] px-6 py-2.5 rounded-2xl border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 shadow-sm flex flex-col items-center min-w-[120px]">
+              <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-tighter">Capacity</span>
+              <span className="text-sm font-black text-midnight dark:text-white leading-none mt-1">85% Full</span>
             </div>
           </div>
         </div>
@@ -169,13 +169,13 @@ const AdmissionsPage = () => {
 
           {/* Main Form Area */}
           <div className="lg:col-span-2 space-y-8">
-            <div className="bg-white rounded-[3rem] shadow-[0_20px_60px_rgba(10,6,55,0.03)] border border-slate-100 p-8 md:p-12">
+            <div className="bg-white dark:bg-[#0f172a] rounded-[3rem] shadow-[0_20px_60px_rgba(10,6,55,0.03)] border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 p-8 md:p-12">
 
               <div className="flex items-center gap-4 mb-10">
                 <div className="h-10 w-10 bg-primary-50 rounded-xl flex items-center justify-center text-primary-500">
                   <User size={20} />
                 </div>
-                <h2 className="text-xl font-black text-midnight uppercase tracking-tight">Student Information</h2>
+                <h2 className="text-xl font-black text-midnight dark:text-white uppercase tracking-tight">Student Information</h2>
               </div>
 
               {/* Photo & Identity */}
@@ -183,12 +183,12 @@ const AdmissionsPage = () => {
                 <div className="flex flex-col items-center">
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="h-32 w-32 bg-slate-50 rounded-[2.5rem] border-4 border-white shadow-xl overflow-hidden cursor-pointer flex items-center justify-center relative group"
+                    className="h-32 w-32 bg-slate-50 dark:bg-slate-800/40 rounded-[2.5rem] border-4 border-white shadow-xl overflow-hidden cursor-pointer flex items-center justify-center relative group"
                   >
                     {previewImage ? <img src={previewImage} className="h-full w-full object-cover" alt="child" /> : <Camera size={24} className="text-slate-300" />}
                   </div>
                   <input type="file" ref={fileInputRef} onChange={handleImageChange} className="hidden" accept="image/*" />
-                  <p className="mt-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Child Photo</p>
+                  <p className="mt-3 text-[9px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest text-center">Child Photo</p>
                 </div>
 
                 <div className="md:col-span-3 space-y-7">
@@ -200,7 +200,7 @@ const AdmissionsPage = () => {
               {/* Birth & Gender */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2 text-left">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Birthday</label>
+                  <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Birthday</label>
                   <input
                     type="date"
                     name="dob"
@@ -208,23 +208,23 @@ const AdmissionsPage = () => {
                     // 3 to 10 years limit
                     max={new Date(new Date().setFullYear(new Date().getFullYear() - 3)).toISOString().split('T')[0]}
                     min={new Date(new Date().setFullYear(new Date().getFullYear() - 10)).toISOString().split('T')[0]}
-                    className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-2xl outline-none text-sm font-bold shadow-sm transition-all"
+                    className="w-full p-4 bg-slate-50 dark:bg-slate-800/40 border-2 border-transparent focus:border-primary-500 focus:bg-white dark:bg-[#0f172a] rounded-2xl outline-none text-sm font-bold shadow-sm transition-all"
                   />
                 </div>
                 <div className="space-y-2 text-left">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                  <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">
                     Age
                   </label>
-                  <div className="w-full p-4 bg-slate-50 border-2 border-transparent rounded-2xl text-sm font-bold text-midnight shadow-sm">
+                  <div className="w-full p-4 bg-slate-50 dark:bg-slate-800/40 border-2 border-transparent rounded-2xl text-sm font-bold text-midnight dark:text-white shadow-sm">
                     {age || "AGE"}
                   </div>
                 </div>
                 <div className="space-y-2 text-left">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Gender</label>
+                  <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Gender</label>
                   <select
                     name="gender"
                     onChange={handleInputChange}
-                    className="w-full p-4 bg-slate-50 rounded-2xl outline-none text-sm font-bold appearance-none border-2 border-transparent focus:border-primary-500 shadow-sm transition-all"
+                    className="w-full p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl outline-none text-sm font-bold appearance-none border-2 border-transparent focus:border-primary-500 shadow-sm transition-all"
                   >
                     <option value="">Select Gender</option>
                     <option value="male">Male</option>
@@ -236,8 +236,8 @@ const AdmissionsPage = () => {
               {/* Medical Details */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
                 <div className="space-y-2 text-left">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-1"><Droplets size={10} /> Blood Group</label>
-                  <select name="bloodGroup" onChange={handleInputChange} className="w-full p-4 bg-slate-50 rounded-2xl outline-none text-sm font-bold appearance-none border-2 border-transparent focus:border-primary-500">
+                  <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1"><Droplets size={10} /> Blood Group</label>
+                  <select name="bloodGroup" onChange={handleInputChange} className="w-full p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl outline-none text-sm font-bold appearance-none border-2 border-transparent focus:border-primary-500">
                     <option value="">Select</option>
                     <option value="A+">A+</option><option value="A-">A-</option>
                     <option value="B+">B+</option><option value="B-">B-</option>
@@ -246,18 +246,18 @@ const AdmissionsPage = () => {
                   </select>
                 </div>
                 <div className="space-y-2 text-left">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-1"><Ruler size={10} /> Height (cm)</label>
-                  <input type="number" name="height" placeholder="110" onChange={handleInputChange} className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-primary-500 rounded-2xl outline-none text-sm font-bold" />
+                  <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1"><Ruler size={10} /> Height (cm)</label>
+                  <input type="number" name="height" placeholder="110" onChange={handleInputChange} className="w-full p-4 bg-slate-50 dark:bg-slate-800/40 border-2 border-transparent focus:border-primary-500 rounded-2xl outline-none text-sm font-bold" />
                 </div>
                 <div className="space-y-2 text-left">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-1"><Scale size={10} /> Weight (kg)</label>
-                  <input type="number" name="weight" placeholder="20" onChange={handleInputChange} className="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-primary-500 rounded-2xl outline-none text-sm font-bold" />
+                  <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1"><Scale size={10} /> Weight (kg)</label>
+                  <input type="number" name="weight" placeholder="20" onChange={handleInputChange} className="w-full p-4 bg-slate-50 dark:bg-slate-800/40 border-2 border-transparent focus:border-primary-500 rounded-2xl outline-none text-sm font-bold" />
                 </div>
               </div>
 
               {/* Address Section */}
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Residential Address</label>
+                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Residential Address</label>
                 <div className="relative">
                   <MapPin className="absolute left-4 top-4 text-slate-300" size={18} />
                   <textarea
@@ -265,14 +265,14 @@ const AdmissionsPage = () => {
                     onChange={handleInputChange}
                     placeholder="Current living address..."
                     rows={2}
-                    className="w-full pl-12 p-4 bg-slate-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-2xl outline-none text-sm font-bold text-midnight min-h-[70px] transition-all resize-none"
+                    className="w-full pl-12 p-4 bg-slate-50 dark:bg-slate-800/40 border-2 border-transparent focus:border-primary-500 focus:bg-white dark:bg-[#0f172a] rounded-2xl outline-none text-sm font-bold text-midnight dark:text-white min-h-[70px] transition-all resize-none"
                   />
                 </div>
               </div>
 
               {/* Health Section */}
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
                   <ClipboardList size={12} className="text-primary-500" /> Health Notes / Allergies
                 </label>
                 <textarea
@@ -280,7 +280,7 @@ const AdmissionsPage = () => {
                   onChange={handleInputChange}
                   placeholder="Enter any medical conditions or specific requirements..."
                   rows={3}
-                  className="w-full p-6 bg-slate-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-[2rem] outline-none text-sm font-bold text-midnight transition-all resize-none"
+                  className="w-full p-6 bg-slate-50 dark:bg-slate-800/40 border-2 border-transparent focus:border-primary-500 focus:bg-white dark:bg-[#0f172a] rounded-[2rem] outline-none text-sm font-bold text-midnight dark:text-white transition-all resize-none"
                 />
               </div>
             </div>
@@ -293,11 +293,11 @@ const AdmissionsPage = () => {
 
               <div className="space-y-5 text-left">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Relationship</label>
+                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Relationship</label>
                   <select
                     name="relationship"
                     onChange={handleInputChange}
-                    className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl outline-none text-sm font-bold text-white appearance-none focus:border-primary-500"
+                    className="w-full p-4 bg-white dark:bg-[#0f172a]/5 border border-white/10 rounded-2xl outline-none text-sm font-bold text-white appearance-none focus:border-primary-500"
                   >
                     <option value="" className="bg-midnight">Select Relationship</option>
                     <option value="father" className="bg-midnight">Father</option>
@@ -311,7 +311,7 @@ const AdmissionsPage = () => {
                 <LittleInput dark label={<span className="flex items-center gap-1"><Mail size={10} /> Email Address</span>} name="parentEmail" placeholder="auth@littlesparks.com" onChange={handleInputChange} />
                 
                 <div className="space-y-2 text-left">
-                  <label className="text-[10px] font-black uppercase tracking-widest ml-1 text-slate-400 flex items-center gap-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest ml-1 text-slate-400 dark:text-slate-500 dark:text-slate-400 flex items-center gap-1">
                     <Phone size={10} /> Mobile
                   </label>
                   <PhoneInput 
@@ -349,12 +349,12 @@ const AdmissionsPage = () => {
 // Reusable Input Component
 const LittleInput = ({ label, dark, ...props }: any) => (
   <div className="space-y-2 text-left">
-    <label className={`text-[10px] font-black uppercase tracking-widest ml-1 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{label}</label>
+    <label className={`text-[10px] font-black uppercase tracking-widest ml-1 ${dark ? 'text-slate-400 dark:text-slate-500 dark:text-slate-400' : 'text-slate-500 dark:text-slate-400'}`}>{label}</label>
     <input
       {...props}
       className={`w-full p-4 rounded-2xl outline-none text-sm font-bold transition-all ${dark
         ? 'bg-white/5 border border-white/10 text-white focus:bg-white/10 focus:border-primary-500'
-        : 'bg-slate-50 border-2 border-transparent focus:border-primary-500 focus:bg-white text-midnight shadow-sm'
+        : 'bg-slate-50 dark:bg-slate-800/40 border-2 border-transparent focus:border-primary-500 focus:bg-white text-midnight shadow-sm'
         }`}
     />
   </div>

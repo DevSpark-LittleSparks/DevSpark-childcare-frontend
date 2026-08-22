@@ -16,6 +16,7 @@ import {
   TrendingUp,
   User
 } from 'lucide-react';
+import { useWebSocket } from '../../../hooks/useWebSocket';
 import { Button } from '../../../components/common/Button';
 import { Logo } from '../../../components/common/Logo';
 import { apiClient } from '../../../services/axiosInstance';
@@ -24,6 +25,7 @@ import AlertBanner from '../../../components/shared/AlertBanner';
 const ParentDashboard = () => {
   const navigate = useNavigate();
   const reduxUser = useSelector(selectUser);
+  const stompClient = useWebSocket('PARENT');
   const [childrenCount, setChildrenCount] = useState(0);
   const [children, setChildren] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -67,7 +69,7 @@ const ParentDashboard = () => {
       const url = `/api/v1/notifications/${id}/read?userId=${reduxUser.uid}`;
       console.log("DEBUG sending PUT request to url:", url);
       await apiClient.put(url);
-      setNotifications(prev => prev.map(n => 
+      setNotifications(prev => prev.map(n =>
         n.id === id ? { ...n, isRead: true } : n
       ));
     } catch (err) {
@@ -109,9 +111,9 @@ const ParentDashboard = () => {
     const fetchNotifications = async () => {
       if (!reduxUser?.uid) return;
       try {
-        const res = await apiClient.get(`/api/v1/notifications/my-alerts/${reduxUser.uid}?role=PARENT`);
+        const res = await apiClient.get(`/api/v1/notifications/my-alerts/${reduxUser.uid}?role=PARENT&size=20`);
         if (res.data.success) {
-          setNotifications(res.data.data);
+          setNotifications(res.data.data.content || []);
         }
       } catch (err) {
         console.error("Failed to fetch notifications:", err);
@@ -121,14 +123,28 @@ const ParentDashboard = () => {
     if (reduxUser?.email) {
       fetchChildren();
       fetchNotifications();
-
-      const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
-      return () => clearInterval(interval);
     }
   }, [reduxUser]);
 
+  useEffect(() => {
+    if (stompClient && stompClient.connected) {
+      const sub1 = stompClient.subscribe('/topic/broadcasts', (message) => {
+        const notif = JSON.parse(message.body);
+        setNotifications((prev) => [notif, ...prev]);
+      });
+      const sub2 = stompClient.subscribe('/topic/parents', (message) => {
+        const notif = JSON.parse(message.body);
+        setNotifications((prev) => [notif, ...prev]);
+      });
+      return () => {
+        sub1.unsubscribe();
+        sub2.unsubscribe();
+      };
+    }
+  }, [stompClient]);
+
   return (
-    <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
+    <div className="min-h-screen w-full bg-surface-secondary dark:bg-slate-950 transition-colors duration-300 font-sans text-slate-900 dark:text-slate-100 pb-10">
 
       {/* --- TOP HEADER --- */}
       <header className="max-w-7xl mx-auto px-6 pt-8 pb-4 flex items-center justify-between">
@@ -139,11 +155,11 @@ const ParentDashboard = () => {
               <Sparkles size={14} className="fill-primary-500" />
               <p className="text-[10px] font-black uppercase tracking-[0.3em]">LittleSparks</p>
             </div>
-          
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight font-sans leading-none">
+
+            <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight font-sans leading-none">
               Hello, {reduxUser?.displayName?.split(' ')[0] || 'Parent'} 👋
             </h1>
-            <p className="text-slate-500 text-xs font-bold mt-1 uppercase tracking-wider opacity-60">Overview & Activity</p>
+            <p className="text-slate-500 dark:text-slate-400 text-xs font-bold mt-1 uppercase tracking-wider opacity-60">Overview & Activity</p>
           </div>
         </div>
 
@@ -153,7 +169,7 @@ const ParentDashboard = () => {
             onClick={() => setShowNotifications(!showNotifications)}
             className={`h-11 w-11 p-0 rounded-xl transition-all shadow-sm relative ${showNotifications ? 'ring-2 ring-primary-500/20 border-primary-500' : ''}`}
           >
-            <Bell size={20} className={showNotifications ? 'text-primary-500' : 'text-slate-400'} />
+            <Bell size={20} className={showNotifications ? 'text-primary-500' : 'text-slate-400 dark:text-slate-500 dark:text-slate-400'} />
             {notifications.some(n => !n.isRead) && (
               <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white ring-2 ring-white animate-in zoom-in duration-300">
                 {notifications.filter(n => !n.isRead).length}
@@ -163,9 +179,9 @@ const ParentDashboard = () => {
 
           {/* NOTIFICATION DROPDOWN */}
           {showNotifications && (
-            <div className="absolute top-full right-0 mt-4 w-85 bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(10,6,55,0.15)] border border-slate-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-              <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
-                <h3 className="text-[10px] font-black text-midnight uppercase tracking-widest">Special Announcements</h3>
+            <div className="absolute top-full right-0 mt-4 w-85 bg-white dark:bg-slate-900 rounded-[2rem] shadow-[0_20px_50px_rgba(10,6,55,0.15)] border border-slate-100 dark:border-slate-800/60 dark:border-slate-800 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+              <div className="p-6 border-b border-slate-50 dark:border-slate-800/60 dark:border-slate-800/50 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40/50 dark:bg-slate-800/50">
+                <h3 className="text-[10px] font-black text-midnight dark:text-white uppercase tracking-widest">Special Announcements</h3>
                 <span className="text-[9px] font-black text-primary-500 bg-primary-50 px-3 py-1 rounded-full uppercase tracking-tighter">
                   {notifications.filter(n => !n.isRead).length} New Updates
                 </span>
@@ -176,34 +192,34 @@ const ParentDashboard = () => {
                     <div
                       key={idx}
                       onClick={() => openNotif(notif)}
-                      className={`p-6 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer relative group`}
+                      className={`p-6 border-b border-slate-50 dark:border-slate-800/60 dark:border-slate-800 hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer relative group`}
                     >
                       <div className="flex justify-between items-start mb-1.5">
                         <div className="flex items-center gap-2">
                           {!notif.isRead && <div className="w-1.5 h-1.5 rounded-full bg-primary-500"></div>}
-                          <h4 className="text-[11px] font-black text-midnight uppercase tracking-tight">
+                          <h4 className="text-[11px] font-black text-midnight dark:text-white uppercase tracking-tight">
                             {notif.title || 'System Notification'}
                           </h4>
                         </div>
-                        <span className="text-[9px] text-slate-400 font-bold">
+                        <span className="text-[9px] text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 font-bold">
                           {new Date(notif.createdAt).toLocaleDateString()}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 leading-relaxed line-clamp-2 font-medium">
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2 font-medium">
                         {notif.body}
                       </p>
                     </div>
                   ))
                 ) : (
-                  <div className="p-10 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">
+                  <div className="p-10 text-center text-slate-400 dark:text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-widest">
                     No Notifications
                   </div>
                 )}
               </div>
-              <div className="p-5 bg-slate-50/80 text-center border-t border-slate-100">
+              <div className="p-5 bg-slate-50 dark:bg-slate-800/40/80 dark:bg-slate-800/80 text-center border-t border-slate-100 dark:border-slate-800/60 dark:border-slate-800">
                 <button
                   onClick={markAllRead}
-                  className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-primary-500 transition-colors"
+                  className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest hover:text-primary-500 transition-colors"
                 >
                   Mark all as read
                 </button>
@@ -220,10 +236,10 @@ const ParentDashboard = () => {
           </Button>
         </div>
       </header>
-      
-      {/* --- ALERT BANNER FOR BROADCASTS --- */}
-      <AlertBanner 
-        notifications={notifications.filter(n => n.type === 'BROADCAST' && !n.isRead && !dismissedIds.includes(n.id))} 
+
+      {/* --- ALERT BANNER FOR BROADCASTS & HIGH PRIORITY --- */}
+      <AlertBanner
+        notifications={notifications.filter(n => (n.type === 'BROADCAST' || n.priority === 'HIGH') && !n.isRead && !dismissedIds.includes(n.id))}
         onRead={markAsRead}
       />
 
@@ -264,13 +280,11 @@ const ParentDashboard = () => {
               <div className="absolute top-0 right-0 w-80 h-80 bg-primary-500/10 rounded-full blur-[100px] -mr-40 -mt-40"></div>
 
               <div className="relative z-10 flex-1">
-                <div className="inline-block px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/10 text-[10px] font-black uppercase tracking-widest mb-6">
-                  Featured Service
-                </div>
+
                 <h2 className="text-4xl font-black tracking-tight mb-4 leading-tight italic">
                   Track Weekly<br />Progress.
                 </h2>
-                <p className="text-slate-400 text-sm max-w-md mb-8 leading-relaxed">
+                <p className="text-slate-400 dark:text-slate-500 dark:text-slate-400 text-sm max-w-md mb-8 leading-relaxed">
                   Stay updated with your child's academic performance, behavioral tracking, and growth milestones.
                 </p>
                 <Button
@@ -313,7 +327,7 @@ const ParentDashboard = () => {
                     </div>
                   )}
                   {/* LOGO OVERLAY - Only show one logo for the whole stack */}
-                  <div className="absolute -bottom-4 -right-4 bg-white p-3 rounded-2xl shadow-2xl z-[100]">
+                  <div className="absolute -bottom-4 -right-4 bg-white dark:bg-[#0f172a] p-3 rounded-2xl shadow-2xl z-[100]">
                     <Logo variant="dark" iconClassName="w-6 h-6" textClassName="text-[10px]" />
                   </div>
                 </div>
@@ -339,9 +353,11 @@ const ParentDashboard = () => {
 
           {/* --- RIGHT COL: RECENT ACTIVITIES --- */}
           <div className="space-y-6">
-            <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
-              <div className="flex items-center justify-between mb-8">
-                <h3 className="text-[11px] font-black text-midnight uppercase tracking-[0.3em]">Recent Activity</h3>
+            <div className="bg-white dark:bg-[#0f172a] rounded-[2.5rem] p-8 border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 shadow-sm relative overflow-hidden">
+              {/* Optional subtle glow for the activity card */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/5 dark:bg-primary-500/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
+              <div className="relative z-10 flex items-center justify-between mb-8">
+                <h3 className="text-[11px] font-black text-midnight dark:text-white uppercase tracking-[0.3em]">Recent Activity</h3>
                 <button className="text-[9px] font-black text-primary-500 uppercase hover:underline">View All</button>
               </div>
 
@@ -366,13 +382,13 @@ const ParentDashboard = () => {
                 />
               </div>
 
-              <div className="mt-10 pt-8 border-t border-slate-50">
-                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
+              <div className="relative z-10 mt-10 pt-8 border-t border-slate-50 dark:border-slate-800/60 dark:border-slate-800/50">
+                <div className="p-6 bg-slate-50 dark:bg-slate-800/40 dark:bg-slate-800/40 rounded-3xl border border-slate-100 dark:border-slate-800/60 dark:border-slate-700/50">
                   <div className="flex items-center gap-3 mb-3">
                     <TrendingUp size={18} className="text-primary-500" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Security Note</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 dark:text-slate-400">Security Note</span>
                   </div>
-                  <p className="text-[11px] font-bold text-midnight leading-relaxed">
+                  <p className="text-[11px] font-bold text-midnight dark:text-slate-300 leading-relaxed">
                     Always use your unique security key for administrative requests.
                   </p>
                 </div>
@@ -386,25 +402,25 @@ const ParentDashboard = () => {
       {/* --- NOTIFICATION MODAL --- */}
       {selectedNotif && (
         <div className="fixed inset-0 bg-midnight/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-10 duration-500 border border-slate-100">
+          <div className="bg-white dark:bg-[#0f172a] w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-10 duration-500 border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60">
             {/* GRADUATION THEME HEADER */}
             {selectedNotif.type === 'graduation' ? (
               <div className="relative h-56 flex flex-col items-center justify-center bg-gradient-to-br from-primary-500 via-primary-600 to-midnight overflow-hidden">
                 <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-                
-                <div className="relative z-10 bg-white p-4 rounded-3xl shadow-2xl mb-4 transform -rotate-3 hover:rotate-0 transition-transform duration-500">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 dark:bg-[#0f172a]/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+
+                <div className="relative z-10 bg-white dark:bg-[#0f172a] p-4 rounded-3xl shadow-2xl mb-4 transform -rotate-3 hover:rotate-0 transition-transform duration-500">
                   <Logo variant="dark" iconClassName="w-10 h-10" textClassName="hidden" />
                 </div>
                 <h2 className="relative z-10 text-white font-black text-xs uppercase tracking-[0.4em] mb-2 opacity-80">LittleSparks</h2>
-                <div className="relative z-10 px-6 py-1 bg-white/20 backdrop-blur-md rounded-full border border-white/20">
+                <div className="relative z-10 px-6 py-1 bg-white/20 dark:bg-[#0f172a]/20 backdrop-blur-md rounded-full border border-white/20">
                   <span className="text-[10px] font-black text-white uppercase tracking-widest">Big School Transition</span>
                 </div>
               </div>
             ) : (
               <div className="relative h-48 flex items-center justify-center bg-gradient-to-br from-hero-blue via-hero-purple to-hero-pink">
                 <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, #06C5D4 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
-                <div className="relative z-10 h-20 w-20 bg-white/20 backdrop-blur-md rounded-3xl border border-white/20 flex items-center justify-center shadow-2xl">
+                <div className="relative z-10 h-20 w-20 bg-white/20 dark:bg-[#0f172a]/20 backdrop-blur-md rounded-3xl border border-white/20 flex items-center justify-center shadow-2xl">
                   <Bell className="text-white" size={32} />
                 </div>
               </div>
@@ -412,7 +428,7 @@ const ParentDashboard = () => {
 
             <button
               onClick={() => setSelectedNotif(null)}
-              className="absolute top-6 right-6 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors border border-white/20 text-white z-[110]"
+              className="absolute top-6 right-6 p-2 bg-white/20 dark:bg-[#0f172a]/20 hover:bg-white/30 rounded-full transition-colors border border-white/20 text-white z-[110]"
             >
               <ArrowRight className="rotate-180" size={20} />
             </button>
@@ -422,17 +438,17 @@ const ParentDashboard = () => {
                 <span className="text-[10px] font-black text-primary-500 uppercase tracking-[0.3em]">
                   {selectedNotif.type === 'graduation' ? '🌟 Milestone' : `${selectedNotif.type} announcement`}
                 </span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase">
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase">
                   {new Date(selectedNotif.createdAt).toLocaleDateString()}
                 </span>
               </div>
-              
-              <h3 className="text-2xl font-black text-midnight tracking-tight leading-tight italic">
+
+              <h3 className="text-2xl font-black text-midnight dark:text-white tracking-tight leading-tight italic">
                 {selectedNotif.title}
               </h3>
-              
-              <div className={`p-6 rounded-[2rem] border ${selectedNotif.type === 'graduation' ? 'bg-primary-50/50 border-primary-100' : 'bg-slate-50 border-slate-100'}`}>
-                <p className="text-slate-600 text-sm leading-relaxed font-medium italic">
+
+              <div className={`p-6 rounded-[2rem] border ${selectedNotif.type === 'graduation' ? 'bg-primary-50/50 border-primary-100' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-100 dark:border-slate-800/60'}`}>
+                <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed font-medium italic">
                   "{selectedNotif.body}"
                 </p>
               </div>
@@ -460,40 +476,42 @@ const ParentDashboard = () => {
 const DashboardStat = ({ icon, label, value, iconBg, onClick }: any) => (
   <div
     onClick={onClick}
-    className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-primary-200 transition-all cursor-pointer group"
+    className="bg-white dark:bg-[#0f172a] p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 shadow-sm hover:shadow-xl hover:border-primary-200 dark:hover:border-primary-500/50 transition-all cursor-pointer group relative overflow-hidden"
   >
-    <div className={`h-14 w-14 ${iconBg} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+    <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 dark:bg-primary-500/10 rounded-full blur-2xl -mr-16 -mt-16 transition-transform duration-700 group-hover:scale-150"></div>
+    <div className={`relative z-10 h-14 w-14 ${iconBg} dark:bg-slate-800/80 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
       {icon}
     </div>
-    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-1">{label}</p>
-    <p className="text-3xl font-black text-midnight tracking-tight">{value}</p>
+    <p className="relative z-10 text-[9px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-1">{label}</p>
+    <p className="relative z-10 text-3xl font-black text-midnight dark:text-white tracking-tight">{value}</p>
   </div>
 );
 
 const QuickLink = ({ title, desc, icon, bg }: any) => (
-  <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-lg transition-all cursor-pointer flex items-center gap-6 group">
-    <div className={`h-16 w-16 ${bg} rounded-3xl flex items-center justify-center shrink-0 group-hover:rotate-6 transition-transform`}>
+  <div className="bg-white dark:bg-[#0f172a] p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 shadow-sm hover:shadow-lg transition-all cursor-pointer flex items-center gap-6 group relative overflow-hidden">
+    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/0 dark:group-hover:bg-slate-800/30 transition-colors"></div>
+    <div className={`relative z-10 h-16 w-16 ${bg} dark:bg-slate-800/80 rounded-3xl flex items-center justify-center shrink-0 group-hover:rotate-6 transition-transform`}>
       {React.cloneElement(icon, { size: 24 })}
     </div>
-    <div>
-      <h4 className="font-black text-midnight text-lg tracking-tight mb-1">{title}</h4>
-      <p className="text-[11px] text-slate-400 font-medium leading-tight">{desc}</p>
+    <div className="relative z-10">
+      <h4 className="font-black text-midnight dark:text-white text-lg tracking-tight mb-1">{title}</h4>
+      <p className="text-[11px] text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 font-medium leading-tight">{desc}</p>
     </div>
-    <ChevronRight size={16} className="ml-auto text-slate-300 group-hover:text-primary-500 transition-colors" />
+    <ChevronRight size={16} className="relative z-10 ml-auto text-slate-300 dark:text-slate-600 dark:text-slate-300 group-hover:text-primary-500 transition-colors" />
   </div>
 );
 
 const ActivityItem = ({ icon, title, time, desc }: any) => (
-  <div className="flex gap-4 group">
-    <div className="h-10 w-10 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 group-hover:bg-white transition-colors">
+  <div className="flex gap-4 group p-2 hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50 dark:hover:bg-slate-800/30 rounded-2xl transition-colors cursor-default">
+    <div className="h-10 w-10 bg-slate-50 dark:bg-slate-800/40 dark:bg-slate-800/80 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-800/60 dark:border-slate-700/50 group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors shadow-sm">
       {icon}
     </div>
-    <div className="space-y-0.5">
-      <div className="flex items-center gap-2">
-        <h4 className="text-[11px] font-black text-midnight uppercase tracking-tight">{title}</h4>
-        <span className="text-[9px] text-slate-300 font-bold">{time}</span>
+    <div className="space-y-0.5 flex-1 mt-1">
+      <div className="flex items-center justify-between">
+        <h4 className="text-[11px] font-black text-midnight dark:text-white uppercase tracking-tight">{title}</h4>
+        <span className="text-[9px] text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 font-bold">{time}</span>
       </div>
-      <p className="text-[11px] text-slate-500 font-medium leading-tight">{desc}</p>
+      <p className="text-[11px] text-slate-500 dark:text-slate-400 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 font-medium leading-tight">{desc}</p>
     </div>
   </div>
 );

@@ -285,7 +285,7 @@ const HeroCarousel: React.FC<{ onCta: (idx: number) => void }> = ({ onCta }) => 
                 <a
                   href="#why"
                   onClick={(e) => { e.preventDefault(); document.getElementById('why')?.scrollIntoView({ behavior: 'smooth' }); }}
-                  className="text-slate-400 hover:text-white transition-colors font-semibold text-sm flex items-center gap-2"
+                  className="text-slate-400 dark:text-slate-500 dark:text-slate-400 hover:text-white transition-colors font-semibold text-sm flex items-center gap-2"
                 >
                   Explore ↓
                 </a>
@@ -311,13 +311,13 @@ const HeroCarousel: React.FC<{ onCta: (idx: number) => void }> = ({ onCta }) => 
         {/* Arrow controls */}
         <button
           onClick={() => paginate(-1)}
-          className="p-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full text-white transition-all active:scale-95 backdrop-blur-sm"
+          className="p-3 bg-white dark:bg-[#0f172a]/10 hover:bg-white/20 border border-white/10 rounded-full text-white transition-all active:scale-95 backdrop-blur-sm"
         >
           <ChevronLeft size={20} />
         </button>
         <button
           onClick={() => paginate(1)}
-          className="p-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full text-white transition-all active:scale-95 backdrop-blur-sm"
+          className="p-3 bg-white dark:bg-[#0f172a]/10 hover:bg-white/20 border border-white/10 rounded-full text-white transition-all active:scale-95 backdrop-blur-sm"
         >
           <ChevronRight size={20} />
         </button>
@@ -386,7 +386,7 @@ const ParallaxSection: React.FC<{ id: string; navigate: (path: string) => void }
             <RevealSection key={s.label} delay={i * 0.15}>
               <motion.div
                 whileHover={{ scale: 1.05, y: -5 }}
-                className="p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-white/10 hover:border-primary-500/30 backdrop-blur-md text-center"
+                className="p-3 rounded-xl bg-white dark:bg-[#0f172a]/5 hover:bg-white/10 transition-colors border border-white/10 hover:border-primary-500/30 backdrop-blur-md text-center"
               >
                 <motion.div
                   className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-purple-400 mb-1"
@@ -397,7 +397,7 @@ const ParallaxSection: React.FC<{ id: string; navigate: (path: string) => void }
                 >
                   {s.val}
                 </motion.div>
-                <div className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">{s.label}</div>
+                <div className="text-slate-400 dark:text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest">{s.label}</div>
               </motion.div>
             </RevealSection>
           ))}
@@ -432,13 +432,13 @@ const Card: React.FC<CardProps> = ({ icon, title, text, to = '#', delay = 0 }) =
     >
       <Link
         to={to}
-        className="block bg-white/5 border border-white/10 p-8 rounded-3xl hover:bg-white/10 hover:border-primary-500/30 transition-all cursor-pointer backdrop-blur-sm"
+        className="block bg-white dark:bg-[#0f172a]/5 border border-white/10 p-8 rounded-3xl hover:bg-white/10 hover:border-primary-500/30 transition-all cursor-pointer backdrop-blur-sm"
       >
-        <div className="mb-6 w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center">
+        <div className="mb-6 w-14 h-14 bg-white dark:bg-[#0f172a]/5 border border-white/10 rounded-2xl flex items-center justify-center">
           {icon}
         </div>
         <h3 className="text-xl font-black text-white mb-3">{title}</h3>
-        <p className="text-slate-400 leading-relaxed">{text}</p>
+        <p className="text-slate-400 dark:text-slate-500 dark:text-slate-400 leading-relaxed">{text}</p>
       </Link>
     </motion.div>
   );
@@ -494,12 +494,12 @@ const FeaturesCarousel: React.FC = () => {
             transition={{ duration: 0.5, ease: "easeInOut" }}
             onClick={() => setActive(i)}
           >
-            <div className={`h-full bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-sm transition-colors duration-500 ${isActive ? 'bg-white/10 border-primary-500/50 shadow-2xl' : 'hover:bg-white/10'}`}>
-              <div className="mb-6 w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center transition-transform duration-500">
+            <div className={`h-full bg-white dark:bg-[#0f172a]/5 border border-white/10 p-8 rounded-3xl backdrop-blur-sm transition-colors duration-500 ${isActive ? 'bg-white/10 border-primary-500/50 shadow-2xl dark:border dark:border-slate-800/60' : 'hover:bg-white/10'}`}>
+              <div className="mb-6 w-14 h-14 bg-white dark:bg-[#0f172a]/5 border border-white/10 rounded-2xl flex items-center justify-center transition-transform duration-500">
                 {feature.icon}
               </div>
               <h3 className="text-xl font-black text-white mb-3">{feature.title}</h3>
-              <p className="text-slate-400 leading-relaxed text-sm">{feature.text}</p>
+              <p className="text-slate-400 dark:text-slate-500 dark:text-slate-400 leading-relaxed text-sm">{feature.text}</p>
             </div>
           </motion.div>
         );
@@ -592,7 +592,7 @@ const LandingPage: React.FC = () => {
                 Playtime
               </span>
             </h2>
-            <p className="text-lg text-slate-400 max-w-xl mx-auto">
+            <p className="text-lg text-slate-400 dark:text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
               Everything you need to run your center smoothly — in one beautifully designed platform.
             </p>
           </RevealSection>
@@ -652,7 +652,7 @@ const LandingPage: React.FC = () => {
               {/* Content */}
               <div className="relative z-10 p-8">
                 <div className="flex justify-between items-start mb-6">
-                  <span className="text-xs font-black text-slate-400 uppercase tracking-widest block">13th Of MAY 2026</span>
+                  <span className="text-xs font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest block">13th Of MAY 2026</span>
                   <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center border border-green-500/30">
                     <motion.div
                       className="w-3 h-3 bg-green-400 rounded-full shadow-[0_0_15px_#4ade80]"
@@ -667,7 +667,7 @@ const LandingPage: React.FC = () => {
                   <div className="text-sm text-slate-300 font-semibold">Attendance Rate</div>
                 </div>
 
-                <div className="bg-white/10 rounded-full h-3 overflow-hidden">
+                <div className="bg-white dark:bg-[#0f172a]/10 rounded-full h-3 overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-primary-500 to-purple-400 rounded-full"
                     initial={{ width: 0 }}
@@ -696,7 +696,7 @@ const LandingPage: React.FC = () => {
                 Effortlessly Archived
               </span>
             </h2>
-            <p className="text-lg text-slate-400 mb-8 leading-relaxed">
+            <p className="text-lg text-slate-400 dark:text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
               Managing all of your reports in one place. Save countless hours on paperwork and stay audit-ready at all times.
             </p>
             <Button
@@ -732,7 +732,7 @@ const LandingPage: React.FC = () => {
               </span>
               !
             </h2>
-            <p className="text-lg text-slate-400 mb-10 max-w-lg mx-auto">
+            <p className="text-lg text-slate-400 dark:text-slate-500 dark:text-slate-400 mb-10 max-w-lg mx-auto">
               Join hundreds of childcare centers already transforming their daily operations with LittleSparks.
             </p>
             <motion.button
@@ -753,7 +753,7 @@ const LandingPage: React.FC = () => {
           <div className="grid md:grid-cols-4 gap-12 mb-12 items-start">
             <div className="col-span-1">
               <LittleSparksLogo variant="light" iconClassName="w-12 h-12" textClassName="text-2xl" />
-              <p className="text-slate-500 mt-4 text-sm leading-relaxed">
+              <p className="text-slate-500 dark:text-slate-400 mt-4 text-sm leading-relaxed">
                 Simplifying childcare management for the next generation of educators.
               </p>
             </div>
@@ -762,34 +762,34 @@ const LandingPage: React.FC = () => {
                 <h4 className="font-black text-white text-sm uppercase tracking-widest">Resources</h4>
                 <div className="w-12 h-1 bg-[#f05060] mt-3 rounded-full"></div>
               </div>
-              <Link to="/signup-request" className="text-slate-500 hover:text-primary-500 transition-colors block mb-3 text-sm">Getting Started</Link>
-              <Link to="/billing" className="text-slate-500 hover:text-primary-500 transition-colors block mb-3 text-sm">Pricing</Link>
+              <Link to="/signup-request" className="text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-colors block mb-3 text-sm">Getting Started</Link>
+              <Link to="/billing" className="text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-colors block mb-3 text-sm">Pricing</Link>
             </div>
             <div>
               <div className="mb-5">
                 <h4 className="font-black text-white text-sm uppercase tracking-widest">Features</h4>
                 <div className="w-12 h-1 bg-[#f05060] mt-3 rounded-full"></div>
               </div>
-              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Billing/Payments</span>
-              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Payroll</span>
-              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Feature Overview</span>
-              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Attendance tracking</span>
-              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Communication</span>
-              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Center Management</span>
-              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Daily Activity Report</span>
-              <span className="text-slate-500 block mb-3 text-sm font-medium cursor-default">Meal Planning</span>
-              <span className="text-slate-500 block text-sm font-medium cursor-default">Lesson Plans</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Billing/Payments</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Payroll</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Feature Overview</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Attendance tracking</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Communication</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Center Management</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Daily Activity Report</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Meal Planning</span>
+              <span className="text-slate-500 dark:text-slate-400 block text-sm font-medium cursor-default">Lesson Plans</span>
             </div>
             <div>
               <div className="mb-5">
                 <h4 className="font-black text-white text-sm uppercase tracking-widest">Company</h4>
                 <div className="w-12 h-1 bg-[#f05060] mt-3 rounded-full"></div>
               </div>
-              <Link to="/about" className="text-slate-500 hover:text-primary-500 transition-colors block mb-3 text-sm">About Us</Link>
-              <Link to="/contact" className="text-slate-500 hover:text-primary-500 transition-colors block text-sm">Contact Support</Link>
+              <Link to="/about" className="text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-colors block mb-3 text-sm">About Us</Link>
+              <Link to="/contact" className="text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-colors block text-sm">Contact Support</Link>
             </div>
           </div>
-          <div className="text-center text-slate-600 border-t border-white/5 pt-8 text-sm">
+          <div className="text-center text-slate-600 dark:text-slate-300 border-t border-white/5 pt-8 text-sm">
             ©2026 LittleSparks.com — All rights reserved
           </div>
         </div>
