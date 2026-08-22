@@ -6,6 +6,7 @@ import { Provider } from 'react-redux';
 import App from './App'; 
 import { store } from './store'; 
 import { FirebaseAuthProvider } from './components/auth/FirebaseAuthProvider';
+import { ThemeProvider } from './components/layout/ThemeProvider';
 import './index.css';
 
 const container = document.getElementById('root');
@@ -16,7 +17,9 @@ if (container) {
     <React.StrictMode>
       <Provider store={store}>
         <FirebaseAuthProvider>
-          <App />
+          <ThemeProvider>
+            <App />
+          </ThemeProvider>
         </FirebaseAuthProvider>
       </Provider>
     </React.StrictMode>

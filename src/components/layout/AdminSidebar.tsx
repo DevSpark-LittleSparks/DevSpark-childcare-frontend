@@ -45,7 +45,7 @@ const LittleSparksLogo = ({ isCollapsed }: { isCollapsed: boolean }) => (
       </g>
     </svg>
     {!isCollapsed && (
-      <span className="font-bold tracking-tighter -ml-2 text-2xl text-[#1F2937]" style={{ fontFamily: "'Nunito', sans-serif" }}>
+      <span className="font-bold tracking-tighter -ml-2 text-2xl text-[#1F2937] dark:text-white" style={{ fontFamily: "'Nunito', sans-serif" }}>
         Little<span style={{ color: '#06C5D4' }}>Sparks</span>
       </span>
     )}
@@ -77,17 +77,17 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, onOpenSettin
 
   return (
     <aside
-      className={`h-screen bg-[#E4F7F7] flex flex-col fixed left-0 top-0 z-[1000] border-r border-cyan-100 shadow-sm transition-all duration-300 ease-in-out ${isCollapsed ? "w-[80px]" : "w-[280px]"
+      className={`h-screen bg-[#E4F7F7] dark:bg-slate-900 dark:bg-slate-900 flex flex-col fixed left-0 top-0 z-[1000] border-r border-cyan-100 dark:border-slate-800 shadow-sm transition-all duration-300 ease-in-out ${isCollapsed ? "w-[80px]" : "w-[280px]"
         }`}
     >
       {/* BRAND & TOGGLE */}
-      <div className={`p-4 flex items-center border-b border-cyan-200/30 mb-2 ${isCollapsed ? 'flex-col gap-4' : 'justify-between'}`}>
+      <div className={`p-4 flex items-center border-b border-cyan-200/30 dark:border-slate-800/50 mb-2 ${isCollapsed ? 'flex-col gap-4' : 'justify-between'}`}>
         <LittleSparksLogo isCollapsed={isCollapsed} />
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           // Logic: Uses text-slate-500 to match the other navigation icons
           // Added hover:text-slate-700 to match the hover behavior of the links
-          className="p-2 rounded-xl text-slate-500 hover:text-slate-700 hover:bg-white/60 transition-all duration-300"
+          className="p-2 rounded-xl text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/60 transition-all duration-300"
           title={isCollapsed ? "Expand" : "Collapse"}
         >
           {isCollapsed ? (
@@ -126,18 +126,18 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, onOpenSettin
       </nav>
 
       {/* FOOTER SECTION: Restored Profile Dropdown logic */}
-      <div className="p-4 border-t border-cyan-200/30 relative" ref={menuRef}>
+      <div className="p-4 border-t border-cyan-200/30 dark:border-slate-800/50 relative" ref={menuRef}>
         {/* The Dropdown Menu */}
         {profileOpen && (
-          <div className={`absolute bottom-[85px] ${isCollapsed ? 'left-16 w-48' : 'left-4 right-4'} bg-white rounded-2xl p-2 shadow-2xl border border-slate-100 z-[1001] animate-in fade-in slide-in-from-bottom-2 duration-200`}>
-            <button className="w-full flex items-center gap-3 p-3 text-sm font-bold text-slate-600 hover:bg-slate-50 rounded-xl transition-all" onClick={() => { setProfileOpen(false); navigate("/admin/profile"); }}>
+          <div className={`absolute bottom-[85px] ${isCollapsed ? 'left-16 w-48' : 'left-4 right-4'} bg-white dark:bg-slate-800 rounded-2xl p-2 shadow-2xl border border-slate-100 dark:border-slate-700 z-[1001] animate-in fade-in slide-in-from-bottom-2 duration-200`}>
+            <button className="w-full flex items-center gap-3 p-3 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-all" onClick={() => { setProfileOpen(false); navigate("/admin/profile"); }}>
               <MdPerson className="text-xl text-slate-400" /> Profile
             </button>
-            <button className="w-full flex items-center gap-3 p-3 text-sm font-bold text-slate-600 hover:bg-slate-50 rounded-xl transition-all" onClick={() => { setProfileOpen(false); onOpenSettings?.(); }}>
+            <button className="w-full flex items-center gap-3 p-3 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-all" onClick={() => { setProfileOpen(false); onOpenSettings?.(); }}>
               <MdSettings className="text-xl text-slate-400" /> Settings
             </button>
-            <div className="h-[1px] bg-slate-100 my-1"></div>
-            <button className="w-full flex items-center gap-3 p-3 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-all" onClick={signOut}>
+            <div className="h-[1px] bg-slate-100 dark:bg-slate-700 my-1"></div>
+            <button className="w-full flex items-center gap-3 p-3 text-sm font-bold text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all" onClick={signOut}>
               <MdLogout className="text-xl" /> Sign out
             </button>
           </div>
@@ -145,13 +145,13 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, onOpenSettin
 
         {/* User Badge/Trigger */}
         <div
-          className={`flex items-center gap-3 p-2 rounded-2xl cursor-pointer transition-all border ${profileOpen ? 'bg-white shadow-md border-cyan-200' : 'hover:bg-white/50 border-transparent'} ${isCollapsed ? 'justify-center' : ''}`}
+          className={`flex items-center gap-3 p-2 rounded-2xl cursor-pointer transition-all border ${profileOpen ? 'bg-white dark:bg-slate-800 shadow-md border-cyan-200 dark:border-slate-700' : 'hover:bg-white/50 dark:hover:bg-slate-800/50 border-transparent'} ${isCollapsed ? 'justify-center' : ''}`}
           onClick={() => setProfileOpen(!profileOpen)}
         >
           <img
             src={user?.photoURL && user.photoURL !== "null" && user.photoURL.trim() !== "" ? user.photoURL : adminAvatar}
             alt="Profile"
-            className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-sm shrink-0"
+            className="w-10 h-10 rounded-xl object-cover border-2 border-white dark:border-slate-700 shadow-sm shrink-0"
             onError={(e) => {
               (e.target as HTMLImageElement).src = adminAvatar;
             }}
@@ -159,8 +159,8 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, onOpenSettin
 
           {!isCollapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-800 truncate">{user?.displayName || "Admin"}</p>
-              <p className="text-[10px] font-bold text-cyan-600 uppercase tracking-wider">{user?.role || "Administrator"}</p>
+              <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{user?.displayName || "Admin"}</p>
+              <p className="text-[10px] font-bold text-cyan-700 dark:text-cyan-400 uppercase tracking-wider">{user?.role || "Administrator"}</p>
             </div>
           )}
 
@@ -176,8 +176,8 @@ const SidebarLink = ({ to, icon, label, isCollapsed }: { to: string, icon: any, 
     to={to}
     className={({ isActive }) =>
       `flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-bold transition-all relative group ${isActive
-        ? "bg-[#CFFAFE] text-[#0891B2] shadow-sm"
-        : "text-slate-500 hover:bg-white/60 hover:text-slate-700"
+        ? "bg-[#CFFAFE] dark:bg-cyan-900/40 text-[#0891B2] dark:text-cyan-400 shadow-sm"
+        : "text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:hover:text-white"
       } ${isCollapsed ? "justify-center px-0" : ""}`
     }
   >
@@ -196,9 +196,9 @@ const SidebarLink = ({ to, icon, label, isCollapsed }: { to: string, icon: any, 
 const NavGroup = ({ title, children, isCollapsed }: { title: string, children: any, isCollapsed: boolean }) => (
   <div className="pt-4">
     {!isCollapsed ? (
-      <p className="px-4 text-[10px] font-black text-cyan-600/60 uppercase tracking-[0.15em] mb-2">{title}</p>
+      <p className="px-4 text-[10px] font-black text-cyan-600/60 dark:text-slate-500 uppercase tracking-[0.15em] mb-2">{title}</p>
     ) : (
-      <div className="mx-4 h-[1px] bg-cyan-200/30 mb-4" />
+      <div className="mx-4 h-[1px] bg-cyan-200/30 dark:bg-slate-800/50 mb-4" />
     )}
     <div className="space-y-1">{children}</div>
   </div>

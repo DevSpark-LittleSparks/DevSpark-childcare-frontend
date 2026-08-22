@@ -29,16 +29,16 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
         input: "py-3 text-slate-900 font-normal leading-tight",
       },
       profile: {
-        container: "rounded-2xl border-2 border-slate-100 bg-white focus-within:border-primary-500 shadow-sm",
-        divider: "border-slate-100 py-4",
+        container: "rounded-2xl border-2 border-slate-100 dark:border-slate-800/60 bg-white dark:bg-[#0f172a] focus-within:border-primary-500 focus-within:bg-white shadow-sm transition-all",
+        divider: "border-slate-100 dark:border-slate-800/60 py-4",
         prefixText: "text-slate-400 font-bold text-sm leading-tight mt-[2px]",
-        input: "py-4 text-midnight font-bold text-sm leading-tight",
+        input: "py-4 text-midnight dark:text-white font-bold text-sm leading-tight bg-transparent",
       },
       dark: {
         container: "rounded-2xl border border-white/10 bg-white/5 focus-within:border-primary-500 focus-within:bg-white/10 transition-all",
         divider: "border-white/10 py-4",
         prefixText: "text-slate-400 font-bold text-sm leading-tight mt-[2px]",
-        input: "py-4 text-white font-bold text-sm leading-tight",
+        input: "py-4 text-white font-bold text-sm leading-tight bg-transparent",
       }
     };
 
@@ -54,10 +54,11 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
         <div className={cn(
           "flex w-full items-stretch overflow-hidden transition-all",
           v.container,
+          props.disabled ? "opacity-60 bg-slate-50 dark:bg-slate-800/40" : "",
           error && "border-red-500 focus-within:border-red-500 focus-within:ring-1 focus-within:ring-red-500",
           className
         )}>
-          <div className={`flex items-center gap-2 border-r pl-4 pr-8 select-none ${v.divider}`}>
+          <div className={`flex items-center gap-2 border-r pl-4 pr-3 select-none ${v.divider}`}>
             <img src="https://flagcdn.com/w20/lk.png" srcSet="https://flagcdn.com/w40/lk.png 2x" width="20" alt="Sri Lanka Flag" className="rounded-[2px] block object-contain" />
             <span className={v.prefixText}>+94</span>
           </div>
