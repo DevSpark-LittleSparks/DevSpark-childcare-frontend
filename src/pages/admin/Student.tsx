@@ -101,12 +101,18 @@ const Students = () => {
   const [students, setStudents] = useState<StudentData[]>([]);
   const [filter, setFilter] = useState<'all' | 'male' | 'female'>('all');
   const [loading, setLoading] = useState(true);
+  
+  // Pagination States
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   React.useEffect(() => {
     const fetchStudents = async () => {
+      setLoading(true);
       try {
-        const response = await apiClient.get('/api/v1/auth/admin/all-children');
-        const liveData = response.data.data;
+        const response = await apiClient.get(`/api/v1/auth/admin/all-children?page=${currentPage}&size=10`);
+        const liveData = response.data.data.content || [];
+        setTotalPages(response.data.data.totalPages || 0);
         const mappedStudents: StudentData[] = liveData.map((c: any) => ({
           id: c.childId,
           firstName: c.firstName,
@@ -129,7 +135,7 @@ const Students = () => {
       }
     };
     fetchStudents();
-  }, []);
+  }, [currentPage]);
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to remove this student?')) {
@@ -243,6 +249,30 @@ const Students = () => {
                 </div>
                 <p className="text-slate-500 dark:text-slate-400 font-bold text-sm">No students found</p>
                 <p className="text-slate-300 text-xs mt-1">Try adjusting your search or filter</p>
+              </div>
+            )}
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-4 pt-4 mt-6 border-t border-slate-100 dark:border-slate-800">
+                <Button
+                  variant="secondary"
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 0}
+                  className="px-4 py-2 text-xs disabled:opacity-50"
+                >
+                  Previous
+                </Button>
+                <span className="text-xs font-bold text-slate-500">
+                  Page {currentPage + 1} of {totalPages}
+                </span>
+                <Button
+                  variant="secondary"
+                  onClick={handleNextPage}
+                  disabled={currentPage >= totalPages - 1}
+                  className="px-4 py-2 text-xs disabled:opacity-50"
+                >
+                  Next
+                </Button>
               </div>
             )}
           </div>

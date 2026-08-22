@@ -43,11 +43,16 @@ const Teachers = () => {
   const [filter, setFilter] = useState<'all' | 'senior' | 'junior'>('all');
   const [loading, setLoading] = useState(true);
 
+  // Pagination States
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
   const loadTeachers = async () => {
     try {
       // Fetch staff records
-      const response = await apiClient.get('/api/v1/auth/admin/all-teachers');
-      const liveData = response.data.data;
+      const response = await apiClient.get(`/api/v1/auth/admin/all-teachers?page=${currentPage}&size=10`);
+      const liveData = response.data.data.content || [];
+      setTotalPages(response.data.data.totalPages || 0);
 
       const mappedTeachers = liveData.map((t: any) => ({
         id: t.id || t.teacherId || t.email,
@@ -78,7 +83,15 @@ const Teachers = () => {
     loadTeachers();
     window.addEventListener('storage', loadTeachers);
     return () => window.removeEventListener('storage', loadTeachers);
-  }, []);
+  }, [currentPage]);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages - 1) setCurrentPage(prev => prev + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 0) setCurrentPage(prev => prev - 1);
+  };
 
   const toggleStatus = (id: string) => {
     setTeachers(teachers.map(t =>
@@ -298,6 +311,31 @@ const Teachers = () => {
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 pt-4 mt-6 border-t border-slate-100 dark:border-slate-800">
+            <Button
+              variant="secondary"
+              onClick={handlePrevPage}
+              disabled={currentPage === 0}
+              className="px-4 py-2 text-xs disabled:opacity-50"
+            >
+              Previous
+            </Button>
+            <span className="text-xs font-bold text-slate-500">
+              Page {currentPage + 1} of {totalPages}
+            </span>
+            <Button
+              variant="secondary"
+              onClick={handleNextPage}
+              disabled={currentPage >= totalPages - 1}
+              className="px-4 py-2 text-xs disabled:opacity-50"
+            >
+              Next
+            </Button>
+          </div>
+        )}
         )}
       </main>
 
