@@ -23,8 +23,8 @@ export const PaymentStatusPage = () => {
     <main className="main-content">
       <div className="page-header">
         <div>
-          <button className="back-link" onClick={() => navigate('/admin/billing')}>
-            <ArrowLeft size={16} /> Back to Billing
+          <button className="back-link" onClick={() => navigate('/admin/logs')}>
+            <ArrowLeft size={16} /> Back to Audit Logs
           </button>
           <h1 className="page-title">Payment Status Overview</h1>
           <p className="page-description">Paid vs pending fees at a glance, to spot overdue payments.</p>

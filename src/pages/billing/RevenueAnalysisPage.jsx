@@ -60,8 +60,8 @@ export const RevenueAnalysisPage = () => {
     <main className="main-content">
       <div className="page-header">
         <div>
-          <button className="back-link" onClick={() => navigate('/admin/billing')}>
-            <ArrowLeft size={16} /> Back to Billing
+          <button className="back-link" onClick={() => navigate('/admin/logs')}>
+            <ArrowLeft size={16} /> Back to Audit Logs
           </button>
           <h1 className="page-title">Revenue Analysis</h1>
           <p className="page-description">A closer look at income trends across months and years.</p>

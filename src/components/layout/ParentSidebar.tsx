@@ -1,14 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { 
-  MdDashboard, MdPeople, MdRestaurant, MdTrendingUp, MdPayment, 
+import {
+  MdDashboard, MdPeople, MdRestaurant, MdTrendingUp, MdPayment,
   MdChat, MdLogout, MdSettings, MdPerson, MdKeyboardArrowUp,
-  MdMenu, MdMenuOpen 
+  MdMenu, MdMenuOpen, MdCampaign
 } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
 import { logout, selectUser } from "../../features/auth/model/authSlice";
 import { useAccountId } from "../../entities/auth/model/useAccountId";
 import { useUnreadMessageCount } from "../../entities/chat/model/useUnreadMessageCount";
+import { useUnreadAlertCount } from "../../entities/alerts/model/useUnreadAlertCount";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -35,6 +36,7 @@ export default function ParentSidebar({ isCollapsed, setIsCollapsed, onOpenSetti
   const navigate = useNavigate();
   const { accountId } = useAccountId();
   const unreadCount = useUnreadMessageCount(accountId);
+  const unreadAlertCount = useUnreadAlertCount(user?.uid, user?.role);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -75,6 +77,7 @@ export default function ParentSidebar({ isCollapsed, setIsCollapsed, onOpenSetti
 
         <NavGroup title="Communication" isCollapsed={isCollapsed}>
           <SidebarLink to="/parent/messages" icon={<MdChat />} label="Messaging" isCollapsed={isCollapsed} badge={unreadCount} />
+          <SidebarLink to="/parent/alerts" icon={<MdCampaign />} label="Alerts" isCollapsed={isCollapsed} badge={unreadAlertCount} />
         </NavGroup>
       </nav>
 

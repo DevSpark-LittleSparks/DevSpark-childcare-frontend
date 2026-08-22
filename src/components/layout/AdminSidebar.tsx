@@ -4,12 +4,13 @@ import {
   MdDashboard, MdAssignmentInd, MdPeople, MdManageAccounts,
   MdCreditCard, MdPayments, MdChat, MdRestaurant, MdSecurity, MdHistory,
   MdLogout, MdSettings, MdPerson, MdKeyboardArrowUp,
-  MdMenuOpen, MdMenu, MdAttachMoney
+  MdMenuOpen, MdMenu, MdAttachMoney, MdCampaign
 } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
 import { logout, selectUser } from "../../features/auth/model/authSlice";
 import { useAccountId } from "../../entities/auth/model/useAccountId";
 import { useUnreadMessageCount } from "../../entities/chat/model/useUnreadMessageCount";
+import { useUnreadAlertCount } from "../../entities/alerts/model/useUnreadAlertCount";
 
 /**
  * SidebarProps Interface
@@ -61,6 +62,7 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, onOpenSettin
   const navigate = useNavigate();
   const { accountId } = useAccountId();
   const unreadCount = useUnreadMessageCount(accountId);
+  const unreadAlertCount = useUnreadAlertCount(user?.uid, user?.role);
 
   /** Handle clicking outside to close the dropdown */
   useEffect(() => {
@@ -124,6 +126,7 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, onOpenSettin
 
         <NavGroup title="Communication" isCollapsed={isCollapsed}>
           <SidebarLink to="/admin/messages" icon={<MdChat />} label="Messages" isCollapsed={isCollapsed} badge={unreadCount} />
+          <SidebarLink to="/admin/alerts" icon={<MdCampaign />} label="Alerts" isCollapsed={isCollapsed} badge={unreadAlertCount} />
         </NavGroup>
 
         <NavGroup title="System" isCollapsed={isCollapsed}>

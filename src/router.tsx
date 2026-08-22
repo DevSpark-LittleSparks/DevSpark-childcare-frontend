@@ -21,6 +21,9 @@ import ChildProfilePage from './pages/admin/ChildProfilePage';
 import ParentManagement from './pages/admin/ParentManagement';
 import Teachers from './pages/admin/Teachers';
 import AdminMessagingPage from './pages/admin/MessagingPage';
+import { AuditLogsPage } from './pages/admin/AuditLogsPage';
+import { AlertsPage } from './pages/admin/AlertsPage';
+import { MyAlertsPage } from './pages/alerts/MyAlertsPage';
 
 // Parent Pages
 import ParentProfilePage from './pages/parent/ProfilePage';
@@ -84,20 +87,23 @@ export const router = createBrowserRouter([
       { path: 'payment-status', element: <PaymentStatusPage /> },
       { path: 'meal', element: <MealsPage /> },
       { path: 'messages', element: <AdminMessagingPage /> },
+      { path: 'logs', element: <AuditLogsPage /> },
+      { path: 'alerts', element: <AlertsPage /> },
     ],
   },
   // --- PARENT SECTION ---
   {
     path: '/parent',
-    element: <ParentLayout />, 
+    element: <ParentLayout />,
     children: [
       { path: 'dashboard', element: <ParentDashboard /> },
       { path: 'profile', element: <ParentProfilePage initialUser={mockUser} /> },
-      { path: 'children', element: <MyChildren /> }, 
-      { path: 'child-profile/:studentId', element: <ChildViewPage /> }, 
+      { path: 'children', element: <MyChildren /> },
+      { path: 'child-profile/:studentId', element: <ChildViewPage /> },
       { path: 'progress', element: <div>Progress</div> },
       { path: 'payments', element: <BillingPage /> },
       { path: 'messages', element: <MessagingPage /> },
+      { path: 'alerts', element: <MyAlertsPage /> },
     ]
   }
 ]);

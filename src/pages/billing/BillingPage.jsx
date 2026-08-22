@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { Download, MessageSquare, LineChart, PieChart, ReceiptText } from 'lucide-react';
+import { Download, MessageSquare, ReceiptText } from 'lucide-react';
 
 import { selectUser } from '@/features/auth/model/authSlice';
 import { useParentId } from '@/entities/parent/model/useParentId';
@@ -146,17 +146,6 @@ export const BillingPage = () => {
         outstandingBalance={outstandingBalance}
         lastPayment={lastPayment}
       />
-
-      {isAdmin && (
-        <div className="analytics-links">
-          <button className="revenue-analysis-link" onClick={() => navigate('/admin/revenue-analysis')}>
-            <LineChart size={18} /> Review Revenue Analysis
-          </button>
-          <button className="revenue-analysis-link" onClick={() => navigate('/admin/payment-status')}>
-            <PieChart size={18} /> Payment Status Overview
-          </button>
-        </div>
-      )}
 
       {parentId && (
         <div className="analytics-links">
