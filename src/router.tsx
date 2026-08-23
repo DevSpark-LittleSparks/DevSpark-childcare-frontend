@@ -1,7 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 // Layouts Import 
-import AdminLayout from './components/layout/AdminLayout'; 
+import AdminLayout from './components/layout/AdminLayout';
 import ParentLayout from './components/layout/ParentLayout';
 import TeacherLayout from './components/layout/TeacherLayout';
 
@@ -11,6 +11,10 @@ import SignupRequestForm from './pages/auth/SignupRequestForm';
 import RequestConfirmedPage from './pages/auth/RequestConfirmedPage';
 import LoginPage from './pages/auth/LoginPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import VerifyOtpPage from './pages/auth/VerifyOtpPage';
+import AboutUsPage from './pages/AboutUsPage';
+import ContactPage from './pages/ContactPage';
+
 
 // Admin Pages
 import AdminDashboardPage from './pages/admin/AdminDashboard';
@@ -24,6 +28,7 @@ import AdminMessagingPage from './pages/admin/MessagingPage';
 import { AuditLogsPage } from './pages/admin/AuditLogsPage';
 import { AlertsPage } from './pages/admin/AlertsPage';
 import { MyAlertsPage } from './pages/alerts/MyAlertsPage';
+import BroadcastPortal from './pages/admin/BroadcastPortal';
 
 // Parent Pages
 import ParentProfilePage from './pages/parent/ProfilePage';
@@ -66,20 +71,25 @@ export const router = createBrowserRouter([
   // --- PUBLIC ROUTES ---
   { path: '/', element: <LandingPage /> },
   { path: '/signup-request', element: <SignupRequestForm /> },
-  { path: '/request-confirmed', element: <RequestConfirmedPage /> },  
+  { path: '/request-confirmed', element: <RequestConfirmedPage /> },
   { path: '/login', element: <LoginPage /> },
   { path: '/forgot-password', element: <ForgotPasswordPage /> },
+  { path: '/verify-otp', element: <VerifyOtpPage /> },
+  { path: '/about', element: <AboutUsPage /> },
+  { path: '/contact', element: <ContactPage /> },
+
 
   // --- ADMIN SECTION ---
   {
     path: '/admin',
-    element: <AdminLayout />, 
+    element: <AdminLayout />,
     children: [
       { path: 'dashboard', element: <AdminDashboardPage /> },
-      { path: 'profile', element: <AdminProfilePage initialUser={{...mockUser, role: 'ADMIN'}} /> },
-      { path: 'admissions', element: <AdmissionsPage /> }, 
+      { path: 'profile', element: <AdminProfilePage initialUser={{ ...mockUser, role: 'ADMIN' }} /> },
+      { path: 'admissions', element: <AdmissionsPage /> },
       { path: 'students', element: <Student /> },
-      { path: 'students/:studentId', element: <ChildProfilePage /> }, 
+      // Admin route for full management/editing
+      { path: 'students/:studentId', element: <ChildProfilePage /> },
       { path: 'parents', element: <ParentManagement /> },
       { path: 'teachers', element: <Teachers /> },
       { path: 'billing', element: <BillingPage /> },
@@ -89,8 +99,10 @@ export const router = createBrowserRouter([
       { path: 'messages', element: <AdminMessagingPage /> },
       { path: 'logs', element: <AuditLogsPage /> },
       { path: 'alerts', element: <AlertsPage /> },
+      { path: 'broadcast', element: <BroadcastPortal /> },
     ],
   },
+
   // --- PARENT SECTION ---
   {
     path: '/parent',
@@ -104,6 +116,23 @@ export const router = createBrowserRouter([
       { path: 'payments', element: <BillingPage /> },
       { path: 'messages', element: <MessagingPage /> },
       { path: 'alerts', element: <MyAlertsPage /> },
-    ]
-  }
+    ],
+  },
+
+  // --- TEACHER SECTION ---
+  {
+    path: '/teacher',
+    element: <TeacherLayout />,
+    children: [
+      { path: 'dashboard', element: <div>Teacher Dashboard</div> },
+      {
+        path: 'profile',
+        element: <TeacherProfilePage initialUser={{ ...mockUser, role: 'TEACHER' }} />
+      },
+      { path: 'attendance', element: <div>Daily Attendance</div> },
+      { path: 'activities', element: <div>My Activities</div> },
+      { path: 'meals', element: <div>Meals</div> },
+      { path: 'messages', element: <div>Messaging</div> },
+    ],
+  },
 ]);

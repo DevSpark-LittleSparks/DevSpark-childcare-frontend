@@ -6,6 +6,7 @@ import billingReducer from './slices/billingSlice';
 import healthReducer from './slices/healthSlice';
 import staffReducer from './slices/staffSlice';
 import messagingReducer from '../features/messaging/model/messagingSlice';
+import settingsReducer from '../features/settings/model/settingsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -15,6 +16,7 @@ export const store = configureStore({
     health: healthReducer,
     staff: staffReducer,
     messaging: messagingReducer,
+    settings: settingsReducer,
   },
   devTools: true,
 });
@@ -22,6 +24,6 @@ export const store = configureStore({
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
-// මේ පේළි දෙක අනිවාර්යයෙන්ම තිබිය යුතුයි
+// must be 
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;

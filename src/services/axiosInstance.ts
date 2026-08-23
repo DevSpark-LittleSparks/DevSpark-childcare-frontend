@@ -8,10 +8,11 @@ export const apiClient = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+// Auto-attach Firebase ID Token to every request
 apiClient.interceptors.request.use(async (config) => {
-  const currentUser = firebaseAuth.currentUser;
-  if (currentUser) {
-    const token = await currentUser.getIdToken();
+  const user = firebaseAuth.currentUser;
+  if (user) {
+    const token = await user.getIdToken();
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;

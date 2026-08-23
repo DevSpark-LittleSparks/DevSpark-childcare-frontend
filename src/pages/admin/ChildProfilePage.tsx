@@ -1,10 +1,11 @@
 import React, { useState, useRef, ChangeEvent, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { 
-  Camera, User, MapPin, ArrowLeft, Loader2, Save, 
-  Edit3, X, Sparkles, Scale, Ruler, Droplets, 
+import {
+  Camera, User, MapPin, ArrowLeft, Loader2, Save,
+  Edit3, X, Sparkles, Scale, Ruler, Droplets,
   ClipboardList, Users, Mail, Phone, Hash, Calendar, Heart
 } from 'lucide-react';
+import { apiClient } from '../../services/axiosInstance';
 import { Button } from '../../components/common/Button';
 
 /**
@@ -19,7 +20,7 @@ const ChildViewPage = () => {
 
   // Security: Check if user is accessing via the admin route
   const isAdmin = location.pathname.startsWith('/admin');
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -28,20 +29,21 @@ const ChildViewPage = () => {
 
   // Form State: Keys match the AdmissionsPage exactly
   const [formData, setFormData] = useState({
-    fullName: 'Amaya Perera',
-    nameWithInitials: 'A.P. Perera',
-    dob: '2020-05-15',
-    gender: 'female',
-    bloodGroup: 'A+',
-    height: '105',
-    weight: '18',
-    address: 'No 45, Flower Road, Colombo 07',
-    specialNote: 'Nut allergy, requires inhaler for dust.',
-    relationship: 'mother',
-    parentFullName: 'Sunethra Perera',
-    parentEmail: 'sunethra.p@gmail.com',
-    parentContact: '+94771234567',
-    parentID: '856643221V'
+    fullName: '',
+    nameWithInitials: '',
+    dob: '',
+    gender: 'male',
+    bloodGroup: '',
+    height: '',
+    weight: '',
+    address: '',
+    specialNote: '',
+    relationship: '',
+    parentFullName: '',
+    parentEmail: '',
+    parentContact: '',
+    parentID: '',
+    status: 'ENROLLED'
   });
 
   // Calculate age dynamically if DOB is changed during edit
@@ -58,28 +60,40 @@ const ChildViewPage = () => {
     }
   }, [formData.dob]);
 
-  // Load actual data from admissionsData
+  // Load actual data from backend
   useEffect(() => {
-    const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
-    const foundChild = admissionsData.find((c: any) => c.id === studentId);
-    if (foundChild) {
-      setFormData({
-        fullName: foundChild.fullName || '',
-        nameWithInitials: foundChild.nameWithInitials || '',
-        dob: foundChild.dob || '',
-        gender: foundChild.gender || 'male',
-        bloodGroup: foundChild.bloodGroup || '',
-        height: foundChild.height || '',
-        weight: foundChild.weight || '',
-        address: foundChild.address || '',
-        specialNote: foundChild.specialNote || '',
-        relationship: foundChild.relationship || '',
-        parentFullName: foundChild.parentFullName || '',
-        parentEmail: foundChild.parentEmail || '',
-        parentContact: foundChild.parentContact || '',
-        parentID: foundChild.parentID || ''
-      });
-      setPreviewImage(foundChild.profileImage || null);
+    const fetchChildData = async () => {
+      try {
+        // Fetch profile data
+        const res = await apiClient.get(`/api/v1/auth/admin/child/${studentId}`);
+        if (res.data.success) {
+          const data = res.data.data;
+          setFormData({
+            fullName: `${data.firstName} ${data.lastName}`,
+            nameWithInitials: `${data.firstName.charAt(0)}.${data.lastName}`, // Fallback
+            dob: data.dob || '',
+            gender: data.gender ? data.gender.toLowerCase() : 'male',
+            bloodGroup: data.bloodGroup || '',
+            height: data.height || '',
+            weight: data.weight || '',
+            address: data.address || '',
+            specialNote: data.specialNote || '',
+            relationship: data.relationship || '',
+            parentFullName: data.guardianName || '',
+            parentEmail: data.guardianEmail || '',
+            parentContact: data.parentContact || '',
+            parentID: data.parentID || '',
+            status: data.status || 'ENROLLED'
+          });
+          setPreviewImage(data.profilePic || null);
+        }
+      } catch (err) {
+        console.error("Failed to fetch child data:", err);
+      }
+    };
+
+    if (studentId) {
+      fetchChildData();
     }
   }, [studentId]);
 
@@ -97,41 +111,60 @@ const ChildViewPage = () => {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsSaving(true);
-    
-    setTimeout(() => {
-      const admissionsData = JSON.parse(localStorage.getItem('admissionsData') || '[]');
-      const updatedData = admissionsData.map((c: any) => 
-        c.id === studentId ? { ...c, ...formData, profileImage: previewImage || c.profileImage } : c
-      );
-      localStorage.setItem('admissionsData', JSON.stringify(updatedData));
+    try {
+      // Split fullName back to first/last for backend if needed
+      const nameParts = formData.fullName.split(' ');
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(' ');
 
-      setIsSaving(false);
+      const payload = {
+        firstName,
+        lastName,
+        dob: formData.dob,
+        gender: formData.gender.toUpperCase(),
+        bloodGroup: formData.bloodGroup,
+        height: formData.height,
+        weight: formData.weight,
+        address: formData.address,
+        specialNote: formData.specialNote,
+        guardianName: formData.parentFullName,
+        guardianEmail: formData.parentEmail,
+        profilePic: previewImage,
+        status: formData.status
+      };
+
+      await apiClient.put(`/api/v1/auth/admin/child/${studentId}`, payload);
       setIsEditing(false);
-      alert("Changes saved to LittleSparks database!");
-    }, 1500);
+      alert("Changes saved to database successfully!");
+    } catch (err) {
+      console.error("Save failed:", err);
+      alert("Failed to save changes.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
-    <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
-      
+    <div className="min-h-screen w-full bg-surface-secondary dark:bg-slate-950 transition-colors duration-300 font-sans text-slate-900 dark:text-slate-100 pb-10">
+
       {/* --- TOP BAR --- */}
       <header className="max-w-7xl mx-auto px-6 pt-8 pb-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-6">
-            <button 
+            <button
               onClick={() => navigate(-1)}
-              className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 transition-all group"
+              className="p-3 bg-white dark:bg-[#0f172a] rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50 transition-all group"
             >
-              <ArrowLeft className="text-slate-400 group-hover:text-primary-500" size={20} />
+              <ArrowLeft className="text-slate-400 dark:text-slate-500 dark:text-slate-400 group-hover:text-primary-500" size={20} />
             </button>
             <div>
               <div className="flex items-center gap-2 mb-1 text-primary-500">
                 <Sparkles size={14} className="fill-primary-500" />
                 <p className="text-[10px] font-black uppercase tracking-[0.3em]">LittleSparks Student Management</p>
               </div>
-              <h1 className="text-3xl font-black text-midnight tracking-tight italic font-sans">
+              <h1 className="text-3xl font-black text-midnight dark:text-white tracking-tight italic font-sans">
                 {isEditing ? "Modify Spark Details" : formData.nameWithInitials}
               </h1>
             </div>
@@ -142,7 +175,7 @@ const ChildViewPage = () => {
               {isEditing ? (
                 <>
                   <Button variant="ghost" onClick={() => setIsEditing(false)} className="rounded-xl border-2 px-6">
-                    <X size={18} className="mr-2"/> Cancel
+                    <X size={18} className="mr-2" /> Cancel
                   </Button>
                   <Button onClick={handleSave} disabled={isSaving} className="rounded-xl shadow-lg shadow-primary-500/20 px-8">
                     {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} className="mr-2" />}
@@ -161,21 +194,21 @@ const ChildViewPage = () => {
 
       <main className="max-w-7xl mx-auto px-6 mt-6 space-y-8 animate-fadeUp">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
-          
+
           {/* --- STUDENT BIO SECTION --- */}
           <div className="lg:col-span-2 space-y-8">
-            <div className="bg-white rounded-[3rem] shadow-[0_20px_60px_rgba(10,6,55,0.02)] border border-slate-100 p-8 md:p-12 relative overflow-hidden">
-              
+            <div className="bg-white dark:bg-[#0f172a] rounded-[3rem] shadow-[0_20px_60px_rgba(10,6,55,0.02)] border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 p-8 md:p-12 relative overflow-hidden">
+
               <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
                 <div className="flex flex-col items-center">
-                  <div 
+                  <div
                     onClick={() => isEditing && fileInputRef.current?.click()}
                     className={`h-40 w-40 rounded-[3rem] border-4 border-white shadow-2xl overflow-hidden relative group transition-all ${isEditing ? 'cursor-pointer ring-8 ring-primary-500/5' : ''}`}
                   >
                     {previewImage ? (
                       <img src={previewImage} className="h-full w-full object-cover" alt="child" />
                     ) : (
-                      <div className="h-full w-full bg-slate-50 flex items-center justify-center text-slate-200">
+                      <div className="h-full w-full bg-slate-50 dark:bg-slate-800/40 flex items-center justify-center text-slate-200">
                         <User size={60} />
                       </div>
                     )}
@@ -186,7 +219,7 @@ const ChildViewPage = () => {
                     )}
                   </div>
                   <input type="file" ref={fileInputRef} onChange={handleImageChange} className="hidden" accept="image/*" />
-                  <p className="mt-5 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Reference ID: {studentId || 'SP-000'}</p>
+                  <p className="mt-5 text-[9px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest text-center">Reference ID: {studentId || 'SP-000'}</p>
                 </div>
 
                 <div className="md:col-span-3 space-y-7">
@@ -196,43 +229,45 @@ const ChildViewPage = () => {
               </div>
 
               {/* Physical Data Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-5 p-7 bg-slate-50/50 rounded-[2.5rem] border border-slate-100/50">
-                <MiniStat icon={<Calendar size={14}/>} label="DOB" value={formData.dob} isEditing={isEditing} name="dob" type="date" onChange={handleInputChange} />
-                <MiniStat icon={<Heart size={14}/>} label="Calculated Age" value={age} />
-                <MiniStat icon={<Ruler size={14}/>} label="Height (CM)" value={formData.height} isEditing={isEditing} name="height" type="number" onChange={handleInputChange} />
-                <MiniStat icon={<Scale size={14}/>} label="Weight (KG)" value={formData.weight} isEditing={isEditing} name="weight" type="number" onChange={handleInputChange} />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-5 p-7 bg-slate-50 dark:bg-slate-800/40/50 rounded-[2.5rem] border border-slate-100 dark:border-slate-800/60/50">
+                <MiniStat icon={<Calendar size={14} />} label="DOB" value={formData.dob} isEditing={isEditing} name="dob" type="date" onChange={handleInputChange} />
+                <MiniStat icon={<Heart size={14} />} label="Calculated Age" value={age} />
+                <MiniStat icon={<Ruler size={14} />} label="Height (CM)" value={formData.height} isEditing={isEditing} name="height" type="number" onChange={handleInputChange} />
+                <MiniStat icon={<Scale size={14} />} label="Weight (KG)" value={formData.weight} isEditing={isEditing} name="weight" type="number" onChange={handleInputChange} />
               </div>
 
               {/* Health & Demographics */}
               <div className="mt-12 space-y-8">
-                 <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 bg-rose-50 rounded-lg flex items-center justify-center text-rose-500">
-                        <Droplets size={16} />
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 bg-rose-50 rounded-lg flex items-center justify-center text-rose-500">
+                    <Droplets size={16} />
+                  </div>
+                  {/* Display health info */}
+                  <h3 className="text-xs font-black text-midnight dark:text-white uppercase tracking-[0.2em]">Medical & Safety</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <InputField label="Blood Group" name="bloodGroup" value={formData.bloodGroup} isEditing={isEditing} type="select" options={['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']} onChange={handleInputChange} />
+                  <InputField label="Gender" name="gender" value={formData.gender} isEditing={isEditing} type="select" options={['male', 'female']} onChange={handleInputChange} />
+                  <InputField label="Status" name="status" value={formData.status} isEditing={isEditing} type="select" options={['ENROLLED', 'BIG_SCHOOL_READY', 'ALUMNI']} onChange={handleInputChange} />
+                </div>
+                <div className="space-y-3 text-left">
+                  <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+                    <ClipboardList size={12} className="text-primary-500" /> Important Health Notes
+                  </label>
+                  {isEditing ? (
+                    <textarea
+                      name="specialNote"
+                      value={formData.specialNote}
+                      onChange={handleInputChange}
+                      rows={3}
+                      className="w-full p-5 bg-slate-50 dark:bg-slate-800/40 border-2 border-primary-500/10 focus:border-primary-500 rounded-3xl outline-none text-sm font-bold transition-all"
+                    />
+                  ) : (
+                    <div className="p-6 bg-primary-50/20 border border-primary-100/30 rounded-3xl text-sm font-bold text-slate-600 dark:text-slate-300 leading-relaxed italic">
+                      {formData.specialNote || "No medical conditions reported."}
                     </div>
-                    <h3 className="text-xs font-black text-midnight uppercase tracking-[0.2em]">Medical & Safety</h3>
-                 </div>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <InputField label="Blood Group" name="bloodGroup" value={formData.bloodGroup} isEditing={isEditing} type="select" options={['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']} onChange={handleInputChange} />
-                    <InputField label="Gender" name="gender" value={formData.gender} isEditing={isEditing} type="select" options={['male', 'female']} onChange={handleInputChange} />
-                 </div>
-                 <div className="space-y-3 text-left">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2">
-                      <ClipboardList size={12} className="text-primary-500" /> Important Health Notes
-                    </label>
-                    {isEditing ? (
-                      <textarea 
-                        name="specialNote" 
-                        value={formData.specialNote} 
-                        onChange={handleInputChange}
-                        rows={3}
-                        className="w-full p-5 bg-slate-50 border-2 border-primary-500/10 focus:border-primary-500 rounded-3xl outline-none text-sm font-bold transition-all"
-                      />
-                    ) : (
-                      <div className="p-6 bg-primary-50/20 border border-primary-100/30 rounded-3xl text-sm font-bold text-slate-600 leading-relaxed italic">
-                        {formData.specialNote || "No medical conditions reported."}
-                      </div>
-                    )}
-                 </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -241,11 +276,11 @@ const ChildViewPage = () => {
           <div className="space-y-8">
             <div className="bg-midnight rounded-[3rem] p-10 shadow-2xl text-white relative overflow-hidden">
               <div className="absolute top-0 right-0 p-8 opacity-5">
-                 <Users size={120} />
+                <Users size={120} />
               </div>
-              
+
               <div className="flex items-center gap-4 mb-10 relative z-10">
-                <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center">
+                <div className="h-10 w-10 bg-white dark:bg-[#0f172a]/10 rounded-xl flex items-center justify-center">
                   <Users size={20} className="text-primary-400" />
                 </div>
                 <h3 className="font-black text-lg uppercase tracking-tight">Parental Record</h3>
@@ -261,10 +296,10 @@ const ChildViewPage = () => {
 
               {!isEditing && (
                 <div className="mt-12 pt-8 border-t border-white/5 space-y-4 relative z-10">
-                   <div className="flex items-start gap-4 text-slate-400">
-                      <MapPin size={18} className="mt-1 flex-shrink-0 text-primary-500" />
-                      <p className="text-xs font-bold leading-relaxed">{formData.address}</p>
-                   </div>
+                  <div className="flex items-start gap-4 text-slate-400">
+                    <MapPin size={18} className="mt-1 flex-shrink-0 text-primary-500" />
+                    <p className="text-xs font-bold leading-relaxed">{formData.address}</p>
+                  </div>
                 </div>
               )}
             </div>
@@ -279,24 +314,24 @@ const ChildViewPage = () => {
 
 const InputField = ({ label, value, isEditing, name, dark, type = "text", options, onChange }: any) => (
   <div className="space-y-2 text-left">
-    <label className={`text-[10px] font-black uppercase tracking-widest ml-1 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{label}</label>
+    <label className={`text-[10px] font-black uppercase tracking-widest ml-1 ${dark ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500 dark:text-slate-400'}`}>{label}</label>
     {isEditing ? (
       type === "select" ? (
-        <select 
-          name={name} 
-          value={value} 
+        <select
+          name={name}
+          value={value}
           onChange={onChange}
-          className={`w-full p-4 rounded-2xl outline-none text-sm font-bold transition-all border-2 ${dark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-primary-500/10 focus:border-primary-500 text-midnight'}`}
+          className={`w-full p-4 rounded-2xl outline-none text-sm font-bold transition-all border-2 ${dark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 dark:bg-slate-800/40 border-primary-500/10 focus:border-primary-500 text-midnight'}`}
         >
-          {options.map((opt: string) => <option key={opt} value={opt} className="text-midnight">{opt.toUpperCase()}</option>)}
+          {options.map((opt: string) => <option key={opt} value={opt} className="text-midnight dark:text-white">{opt.toUpperCase()}</option>)}
         </select>
       ) : (
-        <input 
-          type={type} 
-          name={name} 
-          value={value} 
+        <input
+          type={type}
+          name={name}
+          value={value}
           onChange={onChange}
-          className={`w-full p-4 rounded-2xl outline-none text-sm font-bold transition-all border-2 ${dark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-primary-500/10 focus:border-primary-500 text-midnight'}`} 
+          className={`w-full p-4 rounded-2xl outline-none text-sm font-bold transition-all border-2 ${dark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 dark:bg-slate-800/40 border-primary-500/10 focus:border-primary-500 text-midnight'}`}
         />
       )
     ) : (
@@ -307,17 +342,17 @@ const InputField = ({ label, value, isEditing, name, dark, type = "text", option
 
 const MiniStat = ({ icon, label, value, isEditing, name, type, onChange }: any) => (
   <div className="flex flex-col text-left">
-    <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter flex items-center gap-1.5 mb-2">{icon} {label}</span>
+    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-tighter flex items-center gap-1.5 mb-2">{icon} {label}</span>
     {isEditing && name ? (
-       <input 
-        type={type} 
-        name={name} 
-        value={value} 
-        onChange={onChange} 
-        className="bg-transparent border-b-2 border-primary-500/40 outline-none text-sm font-black text-midnight w-full pb-1" 
-       />
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="bg-transparent border-b-2 border-primary-500/40 outline-none text-sm font-black text-midnight dark:text-white w-full pb-1"
+      />
     ) : (
-       <span className="text-sm font-black text-midnight tracking-tight">{value}</span>
+      <span className="text-sm font-black text-midnight dark:text-white tracking-tight">{value}</span>
     )}
   </div>
 );

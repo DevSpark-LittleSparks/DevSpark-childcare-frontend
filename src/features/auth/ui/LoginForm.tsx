@@ -36,9 +36,10 @@ const LittleSparksLogo = () => (
   </div>
 );
 
+// This defines the rules for our login form (Validation)
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.string().email("Invalid email address"), // Email must be valid
+  password: z.string().min(6, "Password must be at least 6 characters"), // Password must be at least 6 characters
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -56,41 +57,42 @@ export function LoginForm() {
     resolver: zodResolver(loginSchema),
   });
 
+  // This function runs when the user clicks the "Sign In" button
   const onSubmit = async (data: LoginFormValues) => {
-    dispatch(setLoading(true));
+    dispatch(setLoading(true)); // Start the loading spinner (shows "Signing in...")
+    dispatch(setError(null));   // Clear any old error messages
+
     try {
-      // 1. Check Local OTP Credentials from Admin Approval
-      const otpCredentials = JSON.parse(localStorage.getItem('otp_credentials') || '[]');
-      const validOtpUser = otpCredentials.find((c: any) => c.email === data.email && c.otp === data.password);
+      // STEP 1: Check if the user is trying to use an OTP code instead of a password
+      // If the password is exactly 6 numbers, it might be an activation code
+      const isOtp = /^\d{6}$/.test(data.password);
 
-      if (validOtpUser) {
-        dispatch(setUser({
-          uid: 'otp-' + Date.now(),
-          email: validOtpUser.email,
-          displayName: validOtpUser.fullName || validOtpUser.firstName || validOtpUser.role,
-          photoURL: null,
-          role: validOtpUser.role
-        }));
+      if (isOtp) {
+        try {
+          // Send the OTP to the backend to activate the account
+          await apiClient.post("/api/v1/auth/signup/verify-otp", {
+            email: data.email,
+            otpCode: data.password
+          });
 
-        dispatch(setLoading(false));
-
-        // Redirect based on role
-        if (validOtpUser.role.toLowerCase() === 'parent') {
-          navigate("/parent/children");
-        } else if (validOtpUser.role.toLowerCase() === 'teacher') {
-          navigate("/teacher/dashboard");
-        } else {
-          navigate("/admin/dashboard");
+          alert("✨ Account Activated Successfully! You can now log in using your permanent password.");
+          dispatch(setLoading(false));
+          return;
+        } catch (otpErr: any) {
+          // If it wasn't an OTP or verification failed, we just continue to normal login
+          console.log("Not an OTP or verification failed, trying normal login...");
         }
-        return;
       }
 
-      // 2. Fallback to Firebase Auth
+      // STEP 2: Standard Login using Firebase
+      // This sends the email and password to Firebase for authentication
       const userCredential = await signInWithEmailAndPassword(
         firebaseAuth,
         data.email,
         data.password
       );
+
+      // STEP 3: Get user details and their role
       const { uid, email, displayName, photoURL } = userCredential.user;
 
       // The backend sets a "role" custom claim (ADMIN/TEACHER/PARENT) on the
@@ -99,8 +101,10 @@ export function LoginForm() {
       const tokenResult = await userCredential.user.getIdTokenResult();
       const role = (tokenResult.claims.role as string | undefined) ?? null;
 
+      // Save the user info (including role) in our Redux store so the whole app knows who is logged in
       dispatch(setUser({ uid, email, displayName, photoURL, role }));
 
+      // STEP 4: Send the user to the correct dashboard based on their role
       if (role?.toLowerCase() === "admin") {
         navigate("/admin/dashboard");
       } else if (role?.toLowerCase() === "teacher") {
@@ -111,11 +115,23 @@ export function LoginForm() {
         navigate("/");
       }
     } catch (err: any) {
-      dispatch(setError(err.message || "Failed to login. Invalid credentials."));
+      // If the account is disabled (not yet verified), send them to the OTP page
+      if (err.code === 'auth/user-disabled') {
+        navigate(`/verify-otp?email=${encodeURIComponent(data.email)}`);
+        return;
+      }
+
+      // Handle other login errors (wrong password, etc.)
+      let msg = "Invalid email or password.";
+      if (err.response?.data?.message) {
+        msg = err.response.data.message;
+      }
+      dispatch(setError(msg)); // Show the error on the screen
     } finally {
-      dispatch(setLoading(false));
+      dispatch(setLoading(false)); // Stop the loading spinner
     }
   };
+
 
   return (
     <Card className="w-full max-w-md p-8 shadow-2xl border-t-4 border-t-cyan-500 bg-white/80 backdrop-blur-sm">

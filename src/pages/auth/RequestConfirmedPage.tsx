@@ -5,13 +5,13 @@ import ConfirmImg from "@/assets/images/request-confirm.png";
 
 const RequestConfirmedPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans">
+    <div className="min-h-screen bg-white dark:bg-[#0f172a] flex flex-col font-sans">
       <AuthHeader />
 
       <main className="flex-1 flex flex-col lg:flex-row w-full overflow-hidden">
         
         {/* LEFT: CONTENT SECTION - Professional Alignment */}
-        <section className="flex-1 p-8 lg:p-16 xl:p-24 bg-white flex flex-col justify-center items-center lg:items-end">
+        <section className="flex-1 p-8 lg:p-16 xl:p-24 bg-white dark:bg-[#0f172a] flex flex-col justify-center items-center lg:items-end">
           <div className="max-w-md w-full lg:mr-12 xl:mr-20">
             
             {/* Professional Checkmark Icon with Pulse Effect */}
@@ -23,19 +23,19 @@ const RequestConfirmedPage: React.FC = () => {
             </div>
 
             {/* Typography: More Professional Hierarchy */}
-            <h1 className="text-4xl lg:text-5xl font-black text-slate-900 mb-6 leading-[1.1] tracking-tight">
+            <h1 className="text-4xl lg:text-5xl font-black text-slate-900 dark:text-white mb-6 leading-[1.1] tracking-tight">
               Request <br />
               <span className="text-cyan-600">Submitted!</span>
             </h1>
             
-            <div className="space-y-6 mb-12 border-l-4 border-slate-100 pl-6">
-              <p className="text-xl text-slate-600 leading-relaxed font-light italic">
+            <div className="space-y-6 mb-12 border-l-4 border-slate-100 dark:border-slate-800/60 pl-6">
+              <p className="text-xl text-slate-600 dark:text-slate-300 leading-relaxed font-light italic">
                 Thank you for requesting access. The childcare administrator has been
                 notified and will review your details shortly.
               </p>
-              <p className="text-lg text-slate-500 leading-relaxed font-medium">
-                You will receive an email confirmation with Login instructions once
-                your request is approved.
+              <p className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                Once approved, you will receive an email with a <b>Verification OTP</b> to activate your account. 
+                Please keep an eye on your inbox!
               </p>
             </div>
 
@@ -49,7 +49,7 @@ const RequestConfirmedPage: React.FC = () => {
             </div>
 
             {/* Subtle Support Text */}
-            <p className="mt-8 text-sm text-slate-400 font-medium tracking-wide uppercase">
+            <p className="mt-8 text-sm text-slate-400 dark:text-slate-500 dark:text-slate-400 font-medium tracking-wide uppercase">
               Application ID: #{Math.floor(Math.random() * 90000) + 10000}
             </p>
           </div>
