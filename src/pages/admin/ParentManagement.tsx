@@ -161,6 +161,7 @@ const ParentManagement = () => {
             <div className="w-10 h-10 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin" />
           </div>
         ) : (
+        <>
         <div className="bg-white dark:bg-[#0f172a]/70 backdrop-blur-md border border-white/80 rounded-3xl overflow-hidden shadow-sm">
           <table className="w-full text-left">
             <thead>
@@ -281,6 +282,7 @@ const ParentManagement = () => {
             </Button>
           </div>
         )}
+        </>
         )}
       </main>
 
