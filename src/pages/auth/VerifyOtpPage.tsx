@@ -57,14 +57,14 @@ const VerifyOtpPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-800/40 flex flex-col font-sans">
       <AuthHeader />
 
       <main className="flex-1 flex items-center justify-center p-6 lg:p-12">
         <div className="w-full max-w-[480px] animate-in fade-in zoom-in-95 duration-500">
 
           {/* Main Verification Card */}
-          <div className="bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-slate-100 p-10 lg:p-12 relative overflow-hidden">
+          <div className="bg-white dark:bg-[#0f172a] rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 p-10 lg:p-12 relative overflow-hidden">
 
             {/* Subtle Gradient Accent */}
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-cyan-400 to-blue-500" />
@@ -74,12 +74,12 @@ const VerifyOtpPage: React.FC = () => {
             </div>
 
             <div className="text-center mb-10">
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-3">
+              <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-3">
                 Verify Email Address
               </h1>
-              <p className="text-slate-500 font-medium">
+              <p className="text-slate-500 dark:text-slate-400 font-medium">
                 {email ? (
-                  <>Code sent to <span className="text-slate-900 font-bold">{email}</span></>
+                  <>Code sent to <span className="text-slate-900 dark:text-white font-bold">{email}</span></>
                 ) : (
                   "Please enter your email and the verification code sent to you."
                 )}
@@ -108,11 +108,11 @@ const VerifyOtpPage: React.FC = () => {
                 )}
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">
+                  <label className="text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">
                     Verification Code
                   </label>
                   <input
-                    className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-cyan-500 focus:bg-white transition-all text-center text-2xl font-black tracking-[0.5em] text-slate-800 placeholder:text-slate-200"
+                    className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800/40 border-2 border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 rounded-2xl outline-none focus:border-cyan-500 focus:bg-white dark:bg-[#0f172a] transition-all text-center text-2xl font-black tracking-[0.5em] text-slate-800 dark:text-slate-200 placeholder:text-slate-200"
                     type="text"
                     maxLength={6}
                     placeholder="000000"
@@ -137,14 +137,14 @@ const VerifyOtpPage: React.FC = () => {
                   Confirm Activation
                 </Button>
 
-                <p className="text-center text-xs font-bold text-slate-400 uppercase tracking-tighter">
+                <p className="text-center text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-tighter">
                   Account will not be activated without verification.
                 </p>
               </form>
             )}
 
             <div className="mt-12 flex flex-col items-center gap-6">
-              <Link to="/signup-request" className="text-sm font-black text-slate-400 hover:text-cyan-600 transition-colors uppercase tracking-widest">
+              <Link to="/signup-request" className="text-sm font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 hover:text-cyan-600 transition-colors uppercase tracking-widest">
                 Back to Sign Up
               </Link>
 
@@ -156,7 +156,7 @@ const VerifyOtpPage: React.FC = () => {
             </div>
           </div>
 
-          <p className="text-center mt-10 text-slate-400 text-xs font-medium">
+          <p className="text-center mt-10 text-slate-400 dark:text-slate-500 dark:text-slate-400 text-xs font-medium">
             &copy; 2026 LittleSparks ChildCare. All rights reserved.
           </p>
         </div>

@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
+import { PhoneInput } from '../../components/common/PhoneInput';
 import { apiClient } from '../../services/axiosInstance';
 import adminAvatar from '../../assets/images/admin-avatar.jpeg';
 
@@ -65,7 +66,10 @@ const AdminProfilePage: React.FC = () => {
   }, [statusMessage]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    if (name === 'phone1' || name === 'phone2') {
+      value = "+94" + value.replace(/^\+94\s?/, '');
+    }
     setUser(prev => ({ ...prev, [name]: value }));
   };
 
@@ -232,9 +236,27 @@ const AdminProfilePage: React.FC = () => {
                 <div className="space-y-6">
                   <AdminInput label="Full Name" name="fullName" icon={User} value={user.fullName} onChange={handleInputChange} disabled={!isEditing} />
                   <AdminInput label="Registered Email" name="email" icon={Mail} value={user.email} disabled={true} />
-                  <div className="grid grid-cols-2 gap-4">
-                    <AdminInput label="Primary Phone" name="phone1" icon={Phone} value={user.phone1} onChange={handleInputChange} disabled={!isEditing} />
-                    <AdminInput label="Secondary" name="phone2" icon={Phone} value={user.phone2} onChange={handleInputChange} disabled={!isEditing} />
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="space-y-2 group">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Primary Phone</label>
+                      <PhoneInput 
+                        name="phone1" 
+                        variant="profile"
+                        value={user.phone1} 
+                        onChange={handleInputChange} 
+                        disabled={!isEditing}
+                      />
+                    </div>
+                    <div className="space-y-2 group">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Secondary</label>
+                      <PhoneInput 
+                        name="phone2" 
+                        variant="profile"
+                        value={user.phone2} 
+                        onChange={handleInputChange} 
+                        disabled={!isEditing}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

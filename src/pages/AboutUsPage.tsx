@@ -1,245 +1,411 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  motion,
+  useScroll,
+  useInView,
+} from 'framer-motion';
 import { Button } from '../components/common/Button';
 import { Logo } from '../components/common/Logo';
-import { Heart, Target, Users, Sparkles, ShieldCheck, Globe, ArrowRight } from 'lucide-react';
-import aboutImg from '../assets/images/aboutus.jpg';
+import {
+  Users,
+  Leaf,
+  Scale,
+  ArrowRight,
+  Zap
+} from 'lucide-react';
+
 import member1 from '../assets/images/member1.jpeg';
 import member2 from '../assets/images/member2.jpeg';
 import member3 from '../assets/images/member3.jpeg';
 import member4 from '../assets/images/member4.jpeg';
 
-const AboutUsPage: React.FC = () => {
-  const navigate = useNavigate();
+/* ─────────────────────────────────────────
+   1. STAGGERED REVEAL ANIMATIONS
+───────────────────────────────────────── */
+const staggerContainer = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1 } },
+};
 
+const staggerItem = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.215, 0.61, 0.355, 1] } },
+};
+
+const StaggerReveal = ({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-8% 0px' });
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-900">
-      {/* Navigation Header */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="cursor-pointer" onClick={() => navigate('/')}>
-            <Logo iconClassName="w-10 h-10" textClassName="text-2xl" />
-          </div>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate('/')}
-              className="text-sm font-black text-slate-500 hover:text-primary-500 uppercase tracking-widest transition-colors mr-6 hidden md:block"
-            >
-              Home
-            </button>
-            <Button
-              variant="secondary"
-              className="rounded-full px-6"
-              onClick={() => navigate('/login')}
-            >
-              Sign In
-            </Button>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="relative py-24 overflow-hidden bg-gradient-to-br from-cyan-200 to-cyan-100">
-        <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-100 rounded-full text-primary-600 text-[15px] text-black font-black uppercase tracking-widest mb-8 animate-fadeUp">
-
-            Our Mission & Journey
-          </div>
-          <h1 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tight mb-8 leading-[1.1] animate-fadeUp">
-            Empowering The Next <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-primary-600 italic">
-              Generation Of Learners.
-            </span>
-          </h1>
-          <p className="max-w-2xl mx-auto text-lg text-slate-500 font-medium leading-relaxed mb-12 animate-fadeUp delay-100">
-            LittleSparks is more than just a management tool. We are a dedicated team
-            on a mission to simplify early childhood education, giving educators more
-            time to focus on what matters most: the children.
-          </p>
-          <div className="flex justify-center gap-4 animate-fadeUp delay-200">
-            <Button
-              variant="primary"
-              className="px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary-500/20"
-              onClick={() => navigate('/signup-request')}
-            >
-              Start Your Journey
-            </Button>
-          </div>
-        </div>
-
-        {/* Background Decorative Elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl -mr-48 -mt-48"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary-500/5 rounded-full blur-3xl -ml-48 -mb-48"></div>
-      </section>
-
-      {/* Our Vision Section */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            <div className="relative">
-              <div className="aspect-square rounded-[3rem] overflow-hidden shadow-2xl bg-slate-100 border-8 border-white">
-                <img
-                  src={aboutImg}
-                  alt="Child learning"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="absolute -bottom-8 -right-8 bg-white p-8 rounded-[2.5rem] shadow-2xl border border-slate-50 max-w-xs hidden md:block">
-                <div className="flex items-center gap-3 mb-3 text-primary-500">
-                  <Target size={24} />
-                  <span className="text-xs font-black uppercase tracking-widest">Our Vision</span>
-                </div>
-                <p className="text-sm font-bold text-slate-700 italic leading-relaxed">
-                  "To be the digital heartbeat of every early learning center worldwide."
-                </p>
-              </div>
-            </div>
-            <div className="space-y-8">
-              <h2 className="text-4xl font-black text-slate-900 tracking-tight leading-tight">
-                Built by EDUCATORS, for EDUCATORS.
-              </h2>
-              <div className="space-y-6">
-                <div className="flex gap-6 group">
-                  <div className="h-14 w-14 shrink-0 bg-primary-50 rounded-2xl flex items-center justify-center text-primary-500 transition-transform group-hover:rotate-6">
-                    <ShieldCheck size={28} />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-black text-slate-900 mb-2">Simplicity & Trust</h4>
-                    <p className="text-slate-500 text-sm font-medium leading-relaxed">
-                      We believe technology should be invisible. Our platform is designed to be
-                      intuitive, secure, and reliable, so you can trust us with your most valuable data.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-6 group">
-                  <div className="h-14 w-14 shrink-0 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 transition-transform group-hover:rotate-6">
-                    <Heart size={28} />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-black text-slate-900 mb-2">Passion for Progress</h4>
-                    <p className="text-slate-500 text-sm font-medium leading-relaxed">
-                      Every update we ship and every feature we build is driven by the feedback
-                      of thousands of teachers who use LittleSparks every day.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Diversity Section */}
-      <section className="py-24 bg-slate-900 text-white overflow-hidden relative">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/10 text-[10px] font-black uppercase tracking-widest mb-8">
-              <Globe size={14} className="text-primary-400" />
-              Inclusion & Equity
-            </div>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-8 leading-tight italic">
-              Celebrating The Importance <br />
-              <span className="text-primary-400 ">Of Diversity.</span>
-            </h2>
-            <p className="text-slate-400 text-lg font-medium leading-relaxed mb-12">
-              At LittleSparks, we believe that early childhood is where the seeds of
-              inclusion are sown. Our platform is built to support diverse families,
-              multicultural curricula, and accessible learning for every child,
-              regardless of their background or ability.
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-              <div>
-                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nationalities</div>
-              </div>
-              <div>
-                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Accessible</div>
-              </div>
-              <div>
-                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Languages</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Leadership Section */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <div className="mb-20">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full text-slate-500 text-[10px] font-black uppercase tracking-widest mb-4">
-              <Users size={14} />
-              Our Team
-            </div>
-            <h2 className="text-4xl font-black text-slate-900 tracking-tight mb-4 uppercase">Meet Our Leadership</h2>
-
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <TeamMember
-              name="Senuri Werangana"
-              image={member1}
-            />
-            <TeamMember
-              name="Anjana Jayamaha"
-              image={member2}
-            />
-            <TeamMember
-              name="Agnes Ostina"
-              image={member3}
-            />
-            <TeamMember
-              name="Kavindu Welagedara"
-              image={member4}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-24 bg-slate-50">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="bg-primary-500 rounded-[3rem] p-12 md:p-20 text-center text-white relative overflow-hidden shadow-[0_20px_50px_rgba(34,211,238,0.3)]">
-            <div className="absolute top-0 left-0 w-full h-full opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
-            <div className="relative z-10">
-              <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-8 italic">Ready to ignite your center?</h2>
-              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-                <Button
-                  variant="secondary"
-                  className="bg-white text-primary-600 hover:bg-slate-50 px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-xs w-full sm:w-auto"
-                  onClick={() => navigate('/signup-request')}
-                >
-                  Join LittleSparks Today
-                </Button>
-
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-16 bg-white border-t border-slate-100 text-center">
-
-        <p className="mt-6 text-slate-400 text-sm font-medium tracking-wide italic">"Every spark tells a story. Let's make it beautiful."</p>
-        <div className="mt-8 pt-8 border-t border-slate-50 max-w-7xl mx-auto">
-          <div className="text-center text-gray-500 border-t border-gray-800 pt-8">©2026_LittleSparks.com — All rights reserved</div>
-        </div>
-      </footer>
-    </div>
+    <motion.div
+      ref={ref}
+      className={className}
+      variants={staggerContainer}
+      initial="hidden"
+      animate={inView ? 'visible' : 'hidden'}
+    >
+      {children}
+    </motion.div>
   );
 };
 
-const TeamMember = ({ name, image }: { name: string, image: string }) => (
-  <div className="group space-y-4 text-center max-w-[200px] mx-auto">
-    <div className="relative aspect-square rounded-[2rem] overflow-hidden shadow-lg border-4 border-white transition-all duration-500 group-hover:shadow-xl group-hover:-translate-y-2 group-hover:border-primary-100">
-      <img src={image} alt={name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+/* ─────────────────────────────────────────
+   2. SCROLL REVEAL WRAPPER
+───────────────────────────────────────── */
+const ScrollReveal = ({
+  children,
+  direction = 'up',
+  delay = 0,
+  className = '',
+}: {
+  children: React.ReactNode;
+  direction?: 'up' | 'left' | 'right' | 'scale';
+  delay?: number;
+  className?: string;
+}) => {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-10% 0px' });
+
+  const variants: Record<string, any> = {
+    up: { hidden: { opacity: 0, y: 50 }, visible: { opacity: 1, y: 0 } },
+    left: { hidden: { opacity: 0, x: -50 }, visible: { opacity: 1, x: 0 } },
+    right: { hidden: { opacity: 0, x: 50 }, visible: { opacity: 1, x: 0 } },
+    scale: { hidden: { opacity: 0, scale: 0.95 }, visible: { opacity: 1, scale: 1 } },
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      className={className}
+      variants={variants[direction]}
+      initial="hidden"
+      animate={inView ? 'visible' : 'hidden'}
+      transition={{ duration: 0.7, delay, ease: [0.215, 0.61, 0.355, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+/* ─────────────────────────────────────────
+   3. TEAM MEMBER CARD
+───────────────────────────────────────── */
+const TeamMember = ({
+  name,
+  role,
+  image
+}: {
+  name: string;
+  role: string;
+  image: string;
+}) => (
+  <motion.div
+    className="group flex flex-col items-center text-center"
+  >
+    <div className="relative w-48 h-48 rounded-full overflow-hidden mb-6 shadow-xl shadow-slate-200 group-hover:shadow-cyan-500/20 border-4 border-white transition-shadow duration-500">
+      <img
+        src={image}
+        alt={name}
+        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+      />
     </div>
-    <div className="space-y-1">
-      <h4 className="text-sm font-black text-slate-900 tracking-tight leading-none uppercase">{name}</h4>
-    </div>
-  </div>
+    <h4 className="text-lg font-black text-slate-800 dark:text-slate-200 tracking-tight font-sans mb-1">{name}</h4>
+    <p className="text-xs font-bold text-cyan-600 uppercase tracking-widest">{role}</p>
+  </motion.div>
 );
+
+/* ─────────────────────────────────────────
+   MAIN PAGE
+───────────────────────────────────────── */
+const AboutUsPage: React.FC = () => {
+  const navigate = useNavigate();
+  const pageRef = useRef(null);
+  const { scrollYProgress } = useScroll({ target: pageRef });
+
+  return (
+    <div ref={pageRef} className="min-h-screen bg-white dark:bg-[#0f172a] font-sans text-slate-800 dark:text-slate-200 overflow-x-hidden">
+
+      {/* ── Scroll progress bar ── */}
+      <motion.div
+        className="fixed top-0 left-0 h-1 z-[100] origin-left"
+        style={{
+          scaleX: scrollYProgress,
+          background: 'linear-gradient(90deg, #06B6D4, #a78bfa)',
+        }}
+      />
+
+      {/* ── Navbar ── */}
+      <motion.header
+        initial={{ y: -80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/5"
+        style={{ background: 'linear-gradient(135deg, rgba(13,41,82,0.95) 0%, rgba(10,6,32,0.95) 60%, rgba(15,50,100,0.90) 100%)' }}
+      >
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 flex justify-between items-center py-4">
+          <motion.div className="cursor-pointer" onClick={() => navigate('/')}>
+            <Logo variant="light" iconClassName="w-10 h-10" textClassName="text-2xl" />
+          </motion.div>
+
+          <nav className="hidden md:flex items-center gap-8">
+            {['home', 'why', 'features', 'discover'].map((item) => (
+              <button
+                key={item}
+                className="text-blue-200/80 hover:text-white transition-colors text-sm font-semibold capitalize tracking-wide"
+                onClick={() => {
+                  if (item === 'home') navigate('/');
+                  else navigate(`/#${item}`);
+                }}
+              >
+                {item.charAt(0).toUpperCase() + item.slice(1)}
+              </button>
+            ))}
+          </nav>
+
+          <div className="flex gap-4 items-center">
+            <Link className="text-blue-200/80 hover:text-white transition-colors font-semibold text-sm" to="/login">
+              Log In
+            </Link>
+            <Button
+              variant="primary"
+              className="px-5 py-2.5 rounded-full text-sm font-bold shadow-md shadow-cyan-500/20"
+              onClick={() => navigate('/signup-request')}
+            >
+              Get Started
+            </Button>
+          </div>
+        </div>
+      </motion.header>
+
+      {/* ══════════════════════════════════════
+          1. HERO SECTION 
+      ══════════════════════════════════════ */}
+      <section className="relative py-12 px-6 lg:px-8 bg-white dark:bg-[#0f172a]">
+        <div className="max-w-7xl mx-auto relative bg-[#eef8f8] rounded-3xl overflow-hidden shadow-sm min-h-[500px] flex items-center justify-center py-20 px-6">
+
+          {/* Top Left Cyan Shape */}
+          <div className="absolute -left-10 top-20 w-24 h-32 bg-[#00d0b0] transform rotate-12 rounded-sm" style={{ clipPath: 'polygon(100% 0, 100% 100%, 0 80%, 0 20%)' }}></div>
+
+          {/* Top Right Red Arch */}
+          <div className="absolute -right-8 -top-8 w-56 h-56 border-[48px] border-[#f05060] rounded-full border-l-transparent border-b-transparent transform rotate-[15deg]"></div>
+
+          {/* Bottom Left Yellow Arch */}
+          <div className="absolute left-10 -bottom-24 w-64 h-64 border-[48px] border-[#ffd03b] rounded-full" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 50%, 0 50%)' }}></div>
+
+          {/* Bottom Right Green Circle */}
+          <div className="absolute right-20 -bottom-12 w-36 h-36 border-[32px] border-[#69d9a0] rounded-full"></div>
+
+          {/* Decorative Marks */}
+          {/* Top Left Small Lines */}
+          <svg className="absolute left-[20%] top-[25%] w-10 h-10 text-slate-800 dark:text-slate-200 transform rotate-12" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+            <path d="M6 18L10 14M12 22V16M18 18L14 14" />
+          </svg>
+          {/* Top Right Small Lines */}
+          <svg className="absolute right-[20%] top-[25%] w-10 h-10 text-slate-800 dark:text-slate-200 transform -rotate-[30deg]" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+            <path d="M6 18L10 14M12 22V16M18 18L14 14" />
+          </svg>
+          {/* Bottom Left Sparkle */}
+          <svg className="absolute left-[15%] bottom-[30%] w-10 h-10 text-slate-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2C12 7 17 12 22 12C17 12 12 17 12 22C12 17 7 17 2 12C7 12 12 7 12 2Z" />
+          </svg>
+          {/* Bottom Right Sparkle */}
+          <svg className="absolute right-[10%] bottom-[20%] w-12 h-12 text-slate-800 dark:text-slate-200 transform rotate-45" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2C12 7 17 12 22 12C17 12 12 17 12 22C12 17 7 17 2 12C7 12 12 7 12 2Z" />
+            <path d="M19 4C19 6 21 8 23 8C21 8 19 10 19 12C19 10 17 10 15 8C17 8 19 6 19 4Z" />
+          </svg>
+
+          {/* Text Content */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            className="relative z-10 max-w-4xl mx-auto flex flex-col items-center text-center"
+          >
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-800 dark:text-slate-200 tracking-tight leading-tight mb-6">
+              About Us<br className="hidden md:block" />
+
+            </h1>
+            <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl mb-10 px-4">
+              Want to know a lil' more about LittleSparks? Discover the "why" behind our mission and meet the amazing team who makes it possible.
+            </p>
+            <Button
+              variant="primary"
+              className="bg-[#ffd03b] hover:bg-[#f0c020] text-slate-900 dark:text-white border-none px-8 py-3 rounded-md text-lg font-bold shadow-sm"
+              onClick={() => navigate('/contact')}
+            >
+              Get In Touch
+            </Button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════
+          2. WHAT INSPIRES US
+      ══════════════════════════════════════ */}
+      <section className="py-20 relative bg-white dark:bg-[#0f172a]">
+        <div className="max-w-6xl mx-auto px-6">
+          <ScrollReveal direction="up">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-slate-200 text-center mb-16 tracking-tight">
+              What inspires us
+            </h2>
+          </ScrollReveal>
+
+          <StaggerReveal className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+            <motion.div variants={staggerItem} className="flex flex-col items-center">
+              <div className="w-20 h-20 rounded-xl bg-[#00d0b0] flex items-center justify-center mb-6 shadow-sm">
+                <Leaf size={40} className="text-white" strokeWidth={1.5} />
+              </div>
+              <p className="text-slate-600 dark:text-slate-300 text-sm md:text-base leading-relaxed px-4">
+                The first five years of a child's life are the most critical for physical, intellectual, and social emotional development.
+              </p>
+            </motion.div>
+
+            <motion.div variants={staggerItem} className="flex flex-col items-center">
+              <div className="w-20 h-20 rounded-xl bg-[#ffd03b] flex items-center justify-center mb-6 shadow-sm">
+                <Scale size={40} className="text-slate-800" strokeWidth={1.5} />
+              </div>
+              <p className="text-slate-600 dark:text-slate-300 text-sm md:text-base leading-relaxed px-4">
+                The field of early childhood education deserves resources and support worthy of the importance of this time in child development and learning.
+              </p>
+            </motion.div>
+
+            <motion.div variants={staggerItem} className="flex flex-col items-center">
+              <div className="w-20 h-20 rounded-xl bg-[#f05060] flex items-center justify-center mb-6 shadow-sm">
+                <Users size={40} className="text-white" strokeWidth={1.5} />
+              </div>
+              <p className="text-slate-600 dark:text-slate-300 text-sm md:text-base leading-relaxed px-4">
+                Early childhood educators are doing some of the most important work there is in nurturing and caring for the next generation of lifelong learners.
+              </p>
+            </motion.div>
+          </StaggerReveal>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════
+          3. OUR BUILDING BLOCKS (VISION & MISSION)
+      ══════════════════════════════════════ */}
+      <section className="py-20 relative bg-white dark:bg-[#0f172a]">
+        <div className="max-w-5xl mx-auto px-6">
+          <ScrollReveal>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-slate-200 text-center mb-16 tracking-tight">
+              Our Building Blocks
+            </h2>
+          </ScrollReveal>
+
+          <div className="flex flex-col gap-10">
+            {/* Our Vision Block */}
+            <ScrollReveal direction="up">
+              <div className="relative bg-[#fefaf0] p-12 md:p-20 rounded-xl shadow-sm overflow-hidden text-center flex flex-col items-center justify-center min-h-[350px]">
+                {/* Decorative Elements */}
+                <svg className="absolute left-10 top-1/2 -translate-y-1/2 w-16 h-16 text-yellow-400 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+
+                <h3 className="text-2xl md:text-3xl font-semibold text-slate-800 dark:text-slate-200 mb-4">
+                  Our Vision
+                </h3>
+                <p className="text-slate-600 dark:text-slate-300 text-base md:text-lg max-w-2xl">
+                  We believe early childhood educators have the power to change children’s lives and ultimately, the world.
+                </p>
+              </div>
+            </ScrollReveal>
+
+            {/* Our Mission Block */}
+            <ScrollReveal direction="up">
+              <div className="relative bg-[#e8f5ee] p-12 md:p-20 rounded-xl shadow-sm overflow-hidden text-center flex flex-col items-center justify-center min-h-[350px]">
+                {/* Decorative Red Triangle on the right */}
+                <div className="absolute -right-8 top-10 w-24 h-24 bg-[#f05060] rotate-45 transform origin-center" />
+
+                <h3 className="text-2xl md:text-3xl font-semibold text-slate-800 dark:text-slate-200 mb-4">
+                  Our Mission
+                </h3>
+                <p className="text-slate-600 dark:text-slate-300 text-base md:text-lg max-w-3xl">
+                  To elevate early childhood programs with innovative design, quality content, and professional growth opportunities, delivering joyful learning experiences for all children.
+                </p>
+              </div>
+            </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════
+          4. LEADERSHIP TEAM SECTION
+      ══════════════════════════════════════ */}
+      <section className="py-24 relative bg-slate-50 dark:bg-slate-800/40 border-t border-slate-100">
+        <div className="max-w-6xl mx-auto px-6">
+          <ScrollReveal>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-slate-200 text-center mb-16 tracking-tight">
+              Meet Our Team
+            </h2>
+          </ScrollReveal>
+
+          <StaggerReveal className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
+            <TeamMember name="Senuri Werangana" role="" image={member1} />
+            <TeamMember name="Anjana Jayamaha" role="" image={member2} />
+            <TeamMember name="Agnes Ostina" role="" image={member3} />
+            <TeamMember name="Kavindu Welagedara" role="" image={member4} />
+          </StaggerReveal>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════
+          5. FOOTER
+      ══════════════════════════════════════ */}
+      <footer className="bg-[#060413] text-white py-16 px-6 lg:px-8 border-t border-white/5">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-12 mb-12 items-start">
+            <div className="col-span-1">
+              <Logo variant="light" iconClassName="w-10 h-10" textClassName="text-xl" />
+              <p className="text-slate-500 dark:text-slate-400 mt-4 text-sm leading-relaxed">
+                Simplifying childcare management for the next generation of educators.
+              </p>
+            </div>
+            <div>
+              <div className="mb-5">
+                <h4 className="font-bold text-white text-sm uppercase tracking-widest">Resources</h4>
+                <div className="w-12 h-1 bg-[#f05060] mt-3 rounded-full"></div>
+              </div>
+              <Link to="/signup-request" className="text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-colors block mb-3 text-sm">Getting Started</Link>
+              <Link to="/billing" className="text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-colors block mb-3 text-sm">Pricing</Link>
+            </div>
+            <div>
+              <div className="mb-5">
+                <h4 className="font-bold text-white text-sm uppercase tracking-widest">Features</h4>
+                <div className="w-12 h-1 bg-[#f05060] mt-3 rounded-full"></div>
+              </div>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Billing/Payments</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Payroll</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Feature Overview</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Attendance tracking</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Communication</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Center Management</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Daily Activity Report</span>
+              <span className="text-slate-500 dark:text-slate-400 block mb-3 text-sm font-medium cursor-default">Meal Planning</span>
+              <span className="text-slate-500 dark:text-slate-400 block text-sm font-medium cursor-default">Lesson Plans</span>
+            </div>
+            <div>
+              <div className="mb-5">
+                <h4 className="font-bold text-white text-sm uppercase tracking-widest">Company</h4>
+                <div className="w-12 h-1 bg-[#f05060] mt-3 rounded-full"></div>
+              </div>
+              <Link to="/about" className="text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-colors block mb-3 text-sm">About Us</Link>
+              <Link to="/contact" className="text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-colors block text-sm">Contact Support</Link>
+            </div>
+          </div>
+          <div className="text-center text-slate-600 dark:text-slate-300 border-t border-white/5 pt-8 text-sm">
+            ©2026 LittleSparks.com — All rights reserved
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  );
+};
 
 export default AboutUsPage;

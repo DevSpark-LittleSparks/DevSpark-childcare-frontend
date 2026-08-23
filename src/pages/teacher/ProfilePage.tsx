@@ -7,6 +7,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../store';
 import { Button } from '../../components/common/Button';
+import { PhoneInput } from '../../components/common/PhoneInput';
 import { apiClient } from '../../services/axiosInstance';
 import { UserProfile } from '../../types/user.types';
 
@@ -73,7 +74,10 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
   }, [statusMessage]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    if (name === 'phone') {
+      value = "+94" + value.replace(/^\+94\s?/, '');
+    }
     setUser(prev => ({ ...prev, [name]: value }));
   };
 
@@ -175,8 +179,8 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
 
         <div className="bg-white rounded-[3rem] shadow-[0_20px_50px_rgba(10,6,55,0.05)] border border-slate-200 overflow-hidden">
           <div className="relative h-72 flex flex-col items-center justify-center text-center px-6 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary-600 via-primary-500 to-indigo-600 opacity-90"></div>
-            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, #fff 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-hero-blue via-hero-purple to-hero-pink opacity-90"></div>
+            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, #06C5D4 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
 
             <div className="relative z-10 flex flex-col items-center">
               <div className="relative mb-4 group">
@@ -189,7 +193,7 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-primary-400 to-indigo-500 text-white font-black text-5xl uppercase select-none">
+                      <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-primary-500 to-hero-purple text-white font-black text-5xl uppercase select-none">
                         {user.fullName ? user.fullName.charAt(0) : 'T'}
                       </div>
                     )}
@@ -210,9 +214,11 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
                 {user.fullName || "Teacher Name"}
               </h1>
 
-              <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-black px-6 py-2 rounded-full uppercase tracking-[0.25em] border border-white/30">
-                {user.designation} Staff
-              </span>
+              <div className="flex items-center justify-center mt-2">
+                <span className="bg-midnight text-white text-[10px] font-black px-6 py-2 rounded-full uppercase tracking-[0.25em] shadow-lg shadow-midnight/20">
+                  {user.designation} Staff
+                </span>
+              </div>
             </div>
           </div>
 
@@ -259,7 +265,17 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
                 <div className="space-y-6">
                   <TeacherInput label="Full Name" name="fullName" icon={User} value={user.fullName} onChange={handleInputChange} disabled={!isEditing} />
                   <TeacherInput label="Registered Email" name="email" icon={Mail} value={user.email} disabled={true} />
-                  <TeacherInput label="Primary Phone" name="phone" icon={Phone} value={user.phone} onChange={handleInputChange} disabled={!isEditing} />
+                  
+                  <div className="space-y-2 group">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Primary Phone</label>
+                    <PhoneInput 
+                      name="phone" 
+                      variant="profile"
+                      value={user.phone} 
+                      onChange={handleInputChange} 
+                      disabled={!isEditing}
+                    />
+                  </div>
                 </div>
               </div>
 
