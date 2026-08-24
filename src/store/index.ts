@@ -6,6 +6,8 @@ import billingReducer from './slices/billingSlice';
 import healthReducer from './slices/healthSlice';
 import staffReducer from './slices/staffSlice';
 import settingsReducer from '../features/settings/model/settingsSlice';
+import activityReducer from './slices/activitySlice';
+import attendanceReducer from './slices/attendanceSlice';
 
 export const store = configureStore({
   reducer: {
@@ -15,6 +17,8 @@ export const store = configureStore({
     health: healthReducer,
     staff: staffReducer,
     settings: settingsReducer,
+    activity: activityReducer,
+    attendance: attendanceReducer,
   },
   devTools: true,
 });
@@ -22,6 +26,6 @@ export const store = configureStore({
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
-// must be 
+// must be
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
