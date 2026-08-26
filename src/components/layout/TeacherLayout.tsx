@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import TeacherSidebar from "./TeacherSidebar";
+import UniversalSmartAssistant from "../chatbots/UniversalSmartAssistant";
 
 const TeacherLayout: React.FC = () => {
   // Lifted state to control layout expansion
@@ -23,6 +24,7 @@ const TeacherLayout: React.FC = () => {
           <Outlet />
         </div>
       </main>
+      <UniversalSmartAssistant />
     </div>
   );
 };

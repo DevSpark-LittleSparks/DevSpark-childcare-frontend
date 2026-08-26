@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Layers, Zap, Heart } from 'lucide-react';
 import { Button } from '../components/common/Button';
+import UniversalSmartAssistant from '../components/chatbots/UniversalSmartAssistant';
 
 // ==========================================
 // 1) Internal Logo Component
@@ -276,6 +277,8 @@ const LandingPage: React.FC = () => {
           <div className="text-center text-gray-500 border-t border-gray-800 pt-8">©2026_LittleSparks.com — All rights reserved</div>
         </div>
       </footer>
+
+      <UniversalSmartAssistant />
     </div>
   );
 };

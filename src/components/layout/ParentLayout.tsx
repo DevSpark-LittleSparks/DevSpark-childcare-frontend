@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import ParentSidebar from "./ParentSidebar";
+import UniversalSmartAssistant from "../chatbots/UniversalSmartAssistant";
 
 const ParentLayout: React.FC = () => {
   // Shared state to sync sidebar width with main content margin
@@ -24,6 +25,7 @@ const ParentLayout: React.FC = () => {
           <Outlet />
         </div>
       </main>
+      <UniversalSmartAssistant />
     </div>
   );
 };
