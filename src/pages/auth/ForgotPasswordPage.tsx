@@ -7,7 +7,8 @@ import { Card } from "../../components/common/Card";
 import { AuthHeader } from "../../shared/ui/AuthHeader/AuthHeader";
 
 
-import { apiClient } from "../../services/axiosInstance";
+import { firebaseAuth } from "../../lib/firebase";
+import { sendPasswordResetEmail } from "firebase/auth";
 
 const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = React.useState("");
@@ -22,16 +23,29 @@ const ForgotPasswordPage: React.FC = () => {
     setMessage(null);
 
     try {
-      await apiClient.post(`/api/v1/auth/forgot-password?email=${encodeURIComponent(email)}`);
+      // Use Firebase SDK directly to send reset email
+      await sendPasswordResetEmail(firebaseAuth, email);
+      
       setMessage({
         type: 'success',
-        text: "Success! If an account exists for this email, you will receive a password reset link shortly."
+        text: "Success! A password reset link has been sent to your email address."
       });
       setEmail("");
     } catch (err: any) {
+      console.error("Firebase reset error:", err);
+      let errorText = "An error occurred. Please try again later.";
+      
+      // Firebase may silently succeed for non-existent emails for security reasons
+      // auth/user-not-found is deprecated in newer Firebase SDK versions
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-email') {
+        errorText = "Please enter a valid email address.";
+      } else if (err.code === 'auth/too-many-requests') {
+        errorText = "Too many attempts. Please try again later.";
+      }
+
       setMessage({
         type: 'error',
-        text: "An error occurred while processing your request. Please try again later."
+        text: errorText
       });
     } finally {
       setIsSubmitting(false);
@@ -39,13 +53,13 @@ const ForgotPasswordPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-800/40 flex flex-col font-sans">
       { <AuthHeader backLink="/login" /> }
 
       <main className="flex-1 flex flex-col max-w-[1440px] mx-auto w-full items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 shadow-2xl border-t-4 border-t-cyan-500 bg-white/80 backdrop-blur-sm">
+        <Card className="w-full max-w-md p-8 shadow-2xl border-t-4 border-t-cyan-500 bg-white dark:bg-[#0f172a]/80 backdrop-blur-sm">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-extrabold text-slate-900">Reset Password</h2>
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">Reset Password</h2>
             <p className="mt-2 text-sm text-slate-500">
               Enter your email to receive a password reset link.
             </p>
@@ -79,7 +93,7 @@ const ForgotPasswordPage: React.FC = () => {
             </Button>
           </form>
 
-          <div className="mt-8 text-center text-sm border-t border-slate-100 pt-6">
+          <div className="mt-8 text-center text-sm border-t border-slate-100 dark:border-slate-800/60 pt-6">
             <span className="text-slate-500">Remember your password? </span>
             <Link 
               to="/login" 

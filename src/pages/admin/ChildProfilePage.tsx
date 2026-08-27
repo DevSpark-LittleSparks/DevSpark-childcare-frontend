@@ -147,7 +147,7 @@ const ChildViewPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
+    <div className="min-h-screen w-full bg-surface-secondary dark:bg-slate-950 transition-colors duration-300 font-sans text-slate-900 dark:text-slate-100 pb-10">
 
       {/* --- TOP BAR --- */}
       <header className="max-w-7xl mx-auto px-6 pt-8 pb-4">
@@ -155,16 +155,16 @@ const ChildViewPage = () => {
           <div className="flex items-center gap-6">
             <button
               onClick={() => navigate(-1)}
-              className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 transition-all group"
+              className="p-3 bg-white dark:bg-[#0f172a] rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50 transition-all group"
             >
-              <ArrowLeft className="text-slate-400 group-hover:text-primary-500" size={20} />
+              <ArrowLeft className="text-slate-400 dark:text-slate-500 dark:text-slate-400 group-hover:text-primary-500" size={20} />
             </button>
             <div>
               <div className="flex items-center gap-2 mb-1 text-primary-500">
                 <Sparkles size={14} className="fill-primary-500" />
                 <p className="text-[10px] font-black uppercase tracking-[0.3em]">LittleSparks Student Management</p>
               </div>
-              <h1 className="text-3xl font-black text-midnight tracking-tight italic font-sans">
+              <h1 className="text-3xl font-black text-midnight dark:text-white tracking-tight italic font-sans">
                 {isEditing ? "Modify Spark Details" : formData.nameWithInitials}
               </h1>
             </div>
@@ -197,7 +197,7 @@ const ChildViewPage = () => {
 
           {/* --- STUDENT BIO SECTION --- */}
           <div className="lg:col-span-2 space-y-8">
-            <div className="bg-white rounded-[3rem] shadow-[0_20px_60px_rgba(10,6,55,0.02)] border border-slate-100 p-8 md:p-12 relative overflow-hidden">
+            <div className="bg-white dark:bg-[#0f172a] rounded-[3rem] shadow-[0_20px_60px_rgba(10,6,55,0.02)] border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 p-8 md:p-12 relative overflow-hidden">
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
                 <div className="flex flex-col items-center">
@@ -208,7 +208,7 @@ const ChildViewPage = () => {
                     {previewImage ? (
                       <img src={previewImage} className="h-full w-full object-cover" alt="child" />
                     ) : (
-                      <div className="h-full w-full bg-slate-50 flex items-center justify-center text-slate-200">
+                      <div className="h-full w-full bg-slate-50 dark:bg-slate-800/40 flex items-center justify-center text-slate-200">
                         <User size={60} />
                       </div>
                     )}
@@ -219,7 +219,7 @@ const ChildViewPage = () => {
                     )}
                   </div>
                   <input type="file" ref={fileInputRef} onChange={handleImageChange} className="hidden" accept="image/*" />
-                  <p className="mt-5 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Reference ID: {studentId || 'SP-000'}</p>
+                  <p className="mt-5 text-[9px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest text-center">Reference ID: {studentId || 'SP-000'}</p>
                 </div>
 
                 <div className="md:col-span-3 space-y-7">
@@ -229,7 +229,7 @@ const ChildViewPage = () => {
               </div>
 
               {/* Physical Data Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-5 p-7 bg-slate-50/50 rounded-[2.5rem] border border-slate-100/50">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-5 p-7 bg-slate-50 dark:bg-slate-800/40/50 rounded-[2.5rem] border border-slate-100 dark:border-slate-800/60/50">
                 <MiniStat icon={<Calendar size={14} />} label="DOB" value={formData.dob} isEditing={isEditing} name="dob" type="date" onChange={handleInputChange} />
                 <MiniStat icon={<Heart size={14} />} label="Calculated Age" value={age} />
                 <MiniStat icon={<Ruler size={14} />} label="Height (CM)" value={formData.height} isEditing={isEditing} name="height" type="number" onChange={handleInputChange} />
@@ -243,7 +243,7 @@ const ChildViewPage = () => {
                     <Droplets size={16} />
                   </div>
                   {/* Display health info */}
-                  <h3 className="text-xs font-black text-midnight uppercase tracking-[0.2em]">Medical & Safety</h3>
+                  <h3 className="text-xs font-black text-midnight dark:text-white uppercase tracking-[0.2em]">Medical & Safety</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <InputField label="Blood Group" name="bloodGroup" value={formData.bloodGroup} isEditing={isEditing} type="select" options={['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']} onChange={handleInputChange} />
@@ -251,7 +251,7 @@ const ChildViewPage = () => {
                   <InputField label="Status" name="status" value={formData.status} isEditing={isEditing} type="select" options={['ENROLLED', 'BIG_SCHOOL_READY', 'ALUMNI']} onChange={handleInputChange} />
                 </div>
                 <div className="space-y-3 text-left">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2">
+                  <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
                     <ClipboardList size={12} className="text-primary-500" /> Important Health Notes
                   </label>
                   {isEditing ? (
@@ -260,10 +260,10 @@ const ChildViewPage = () => {
                       value={formData.specialNote}
                       onChange={handleInputChange}
                       rows={3}
-                      className="w-full p-5 bg-slate-50 border-2 border-primary-500/10 focus:border-primary-500 rounded-3xl outline-none text-sm font-bold transition-all"
+                      className="w-full p-5 bg-slate-50 dark:bg-slate-800/40 border-2 border-primary-500/10 focus:border-primary-500 rounded-3xl outline-none text-sm font-bold transition-all"
                     />
                   ) : (
-                    <div className="p-6 bg-primary-50/20 border border-primary-100/30 rounded-3xl text-sm font-bold text-slate-600 leading-relaxed italic">
+                    <div className="p-6 bg-primary-50/20 border border-primary-100/30 rounded-3xl text-sm font-bold text-slate-600 dark:text-slate-300 leading-relaxed italic">
                       {formData.specialNote || "No medical conditions reported."}
                     </div>
                   )}
@@ -280,7 +280,7 @@ const ChildViewPage = () => {
               </div>
 
               <div className="flex items-center gap-4 mb-10 relative z-10">
-                <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center">
+                <div className="h-10 w-10 bg-white dark:bg-[#0f172a]/10 rounded-xl flex items-center justify-center">
                   <Users size={20} className="text-primary-400" />
                 </div>
                 <h3 className="font-black text-lg uppercase tracking-tight">Parental Record</h3>
@@ -314,16 +314,16 @@ const ChildViewPage = () => {
 
 const InputField = ({ label, value, isEditing, name, dark, type = "text", options, onChange }: any) => (
   <div className="space-y-2 text-left">
-    <label className={`text-[10px] font-black uppercase tracking-widest ml-1 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{label}</label>
+    <label className={`text-[10px] font-black uppercase tracking-widest ml-1 ${dark ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500 dark:text-slate-400'}`}>{label}</label>
     {isEditing ? (
       type === "select" ? (
         <select
           name={name}
           value={value}
           onChange={onChange}
-          className={`w-full p-4 rounded-2xl outline-none text-sm font-bold transition-all border-2 ${dark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-primary-500/10 focus:border-primary-500 text-midnight'}`}
+          className={`w-full p-4 rounded-2xl outline-none text-sm font-bold transition-all border-2 ${dark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 dark:bg-slate-800/40 border-primary-500/10 focus:border-primary-500 text-midnight'}`}
         >
-          {options.map((opt: string) => <option key={opt} value={opt} className="text-midnight">{opt.toUpperCase()}</option>)}
+          {options.map((opt: string) => <option key={opt} value={opt} className="text-midnight dark:text-white">{opt.toUpperCase()}</option>)}
         </select>
       ) : (
         <input
@@ -331,7 +331,7 @@ const InputField = ({ label, value, isEditing, name, dark, type = "text", option
           name={name}
           value={value}
           onChange={onChange}
-          className={`w-full p-4 rounded-2xl outline-none text-sm font-bold transition-all border-2 ${dark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-primary-500/10 focus:border-primary-500 text-midnight'}`}
+          className={`w-full p-4 rounded-2xl outline-none text-sm font-bold transition-all border-2 ${dark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 dark:bg-slate-800/40 border-primary-500/10 focus:border-primary-500 text-midnight'}`}
         />
       )
     ) : (
@@ -342,17 +342,17 @@ const InputField = ({ label, value, isEditing, name, dark, type = "text", option
 
 const MiniStat = ({ icon, label, value, isEditing, name, type, onChange }: any) => (
   <div className="flex flex-col text-left">
-    <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter flex items-center gap-1.5 mb-2">{icon} {label}</span>
+    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-tighter flex items-center gap-1.5 mb-2">{icon} {label}</span>
     {isEditing && name ? (
       <input
         type={type}
         name={name}
         value={value}
         onChange={onChange}
-        className="bg-transparent border-b-2 border-primary-500/40 outline-none text-sm font-black text-midnight w-full pb-1"
+        className="bg-transparent border-b-2 border-primary-500/40 outline-none text-sm font-black text-midnight dark:text-white w-full pb-1"
       />
     ) : (
-      <span className="text-sm font-black text-midnight tracking-tight">{value}</span>
+      <span className="text-sm font-black text-midnight dark:text-white tracking-tight">{value}</span>
     )}
   </div>
 );

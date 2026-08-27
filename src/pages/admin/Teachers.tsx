@@ -17,7 +17,22 @@ interface TeacherData {
   phone?: string;
   address?: string;
   joinedAt?: string;
+  profilePicture?: string;
 }
+
+const getRoleBadge = (role: string) => {
+  const r = role?.toUpperCase();
+  if (r === 'SENIOR') return 'bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300';
+  if (r === 'JUNIOR') return 'bg-orange-500/10 dark:bg-orange-500/20 text-orange-600 dark:text-orange-300';
+  return 'bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-300 border border-transparent dark:border-slate-700 shadow-sm';
+};
+
+const getAvatarStyle = (role: string) => {
+  const r = role?.toUpperCase();
+  if (r === 'SENIOR') return 'bg-indigo-50 text-indigo-600 border-indigo-100';
+  if (r === 'JUNIOR') return 'bg-orange-50 text-orange-600 border-orange-100';
+  return 'bg-slate-50 dark:bg-slate-800/40 text-slate-600 dark:text-slate-300 border-slate-100 dark:border-slate-800/60';
+};
 
 const Teachers = () => {
   const navigate = useNavigate();
@@ -25,13 +40,20 @@ const Teachers = () => {
   const [teachers, setTeachers] = useState<TeacherData[]>([]);
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
   const [viewingTeacher, setViewingTeacher] = useState<TeacherData | null>(null);
+  const [filter, setFilter] = useState<'all' | 'senior' | 'junior'>('all');
+  const [loading, setLoading] = useState(true);
+
+  // Pagination States
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   const loadTeachers = async () => {
     try {
       // Fetch staff records
-      const response = await apiClient.get('/api/v1/auth/admin/all-teachers');
-      const liveData = response.data.data;
-      
+      const response = await apiClient.get(`/api/v1/auth/admin/all-teachers?page=${currentPage}&size=10`);
+      const liveData = response.data.data.content || [];
+      setTotalPages(response.data.data.totalPages || 0);
+
       const mappedTeachers = liveData.map((t: any) => ({
         id: t.id || t.teacherId || t.email,
         firstName: t.firstName,
@@ -41,16 +63,19 @@ const Teachers = () => {
         status: t.status?.toLowerCase() === 'active' ? 'active' : 'inactive',
         phone: t.phoneNumber || 'N/A',
         address: t.address || 'N/A',
-        joinedAt: t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'N/A'
+        joinedAt: t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'N/A',
+        profilePicture: t.profilePicture || undefined,
       }));
-      
+
       // Sort by first name
-      const sortedTeachers = mappedTeachers.sort((a: any, b: any) => 
+      const sortedTeachers = mappedTeachers.sort((a: any, b: any) =>
         a.firstName.localeCompare(b.firstName)
       );
       setTeachers(sortedTeachers);
     } catch (err) {
       console.error("Failed to load teachers:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -58,7 +83,15 @@ const Teachers = () => {
     loadTeachers();
     window.addEventListener('storage', loadTeachers);
     return () => window.removeEventListener('storage', loadTeachers);
-  }, []);
+  }, [currentPage]);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages - 1) setCurrentPage(prev => prev + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 0) setCurrentPage(prev => prev - 1);
+  };
 
   const toggleStatus = (id: string) => {
     setTeachers(teachers.map(t =>
@@ -95,31 +128,26 @@ const Teachers = () => {
     }
   };
 
-  const filteredTeachers = teachers.filter(t =>
-    `${t.firstName} ${t.lastName} ${t.email}`.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTeachers = teachers.filter(t => {
+    const matchesSearch = `${t.firstName} ${t.lastName} ${t.email}`.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filter === 'all' || t.role.toLowerCase() === filter.toLowerCase();
+    return matchesSearch && matchesFilter;
+  });
 
   return (
-    <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
+    <div className="min-h-screen w-full bg-surface-secondary dark:bg-slate-950 transition-colors duration-300 font-sans text-slate-900 dark:text-slate-100 pb-16">
 
       {/* --- HEADER SECTION --- */}
       <header className="max-w-7xl mx-auto px-6 pt-8 pb-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-6">
-            <button
-              onClick={() => navigate('/admin/dashboard')}
-              className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 transition-all group"
-            >
-              <ArrowLeft className="text-slate-400 group-hover:text-primary-500" size={20} />
-            </button>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Staff</h1>
+            <span className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-black rounded-full border border-slate-200 dark:border-slate-700">
+              {loading ? '...' : teachers.length}
+            </span>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="bg-white px-6 py-2.5 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center min-w-[120px]">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Total Staff</span>
-              <span className="text-xl font-black text-slate-900 leading-none">{teachers.length}</span>
-            </div>
-
+          <div className="flex items-center gap-3">
             {selectedTeachers.length > 0 && (
               <Button
                 variant="outline"
@@ -129,50 +157,91 @@ const Teachers = () => {
                     setSelectedTeachers([]);
                   }
                 }}
-                className="bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100"
+                className="bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100 text-xs px-4 py-2 rounded-xl"
               >
-                Delete Selected ({selectedTeachers.length})
+                Delete ({selectedTeachers.length})
               </Button>
             )}
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 mt-6 space-y-8 animate-fadeUp">
+      <main className="max-w-7xl mx-auto px-6 space-y-4">
 
-        {/* --- SEARCH BAR --- */}
-        <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)]">
-          <div className="relative">
+        {/* Toolbar: Search + Filters */}
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Compact search bar */}
+          <div className="relative w-72">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" size={15} />
             <input
               type="text"
-              placeholder="Search by name or email..."
-              className="w-full pl-6 pr-12 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/5 focus:bg-white transition-all text-slate-600 font-medium placeholder:text-slate-300"
+              placeholder="Search staff..."
+              className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 placeholder:text-slate-300 outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-300 transition-all shadow-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
+          </div>
+
+          {/* Filter chips */}
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setFilter('all')}
+              className={`px-3.5 py-2 rounded-xl text-[11px] font-bold transition-all ${
+                filter === 'all'
+                  ? 'bg-slate-800 text-white shadow-sm'
+                  : 'bg-white text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700/60 hover:border-slate-300 hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50'
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setFilter('senior')}
+              className={`px-3.5 py-2 rounded-xl text-[11px] font-bold transition-all ${
+                filter === 'senior'
+                  ? 'bg-indigo-500 text-white shadow-sm'
+                  : 'bg-white text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700/60 hover:border-indigo-200 hover:bg-indigo-50'
+              }`}
+            >
+              Senior
+            </button>
+            <button
+              onClick={() => setFilter('junior')}
+              className={`px-3.5 py-2 rounded-xl text-[11px] font-bold transition-all ${
+                filter === 'junior'
+                  ? 'bg-orange-500 text-white shadow-sm'
+                  : 'bg-white text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700/60 hover:border-orange-200 hover:bg-orange-50'
+              }`}
+            >
+              Junior
+            </button>
           </div>
         </div>
 
         {/* --- TEACHERS TABLE --- */}
-        <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)] overflow-hidden">
+        {loading ? (
+          <div className="flex items-center justify-center py-24">
+            <div className="w-10 h-10 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin" />
+          </div>
+        ) : (
+        <>
+        <div className="bg-white dark:bg-[#0f172a]/70 backdrop-blur-md border border-white/80 rounded-3xl overflow-hidden shadow-sm">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-100">
+              <tr className="bg-slate-50 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/60">
                 <th className="px-8 py-5 w-20">
-                  <button onClick={toggleSelectAll} className="text-slate-400 hover:text-primary-500 transition-colors">
+                  <button onClick={toggleSelectAll} className="text-slate-400 dark:text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-colors">
                     {selectedTeachers.length === filteredTeachers.length ? <CheckSquare size={20} className="text-primary-500" /> : <Square size={20} />}
                   </button>
                 </th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Teacher</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Contact</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">Teacher</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">Contact</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest text-center">Status</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-slate-50/80 dark:divide-slate-800/60">
               {filteredTeachers.map((t) => (
-                <tr key={t.id} className={`hover:bg-slate-50/50 transition-all group ${selectedTeachers.includes(t.id) ? 'bg-primary-50/20' : ''}`}>
+                <tr key={t.id} className={`hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50/50 transition-all group ${selectedTeachers.includes(t.id) ? 'bg-primary-50/20' : ''}`}>
                   <td className="px-8 py-6">
                     <button onClick={() => toggleSelect(t.id)} className="text-slate-300 hover:text-primary-500 transition-colors">
                       {selectedTeachers.includes(t.id) ? <CheckSquare size={20} className="text-primary-500" /> : <Square size={20} />}
@@ -180,12 +249,20 @@ const Teachers = () => {
                   </td>
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-black text-lg border border-indigo-100 shadow-sm">
-                        {t.firstName[0]}{t.lastName[0]}
-                      </div>
+                      {t.profilePicture ? (
+                        <div className="h-12 w-12 rounded-xl overflow-hidden shrink-0 ring-2 ring-white shadow-md">
+                          <img src={t.profilePicture} alt={t.firstName} className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className={`h-12 w-12 rounded-xl flex items-center justify-center font-black text-lg border shadow-sm ${getAvatarStyle(t.role)}`}>
+                          {t.firstName[0]}{t.lastName[0]}
+                        </div>
+                      )}
                       <div>
-                        <p className="font-bold text-slate-900 tracking-tight">{t.firstName} {t.lastName}</p>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mt-1">{t.role}</p>
+                        <p className="font-bold text-slate-900 dark:text-white tracking-tight">{t.firstName} {t.lastName}</p>
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider mt-1 ${getRoleBadge(t.role)}`}>
+                          {t.role}
+                        </span>
                       </div>
                     </div>
                   </td>
@@ -205,8 +282,8 @@ const Teachers = () => {
                     <button
                       onClick={() => toggleStatus(t.id)}
                       className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${t.status === 'active'
-                          ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100'
-                          : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200'
+                        ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20 hover:bg-emerald-100 dark:hover:bg-emerald-500/20'
+                        : 'bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
                         }`}
                     >
                       {t.status === 'active' ? 'Active' : 'Inactive'}
@@ -216,14 +293,14 @@ const Teachers = () => {
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => setViewingTeacher(t)}
-                        className="p-3 bg-slate-50 text-slate-400 hover:text-primary-500 hover:bg-primary-50 rounded-xl transition-all"
+                        className="p-3 bg-slate-50 dark:bg-slate-800/40 text-slate-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-500/10 rounded-xl transition-all"
                         title="View Details"
                       >
                         <Eye size={18} />
                       </button>
                       <button
                         onClick={() => handleDelete(t.id)}
-                        className="p-3 bg-slate-50 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                        className="p-3 bg-slate-50 dark:bg-slate-800/40 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all"
                         title="Delete Staff"
                       >
                         <Trash2 size={18} />
@@ -235,25 +312,58 @@ const Teachers = () => {
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 pt-4 mt-6 border-t border-slate-100 dark:border-slate-800">
+            <Button
+              variant="secondary"
+              onClick={handlePrevPage}
+              disabled={currentPage === 0}
+              className="px-4 py-2 text-xs disabled:opacity-50"
+            >
+              Previous
+            </Button>
+            <span className="text-xs font-bold text-slate-500">
+              Page {currentPage + 1} of {totalPages}
+            </span>
+            <Button
+              variant="secondary"
+              onClick={handleNextPage}
+              disabled={currentPage >= totalPages - 1}
+              className="px-4 py-2 text-xs disabled:opacity-50"
+            >
+              Next
+            </Button>
+          </div>
+        )}
+        </>
+        )}
       </main>
 
       {/* --- TEACHER DETAILS MODAL --- */}
       {viewingTeacher && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setViewingTeacher(null)}>
-          <div className="bg-white rounded-[3rem] w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
+          <div className="bg-white dark:bg-[#0f172a] rounded-[3rem] w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
 
             <div className="relative h-40 bg-gradient-to-br from-indigo-500 to-primary-600">
               <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
               <div className="absolute -bottom-12 left-10">
-                <div className="h-24 w-24 bg-white p-2 rounded-[2rem] shadow-xl">
-                  <div className="h-full w-full bg-indigo-50 rounded-[1.5rem] flex items-center justify-center text-indigo-600 font-black text-3xl">
-                    {viewingTeacher.firstName[0]}{viewingTeacher.lastName[0]}
-                  </div>
+                <div className="h-24 w-24 bg-white dark:bg-[#0f172a] p-2 rounded-[2rem] shadow-xl">
+                  {viewingTeacher.profilePicture ? (
+                    <div className="h-full w-full rounded-[1.5rem] overflow-hidden">
+                      <img src={viewingTeacher.profilePicture} alt={viewingTeacher.firstName} className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className={`h-full w-full rounded-[1.5rem] flex items-center justify-center font-black text-3xl ${getAvatarStyle(viewingTeacher.role)}`}>
+                      {viewingTeacher.firstName[0]}{viewingTeacher.lastName[0]}
+                    </div>
+                  )}
                 </div>
               </div>
               <button
                 onClick={() => setViewingTeacher(null)}
-                className="absolute top-6 right-6 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition-all"
+                className="absolute top-6 right-6 p-2 bg-white dark:bg-[#0f172a]/20 hover:bg-white/30 rounded-full text-white transition-all"
               >
                 <ArrowLeft className="rotate-180" size={20} />
               </button>
@@ -261,11 +371,11 @@ const Teachers = () => {
 
             <div className="pt-16 p-10 space-y-8">
               <div>
-                <h2 className="text-3xl font-black text-slate-900 tracking-tight">{viewingTeacher.firstName} {viewingTeacher.lastName}</h2>
+                <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{viewingTeacher.firstName} {viewingTeacher.lastName}</h2>
                 <p className="text-primary-500 font-black uppercase text-[10px] tracking-[0.3em] mt-1">{viewingTeacher.role}</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-8 border-y border-slate-50 py-8">
+              <div className="grid grid-cols-2 gap-8 border-y border-slate-50 dark:border-slate-800/60 py-8">
                 <DetailItem icon={<Mail size={16} />} label="Work Email" value={viewingTeacher.email} />
                 <DetailItem icon={<Phone size={16} />} label="Mobile Number" value={viewingTeacher.phone} />
                 <DetailItem icon={<MapPin size={16} />} label="Resident Address" value={viewingTeacher.address} />
@@ -298,7 +408,7 @@ const DetailItem = ({ icon, label, value }: any) => (
       {icon}
       <span className="text-[9px] font-black uppercase tracking-widest">{label}</span>
     </div>
-    <p className="text-sm font-bold text-slate-700 ml-6">{value || 'Not Provided'}</p>
+    <p className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-6">{value || 'Not Provided'}</p>
   </div>
 );
 

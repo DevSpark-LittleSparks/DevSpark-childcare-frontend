@@ -1,30 +1,31 @@
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import TeacherSidebar from "./TeacherSidebar";
-import UniversalSmartAssistant from "../chatbots/UniversalSmartAssistant";
+import SettingsDrawer from "./SettingsDrawer";
 
 const TeacherLayout: React.FC = () => {
   // Lifted state to control layout expansion
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
-      <TeacherSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      <TeacherSidebar 
+        isCollapsed={isCollapsed} 
+        setIsCollapsed={setIsCollapsed} 
+        onOpenSettings={() => setSettingsOpen(true)}
+      />
       
       <main 
-        style={{ 
-          flex: 1, 
-          // Adjust margin dynamically: 80px or 280px
-          marginLeft: isCollapsed ? "80px" : "280px", 
-          backgroundColor: "#f8fafc",
-          transition: "margin-left 0.3s ease-in-out" 
-        }}
+        className="flex-1 bg-[#f8fafc] dark:bg-slate-950 transition-all duration-300 ease-in-out"
+        style={{ marginLeft: isCollapsed ? "80px" : "280px" }}
       >
         <div style={{ padding: "24px" }}>
           <Outlet />
         </div>
       </main>
-      <UniversalSmartAssistant />
+
+      <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 };

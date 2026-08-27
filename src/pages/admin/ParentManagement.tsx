@@ -9,18 +9,24 @@ const ParentManagement = () => {
   const [parents, setParents] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedParents, setSelectedParents] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
   const [viewingParent, setViewingParent] = useState<any | null>(null);
+
+  // Pagination States
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   const loadParents = async () => {
     try {
       // Fetch parent records
       const [parentsRes, childrenRes] = await Promise.all([
-        apiClient.get('/api/v1/auth/admin/all-parents'),
+        apiClient.get(`/api/v1/auth/admin/all-parents?page=${currentPage}&size=10`),
         apiClient.get('/api/v1/auth/admin/all-children')
       ]);
 
-      const liveParents = parentsRes.data.data;
-      const liveChildren = childrenRes.data.data;
+      const liveParents = parentsRes.data.data.content || [];
+      setTotalPages(parentsRes.data.data.totalPages || 0);
+      const liveChildren = childrenRes.data.data.content || [];
 
       const parentsMap = new Map();
 
@@ -61,6 +67,8 @@ const ParentManagement = () => {
       setParents(sortedParents);
     } catch (err) {
       console.error("Failed to load parents and children:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -68,7 +76,15 @@ const ParentManagement = () => {
     loadParents();
     window.addEventListener('storage', loadParents);
     return () => window.removeEventListener('storage', loadParents);
-  }, []);
+  }, [currentPage]);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages - 1) setCurrentPage(prev => prev + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 0) setCurrentPage(prev => prev - 1);
+  };
 
   const filteredParents = parents.filter(p =>
     `${p.fullName} ${p.email}`.toLowerCase().includes(searchTerm.toLowerCase())
@@ -96,82 +112,81 @@ const ParentManagement = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-surface-secondary font-sans text-slate-900 pb-10">
+    <div className="min-h-screen w-full bg-surface-secondary dark:bg-slate-950 transition-colors duration-300 font-sans text-slate-900 dark:text-slate-100 pb-16">
       <header className="max-w-7xl mx-auto px-6 pt-8 pb-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-6">
-            <button
-              onClick={() => navigate('/admin/dashboard')}
-              className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 transition-all group"
-            >
-              <ArrowLeft className="text-slate-400 group-hover:text-primary-500" size={20} />
-            </button>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Parent Management</h1>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Parents</h1>
+            <span className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-black rounded-full border border-slate-200 dark:border-slate-700">
+              {loading ? '...' : parents.length}
+            </span>
           </div>
-
-          <div className="flex items-center gap-4">
-            <div className="bg-white px-6 py-2.5 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center min-w-[120px]">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Total Parents</span>
-              <span className="text-xl font-black text-slate-900 leading-none">{parents.length}</span>
-            </div>
+          <div className="flex items-center gap-3">
             {selectedParents.length > 0 && (
-              <button 
+              <button
                 onClick={() => {
-                  if(window.confirm(`Delete ${selectedParents.length} selected parents?`)) {
+                  if (window.confirm(`Delete ${selectedParents.length} selected parents?`)) {
                     setParents(parents.filter(p => !selectedParents.includes(p.email)));
                     setSelectedParents([]);
                   }
                 }}
-                className="bg-rose-50 text-rose-600 border border-rose-100 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-rose-100 transition-all"
+                className="bg-rose-50 text-rose-600 border border-rose-100 px-4 py-2 rounded-xl font-bold text-xs hover:bg-rose-100 transition-all"
               >
-                Delete Selected ({selectedParents.length})
+                Delete ({selectedParents.length})
               </button>
             )}
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 mt-6 space-y-8 animate-fadeUp">
+      <main className="max-w-7xl mx-auto px-6 space-y-4">
 
-        {/* --- SEARCH BAR --- */}
-        <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)]">
-          <div className="relative">
+        {/* Toolbar: Search */}
+        <div className="flex items-center gap-3">
+          <div className="relative w-72">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" size={15} />
             <input
               type="text"
               placeholder="Search by name or email..."
-              className="w-full pl-6 pr-12 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/5 focus:bg-white transition-all text-slate-600 font-medium placeholder:text-slate-300"
+              className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 placeholder:text-slate-300 outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-300 transition-all shadow-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
           </div>
         </div>
 
-        <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)] overflow-hidden">
+        {/* Loading */}
+        {loading ? (
+          <div className="flex items-center justify-center py-24">
+            <div className="w-10 h-10 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin" />
+          </div>
+        ) : (
+        <>
+        <div className="bg-white dark:bg-[#0f172a]/70 backdrop-blur-md border border-white/80 rounded-3xl overflow-hidden shadow-sm">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-100">
+              <tr className="bg-slate-50 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/60">
                 <th className="px-8 py-5 w-20 text-center">
                    <button onClick={() => {
                       if(selectedParents.length === filteredParents.length) setSelectedParents([]);
                       else setSelectedParents(filteredParents.map(p => p.email));
-                   }} className="text-slate-400 hover:text-primary-500 transition-colors">
+                   }} className="text-slate-400 dark:text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-colors">
                       {selectedParents.length === filteredParents.length && filteredParents.length > 0 ? <CheckSquare size={20} className="text-primary-500 mx-auto" /> : <Square size={20} className="mx-auto" />}
                    </button>
                 </th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Parent Name</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Contact Info</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Linked Children</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">Parent Name</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">Contact Info</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest text-center">Status</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">Linked Children</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-slate-50/80 dark:divide-slate-800/60">
               {filteredParents.map((parent, idx) => (
                 <tr 
                   key={idx} 
                   onClick={() => setViewingParent(parent)}
-                  className={`hover:bg-slate-50/50 transition-all group cursor-pointer ${selectedParents.includes(parent.email) ? 'bg-primary-50/20' : ''}`}
+                  className={`hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50/50 transition-all group cursor-pointer ${selectedParents.includes(parent.email) ? 'bg-primary-50/20' : ''}`}
                 >
                   <td className="px-8 py-6 text-center" onClick={e => e.stopPropagation()}>
                     <button onClick={() => toggleSelect(parent.email)} className="text-slate-300 hover:text-primary-500 transition-colors">
@@ -184,8 +199,8 @@ const ParentManagement = () => {
                         {parent.fullName?.charAt(0) || 'P'}
                       </div>
                       <div>
-                        <p className="font-bold text-slate-900 tracking-tight">{parent.fullName}</p>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{parent.relationship || 'Guardian'}</p>
+                        <p className="font-bold text-slate-900 dark:text-white tracking-tight">{parent.fullName}</p>
+                        <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">{parent.relationship || 'Guardian'}</p>
                       </div>
                     </div>
                   </td>
@@ -204,8 +219,8 @@ const ParentManagement = () => {
                   <td className="px-8 py-6 text-center">
                     <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
                       parent.status === 'active' 
-                        ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
-                        : 'bg-amber-50 text-amber-600 border border-amber-100'
+                        ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20' 
+                        : 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-500/20'
                     }`}>
                       {parent.status === 'active' ? 'Account Active' : 'No Account'}
                     </span>
@@ -223,14 +238,14 @@ const ParentManagement = () => {
                     <div className="flex items-center justify-end gap-2">
                       <button 
                         onClick={() => setViewingParent(parent)}
-                        className="p-3 bg-slate-50 text-slate-400 hover:text-primary-500 hover:bg-primary-50 rounded-xl transition-all"
+                        className="p-3 bg-slate-50 dark:bg-slate-800/40 text-slate-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-500/10 rounded-xl transition-all"
                         title="View Details"
                       >
                         <Eye size={18} />
                       </button>
                       <button 
                         onClick={() => handleDelete(parent.email)}
-                        className="p-3 bg-slate-50 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                        className="p-3 bg-slate-50 dark:bg-slate-800/40 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all"
                         title="Delete Parent"
                       >
                         <Trash2 size={18} />
@@ -242,17 +257,44 @@ const ParentManagement = () => {
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 pt-4 mt-6 border-t border-slate-100 dark:border-slate-800">
+            <Button
+              variant="secondary"
+              onClick={handlePrevPage}
+              disabled={currentPage === 0}
+              className="px-4 py-2 text-xs disabled:opacity-50"
+            >
+              Previous
+            </Button>
+            <span className="text-xs font-bold text-slate-500">
+              Page {currentPage + 1} of {totalPages}
+            </span>
+            <Button
+              variant="secondary"
+              onClick={handleNextPage}
+              disabled={currentPage >= totalPages - 1}
+              className="px-4 py-2 text-xs disabled:opacity-50"
+            >
+              Next
+            </Button>
+          </div>
+        )}
+        </>
+        )}
       </main>
 
       {/* --- PARENT DETAILS MODAL --- */}
       {viewingParent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setViewingParent(null)}>
-          <div className="bg-white rounded-[3rem] w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
+          <div className="bg-white dark:bg-[#0f172a] rounded-[3rem] w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
             
             <div className="relative h-40 bg-gradient-to-br from-cyan-500 to-blue-600">
                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
                <div className="absolute -bottom-12 left-10">
-                  <div className="h-24 w-24 bg-white p-2 rounded-[2rem] shadow-xl">
+                  <div className="h-24 w-24 bg-white dark:bg-[#0f172a] p-2 rounded-[2rem] shadow-xl">
                     <div className="h-full w-full bg-cyan-50 rounded-[1.5rem] flex items-center justify-center text-cyan-600 font-black text-3xl">
                       {viewingParent.fullName?.charAt(0) || 'P'}
                     </div>
@@ -260,7 +302,7 @@ const ParentManagement = () => {
                </div>
                <button 
                  onClick={() => setViewingParent(null)}
-                 className="absolute top-6 right-6 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition-all"
+                 className="absolute top-6 right-6 p-2 bg-white dark:bg-[#0f172a]/20 hover:bg-white/30 rounded-full text-white transition-all"
                >
                  <ArrowLeft className="rotate-180" size={20} />
                </button>
@@ -269,16 +311,16 @@ const ParentManagement = () => {
             <div className="pt-16 p-10 space-y-8">
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="text-3xl font-black text-slate-900 tracking-tight">{viewingParent.fullName}</h2>
+                  <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{viewingParent.fullName}</h2>
                   <p className="text-cyan-500 font-black uppercase text-[10px] tracking-[0.3em] mt-1">{viewingParent.relationship || 'Primary Guardian'}</p>
                 </div>
-                <div className="bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
-                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Linked Records</p>
-                   <p className="text-sm font-black text-slate-700 text-center">{viewingParent.children.length} Children</p>
+                <div className="bg-slate-50 dark:bg-slate-800/40 px-4 py-2 rounded-2xl border border-slate-100">
+                   <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest text-center">Linked Records</p>
+                   <p className="text-sm font-black text-slate-700 dark:text-slate-300 text-center">{viewingParent.children.length} Children</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-8 border-y border-slate-50 py-8">
+              <div className="grid grid-cols-2 gap-8 border-y border-slate-50 dark:border-slate-800/60 py-8">
                 <DetailItem icon={<Mail size={16} className="text-cyan-500"/>} label="Email Address" value={viewingParent.email} />
                 <DetailItem icon={<Phone size={16} className="text-cyan-500"/>} label="Contact Number" value={viewingParent.contact} />
                 <DetailItem icon={<ShieldCheck size={16} className="text-cyan-500"/>} label="ID Number" value={viewingParent.idNumber} />
@@ -286,14 +328,14 @@ const ParentManagement = () => {
               </div>
 
               <div className="space-y-4">
-                 <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Enrolled Children</h3>
+                 <h3 className="text-xs font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">Enrolled Children</h3>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {viewingParent.children.map((child: any) => (
-                      <div key={child.id} className="flex items-center gap-4 bg-slate-50 p-4 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-md transition-all group">
+                      <div key={child.id} className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-3xl border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 hover:bg-white dark:bg-[#0f172a] hover:shadow-md transition-all group">
                          <img src={child.image} alt={child.name} className="h-14 w-14 rounded-2xl object-cover shadow-sm group-hover:scale-105 transition-transform" />
                          <div>
-                            <p className="font-bold text-slate-900 text-sm tracking-tight">{child.name}</p>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{child.age} Years • {child.gender}</p>
+                            <p className="font-bold text-slate-900 dark:text-white text-sm tracking-tight">{child.name}</p>
+                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-0.5">{child.age} Years • {child.gender}</p>
                          </div>
                       </div>
                     ))}
@@ -322,7 +364,7 @@ const DetailItem = ({ icon, label, value }: any) => (
       {icon}
       <span className="text-[9px] font-black uppercase tracking-widest">{label}</span>
     </div>
-    <p className="text-sm font-bold text-slate-700 ml-6">{value || 'Not Provided'}</p>
+    <p className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-6">{value || 'Not Provided'}</p>
   </div>
 );
 
