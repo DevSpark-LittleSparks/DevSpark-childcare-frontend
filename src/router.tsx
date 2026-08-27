@@ -24,18 +24,21 @@ import ChildProfilePage    from './pages/admin/ChildProfilePage';
 import ParentManagement    from './pages/admin/ParentManagement';
 import Teachers            from './pages/admin/Teachers';
 import BroadcastPortal     from './pages/admin/BroadcastPortal';
-import AdminProgressPage   from './pages/AdminProgressPage';   // ← NEW
+import AdminProgressPage   from './pages/AdminProgressPage';        // ← Progress/Chatbot feature
+import AdminActivityPage   from './pages/admin/AdminActivityPage';  // ← Activity/Schedule feature
 
 // Parent Pages
 import ParentProfilePage   from './pages/parent/ProfilePage';
 import ChildViewPage       from './pages/parent/ChildViewPage';
 import MyChildren          from './pages/parent/MyChildren';
 import ParentDashboard     from './pages/parent/dashboard/ParentDashboard';
-import ParentProgressPage  from './pages/ParentProgressPage';  // ← NEW
+import ParentProgressPage  from './pages/ParentProgressPage';  // ← Progress/Chatbot feature
 
 // Teacher Pages
 import TeacherProfilePage      from './pages/teacher/ProfilePage';
-import TeacherDashboardPage    from './pages/TeacherDashboardPage'; // ← NEW
+import TeacherDashboardPage    from './pages/TeacherDashboardPage'; // ← Progress/Chatbot feature
+import AttendancePage          from './pages/AttendancePage';       // ← Activity/Schedule feature
+import TeacherActivityPage     from './pages/TeacherActivityPage';  // ← Activity/Schedule feature
 
 // Other Management Pages
 import BillingPage from './pages/BillingPage';
@@ -75,7 +78,7 @@ export const router = createBrowserRouter([
     element: <AdminLayout />,
     children: [
       { path: 'dashboard',            element: <AdminDashboardPage /> },
-      { path: 'profile',              element: <AdminProfilePage initialUser={{ ...mockUser, role: 'ADMIN' }} /> },
+      { path: 'profile',              element: <AdminProfilePage /> },
       { path: 'admissions',           element: <AdmissionsPage /> },
       { path: 'students',             element: <Student /> },
       { path: 'students/:studentId',  element: <ChildProfilePage /> },
@@ -84,7 +87,9 @@ export const router = createBrowserRouter([
       { path: 'billing',              element: <BillingPage /> },
       { path: 'meal',                 element: <MealsPage /> },
       { path: 'broadcast',            element: <BroadcastPortal /> },
-      { path: 'learning',             element: <AdminProgressPage /> },  // ← NEW
+      { path: 'learning',             element: <AdminProgressPage /> },
+      { path: 'activities',           element: <AdminActivityPage /> },
+      { path: 'schedules',            element: <AdminActivityPage /> },
     ],
   },
 
@@ -97,7 +102,7 @@ export const router = createBrowserRouter([
       { path: 'profile',                      element: <ParentProfilePage initialUser={mockUser} /> },
       { path: 'children',                     element: <MyChildren /> },
       { path: 'child-profile/:studentId',     element: <ChildViewPage /> },
-      { path: 'progress',                     element: <ParentProgressPage /> },  // ← NEW
+      { path: 'progress',                     element: <ParentProgressPage /> },
       { path: 'payments',                     element: <div>Payments</div> },
       { path: 'notifications',                element: <div>Notifications</div> },
       { path: 'messaging',                    element: <div>Messaging</div> },
@@ -109,10 +114,10 @@ export const router = createBrowserRouter([
     path: '/teacher',
     element: <TeacherLayout />,
     children: [
-      { path: 'dashboard',   element: <TeacherDashboardPage /> },  // ← NEW
+      { path: 'dashboard',   element: <TeacherDashboardPage /> },
       { path: 'profile',     element: <TeacherProfilePage initialUser={{ ...mockUser, role: 'TEACHER' }} /> },
-      { path: 'attendance',  element: <div>Daily Attendance</div> },
-      { path: 'activities',  element: <div>My Activities</div> },
+      { path: 'attendance',  element: <AttendancePage /> },
+      { path: 'activities',  element: <TeacherActivityPage /> },
       { path: 'meals',       element: <div>Meals</div> },
       { path: 'messages',    element: <div>Messaging</div> },
     ],

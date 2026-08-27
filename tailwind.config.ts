@@ -1,4 +1,3 @@
-// tailwind.config.ts
 import type { Config } from 'tailwindcss';
 
 export default {
@@ -19,6 +18,11 @@ export default {
         },
         secondary: {
           500: '#4AC389',
+        },
+        // 💡 Outline Button එකේ ලස්සන පාටවල් ටික මෙතනට දැම්මා
+        teal: {
+          50: '#F0FAF9',
+          500: '#14B8A6',
         },
         midnight: '#0A0637', // Existing Dark Section Background
         slate: {
@@ -58,7 +62,6 @@ export default {
         logo: ['Nunito', 'sans-serif'], // Specific font for logo if needed
         sans: ['Inter', 'system-ui', 'sans-serif'],
         nunito: ['Nunito', 'sans-serif'], // Added for consistent use of Nunito across the app
-
       },
     },
   },
