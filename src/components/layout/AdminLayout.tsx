@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar";
 import SettingsDrawer from "./SettingsDrawer";
+import UniversalSmartAssistant from "../chatbots/UniversalSmartAssistant";
 
 const AdminLayout: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -24,9 +25,10 @@ const AdminLayout: React.FC = () => {
 
       {/* Slide-in settings drawer */}
       <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <UniversalSmartAssistant />
     </div>
   );
 };
 
 export default AdminLayout;
-
+
