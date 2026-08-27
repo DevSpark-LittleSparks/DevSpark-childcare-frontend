@@ -16,6 +16,7 @@ import {
   selectProgressDateRange, selectEngagement, selectAttendance,
   selectProgressLoading, selectProgressError,
 } from '../store/slices/progressSlice';
+import { selectUser } from '../features/auth/model/authSlice';
 import { apiClient } from '../services/axiosInstance';
 import { DailyProgressStackedBarChart, ProgressBarChart, ProgressPieChart } from '../components/progress';
 import { BarChart2 } from 'lucide-react';
@@ -25,6 +26,7 @@ const fmt = (d: Date) => d.toISOString().split('T')[0];
 
 const AdminProgressPage: React.FC = () => {
   const dispatch         = useAppDispatch();
+  const user             = useAppSelector(selectUser);
   const selectedDate     = useAppSelector(selectAdminSelectedDate);
   const dailyProgress    = useAppSelector(selectAdminDailyProgress);
   const activities       = useAppSelector(selectAdminActivities);
@@ -80,9 +82,10 @@ const AdminProgressPage: React.FC = () => {
   };
 
   useEffect(() => {
+    if (!user?.email) return;
     fetchDailyOverview(selectedDate);
     fetchChildren();
-  }, []);
+  }, [user]);
 
   // Switching to a different child resets back to the "not yet viewed" stage
   useEffect(() => {

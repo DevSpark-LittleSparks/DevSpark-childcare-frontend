@@ -137,6 +137,7 @@ const TeacherDashboardPage: React.FC = () => {
   };
 
   useEffect(() => {
+    if (!user?.email) return;
     fetchAll();
     const interval = setInterval(async () => {
       try {
@@ -145,7 +146,7 @@ const TeacherDashboardPage: React.FC = () => {
       } catch {}
     }, 60_000);
     return () => clearInterval(interval);
-  }, []);
+  }, [user]);
 
   const handleSortChange = (value: string) => {
     setSortBy(value);
@@ -254,7 +255,7 @@ const TeacherDashboardPage: React.FC = () => {
             subtitle="Critical updates needed"
             icon={<ShieldAlert size={16} className="text-amber-500" />}
           >
-            <div className="space-y-2 pt-1">
+            <div className="teacher-alert-scroll space-y-2 pt-1 max-h-[130px] overflow-y-auto pr-1">
               {alerts.length === 0 ? (
                 <p className="text-xs text-slate-400 font-bold text-center py-4">No active alerts</p>
               ) : alerts.map((a, i) => (
@@ -449,6 +450,27 @@ const TeacherDashboardPage: React.FC = () => {
 
         </div>
       </main>
+
+      <style>{`
+        .teacher-alert-scroll {
+          scrollbar-width: auto;
+          scrollbar-color: #06B6D4 #f1f5f9;
+        }
+        .teacher-alert-scroll::-webkit-scrollbar {
+          width: 8px;
+        }
+        .teacher-alert-scroll::-webkit-scrollbar-track {
+          background: #f1f5f9;
+          border-radius: 9999px;
+        }
+        .teacher-alert-scroll::-webkit-scrollbar-thumb {
+          background: #06B6D4;
+          border-radius: 9999px;
+        }
+        .teacher-alert-scroll::-webkit-scrollbar-thumb:hover {
+          background: #0891B2;
+        }
+      `}</style>
     </div>
   );
 };

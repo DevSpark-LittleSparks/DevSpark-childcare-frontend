@@ -45,6 +45,8 @@ const ParentProgressPage: React.FC = () => {
 
   // ── Load children list ────────────────────────────────────────────────────
   useEffect(() => {
+    if (!user?.email) return;
+
     const fetchChildren = async () => {
       try {
         const res = await apiClient.get('/api/v1/parent/profile');
@@ -62,7 +64,7 @@ const ParentProgressPage: React.FC = () => {
     fetchChildren();
 
     return () => { dispatch(resetProgress()); };
-  }, [dispatch]);
+  }, [dispatch, user]);
 
   // ── Fetch progress data ───────────────────────────────────────────────────
   const fetchProgress = async (childId: string, fromDate: string, toDate: string) => {
