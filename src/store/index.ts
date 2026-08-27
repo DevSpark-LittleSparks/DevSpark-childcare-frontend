@@ -6,6 +6,9 @@ import billingReducer from './slices/billingSlice';
 import healthReducer from './slices/healthSlice';
 import staffReducer from './slices/staffSlice';
 import settingsReducer from '../features/settings/model/settingsSlice';
+import chatbotReducer from './slices/chatbotSlice';
+import progressReducer from './slices/progressSlice';
+import teacherReducer from './slices/teacherSlice';
 
 export const store = configureStore({
   reducer: {
@@ -15,6 +18,9 @@ export const store = configureStore({
     health: healthReducer,
     staff: staffReducer,
     settings: settingsReducer,
+    chatbot: chatbotReducer,
+    progress: progressReducer,
+    teacher: teacherReducer,
   },
   devTools: true,
 });
