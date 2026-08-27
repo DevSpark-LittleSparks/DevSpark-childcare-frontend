@@ -1,11 +1,12 @@
-import axios from "axios";
-import { env } from "@/shared/config/env";
-import { firebaseAuth } from "@/lib/firebase";
+import axios from 'axios';
+// Fixed relative paths to remove ts(2307) errors
+import { env } from '../shared/config/env';
+import { firebaseAuth } from '../lib/firebase';
 
 export const apiClient = axios.create({
   baseURL: env.apiBaseUrl,
   timeout: 10000,
-  headers: { "Content-Type": "application/json" },
+  headers: { 'Content-Type': 'application/json' },
 });
 
 // Auto-attach Firebase ID Token to every request

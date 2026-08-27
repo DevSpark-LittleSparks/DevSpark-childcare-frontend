@@ -1,6 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 
-// Layouts Import 
+// Layouts Import
 import AdminLayout from './components/layout/AdminLayout';
 import ParentLayout from './components/layout/ParentLayout';
 import TeacherLayout from './components/layout/TeacherLayout';
@@ -15,25 +15,27 @@ import VerifyOtpPage from './pages/auth/VerifyOtpPage';
 import AboutUsPage from './pages/AboutUsPage';
 import ContactPage from './pages/ContactPage';
 
-
 // Admin Pages
 import AdminDashboardPage from './pages/admin/AdminDashboard';
 import AdminProfilePage from './pages/admin/ProfilePage';
 import AdmissionsPage from './pages/admin/Admissions';
 import Student from './pages/admin/Student';
-import ChildProfilePage from './pages/admin/ChildProfilePage'; // Admin Edit/Manage Page
+import ChildProfilePage from './pages/admin/ChildProfilePage';
 import ParentManagement from './pages/admin/ParentManagement';
 import Teachers from './pages/admin/Teachers';
 import BroadcastPortal from './pages/admin/BroadcastPortal';
+import AdminActivityPage from './pages/admin/AdminActivityPage';
 
 // Parent Pages
 import ParentProfilePage from './pages/parent/ProfilePage';
-import ChildViewPage from './pages/parent/ChildViewPage'; // Parent View-Only Page
+import ChildViewPage from './pages/parent/ChildViewPage';
 import MyChildren from './pages/parent/MyChildren';
 import ParentDashboard from './pages/parent/dashboard/ParentDashboard';
 
 // Teacher Pages
 import TeacherProfilePage from './pages/teacher/ProfilePage';
+import AttendancePage from './pages/AttendancePage';
+import TeacherActivityPage from './pages/TeacherActivityPage'; // 💡 ඔයාගේ ඔරිජිනල් එක!
 
 // Other Management Pages
 import BillingPage from './pages/BillingPage';
@@ -53,9 +55,7 @@ const mockUser: UserProfile = {
   phone1: '0771234567',
   phone2: '0711234567',
   relationship: 'Father',
-  children: [
-    { id: 'c1', name: 'Shemil Doe', age: 4, gender: 'Male', enrolledDate: '2026-01-01' }
-  ]
+  children: [{ id: 'c1', name: 'Shemil Doe', age: 4, gender: 'Male', enrolledDate: '2026-01-01' }],
 };
 
 export const router = createBrowserRouter([
@@ -69,50 +69,41 @@ export const router = createBrowserRouter([
   { path: '/about', element: <AboutUsPage /> },
   { path: '/contact', element: <ContactPage /> },
 
-
   // --- ADMIN SECTION ---
   {
     path: '/admin',
     element: <AdminLayout />,
     children: [
       { path: 'dashboard', element: <AdminDashboardPage /> },
-      { path: 'profile', element: <AdminProfilePage initialUser={{ ...mockUser, role: 'ADMIN' }} /> },
+      { path: 'profile', element: <AdminProfilePage /> },
       { path: 'admissions', element: <AdmissionsPage /> },
       { path: 'students', element: <Student /> },
-      // Admin route for full management/editing
       { path: 'students/:studentId', element: <ChildProfilePage /> },
       { path: 'parents', element: <ParentManagement /> },
       { path: 'teachers', element: <Teachers /> },
       { path: 'billing', element: <BillingPage /> },
       { path: 'meal', element: <MealsPage /> },
       { path: 'broadcast', element: <BroadcastPortal /> },
+      { path: 'activities', element: <AdminActivityPage /> },
+      { path: 'schedules', element: <AdminActivityPage /> },
     ],
   },
-
-  // --- PARENT SECTION 
 
   // --- PARENT SECTION ---
   {
     path: '/parent',
-    element: <ParentLayout />, // Use the Layout here, NOT MyChildren
+    element: <ParentLayout />, 
     children: [
-      // This makes /parent redirect to dashboard or children automatically
       { path: 'dashboard', element: <ParentDashboard /> },
       { path: 'profile', element: <ParentProfilePage initialUser={mockUser} /> },
-
-      // This is the page with your clickable cards
       { path: 'children', element: <MyChildren /> },
-
-      // This is the profile page you want to see when you click
       { path: 'child-profile/:studentId', element: <ChildViewPage /> },
-
       { path: 'progress', element: <div>Progress</div> },
       { path: 'payments', element: <div>Payments</div> },
       { path: 'notifications', element: <div>Notifications</div> },
       { path: 'messaging', element: <div>Messaging</div> },
     ],
   },
-
 
   // --- TEACHER SECTION ---
   {
@@ -122,10 +113,10 @@ export const router = createBrowserRouter([
       { path: 'dashboard', element: <div>Teacher Dashboard</div> },
       {
         path: 'profile',
-        element: <TeacherProfilePage initialUser={{ ...mockUser, role: 'TEACHER' }} />
+        element: <TeacherProfilePage initialUser={{ ...mockUser, role: 'TEACHER' }} />,
       },
-      { path: 'attendance', element: <div>Daily Attendance</div> },
-      { path: 'activities', element: <div>My Activities</div> },
+      { path: 'attendance', element: <AttendancePage /> }, // 💡 ඔයාගේ ඔරිජිනල් Attendance පේජ් එක!
+      { path: 'activities', element: <TeacherActivityPage /> }, // 💡 ඔයාගේ ඔරිජිනල් Activity පේජ් එක!
       { path: 'meals', element: <div>Meals</div> },
       { path: 'messages', element: <div>Messaging</div> },
     ],
