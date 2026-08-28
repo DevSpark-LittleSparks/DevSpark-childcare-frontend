@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Layers, Zap, Heart, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { Button } from '../components/common/Button';
+import UniversalSmartAssistant from '../components/chatbots/UniversalSmartAssistant';
 import {
   motion,
   AnimatePresence,
@@ -794,6 +795,8 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      <UniversalSmartAssistant />
     </div>
   );
 };

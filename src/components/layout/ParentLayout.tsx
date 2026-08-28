@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import ParentSidebar from "./ParentSidebar";
 import SettingsDrawer from "./SettingsDrawer";
+import UniversalSmartAssistant from "../chatbots/UniversalSmartAssistant";
 
 const ParentLayout: React.FC = () => {
   // Shared state to sync sidebar width with main content margin
@@ -40,6 +41,7 @@ const ParentLayout: React.FC = () => {
       </main>
 
       <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <UniversalSmartAssistant />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar";
 import SettingsDrawer from "./SettingsDrawer";
+import UniversalSmartAssistant from "../chatbots/UniversalSmartAssistant";
 
 const AdminLayout: React.FC = () => {
   // Shared state to track whether the sidebar is collapsed or expanded
@@ -36,6 +37,7 @@ const AdminLayout: React.FC = () => {
 
       {/* Slide-in settings drawer */}
       <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <UniversalSmartAssistant />
     </div>
   );
 };

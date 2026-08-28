@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import TeacherSidebar from "./TeacherSidebar";
 import SettingsDrawer from "./SettingsDrawer";
+import UniversalSmartAssistant from "../chatbots/UniversalSmartAssistant";
 
 const TeacherLayout: React.FC = () => {
   // Lifted state to control layout expansion
@@ -26,6 +27,7 @@ const TeacherLayout: React.FC = () => {
       </main>
 
       <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <UniversalSmartAssistant />
     </div>
   );
 };

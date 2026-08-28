@@ -7,6 +7,11 @@ import healthReducer from './slices/healthSlice';
 import staffReducer from './slices/staffSlice';
 import messagingReducer from '../features/messaging/model/messagingSlice';
 import settingsReducer from '../features/settings/model/settingsSlice';
+import chatbotReducer from './slices/chatbotSlice';
+import progressReducer from './slices/progressSlice';
+import teacherReducer from './slices/teacherSlice';
+import activityReducer from './slices/activitySlice';
+import attendanceReducer from './slices/attendanceSlice';
 
 export const store = configureStore({
   reducer: {
@@ -17,13 +22,18 @@ export const store = configureStore({
     staff: staffReducer,
     messaging: messagingReducer,
     settings: settingsReducer,
+    chatbot: chatbotReducer,
+    progress: progressReducer,
+    teacher: teacherReducer,
+    activity: activityReducer,
+    attendance: attendanceReducer,
   },
   devTools: true,
 });
 
-export type RootState = ReturnType<typeof store.getState>;
+export type RootState   = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
-// must be 
+// must be
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;

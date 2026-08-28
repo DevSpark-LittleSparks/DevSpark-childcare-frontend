@@ -12,6 +12,7 @@ import { Spinner } from "../../../components/common/Spinner";
 import { useAppDispatch, useAppSelector, RootState } from "../../../store";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { firebaseAuth } from "../../../lib/firebase";
+import { apiClient } from "../../../services/axiosInstance";
 
 // Local model and Routing
 import { setUser, setError, setLoading } from "../model/authSlice";
