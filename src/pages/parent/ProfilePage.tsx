@@ -5,7 +5,7 @@ import {
   Save, Edit2, Key, CheckCircle2, AlertCircle, Loader2, Camera, Send, ShieldCheck, FileText
 } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../../store';
-import { setUser } from '../../store/slices/authSlice';
+import { setUser as setReduxUser } from '../../features/auth/model/authSlice';
 import { Button } from '../../components/common/Button';
 import { PhoneInput } from '../../components/common/PhoneInput';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
@@ -130,7 +130,7 @@ const ParentProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
       setIsEditing(false);
       setStatusMessage({ type: 'success', text: 'Parent profile updated successfully!' });
       if (reduxUser) {
-        dispatch(setUser({ ...reduxUser, displayName: user.fullName, photoURL: user.profilePicture || reduxUser.photoURL }));
+        dispatch(setReduxUser({ ...reduxUser, displayName: user.fullName, photoURL: user.profilePicture || reduxUser.photoURL }));
       }
       fetchProfile();
     } catch (err: any) {
@@ -246,10 +246,10 @@ const ParentProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12">
               <div className="space-y-8">
-                <h3 className="text-[11px] font-black text-midnight uppercase tracking-[0.4em]">Personal Information</h3>
+                <h3 className="text-xl font-black text-midnight dark:text-white uppercase tracking-tight flex items-center gap-4"><div className="w-10 h-10 bg-primary-50 rounded-xl flex items-center justify-center text-primary-500"><User size={20} /></div> Guardian Information</h3>
                 <div className="space-y-6">
-                  <ParentInput label="Full Name" name="fullName" icon={User} value={user.fullName} onChange={handleInputChange} disabled={!isEditing} error={errors.fullName} />
-                  <ParentInput label="Registered Email" name="email" icon={Mail} value={user.email} disabled={true} />
+                  <ProfileInput label="Full Name" name="fullName" icon={User} value={user.fullName} onChange={handleInputChange} disabled={!isEditing} error={errors.fullName} />
+                  <ProfileInput label="Registered Email" name="email" icon={Mail} value={user.email} disabled={true} />
                   <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Primary Phone</label>
@@ -259,7 +259,15 @@ const ParentProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Secondary Phone</label>
                       <PhoneInput name="phone2" variant="profile" value={user.phone2} onChange={handleInputChange} disabled={!isEditing} error={errors.phone2} />
                     </div>
-                    <ParentInput label="National ID / NIC" name="nic" icon={Lock} value={user.nic} onChange={handleInputChange} disabled={!isEditing} error={errors.nic} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-8">
+                <h3 className="text-xl font-black text-midnight dark:text-white uppercase tracking-tight flex items-center gap-4"><div className="w-10 h-10 bg-secondary-50 rounded-xl flex items-center justify-center text-secondary-500"><ShieldCheck size={20} /></div> Identity & Address</h3>
+                <div className="space-y-6 bg-transparent">
+                  <div className="grid grid-cols-1 gap-4">
+                    <ProfileInput label="National ID / NIC" name="nic" icon={Lock} value={user.nic} onChange={handleInputChange} disabled={!isEditing} error={errors.nic} />
                   </div>
                 </div>
               </div>
@@ -268,12 +276,22 @@ const ParentProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
                 <h3 className="text-[11px] font-black text-midnight uppercase tracking-[0.4em]">Residential Data</h3>
                 <div className="space-y-6 bg-sidebar-bg/20 p-8 rounded-[2.5rem] border border-sidebar-bg/50">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Current Address</label>
-                    <textarea name="address" value={user.address || ''} onChange={handleInputChange} disabled={!isEditing} rows={3} className={`w-full pl-4 p-4 bg-white border-2 ${errors.address ? 'border-red-500' : 'border-slate-100'} rounded-2xl outline-none text-sm font-bold text-midnight disabled:bg-slate-50`} />
-                    <ErrorMessage message={errors.address} />
+                    <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Resident Address</label>
+                    <div className="relative">
+                      <MapPin className="absolute left-4 top-4 text-slate-300" size={18} />
+                      <textarea
+                        name="address"
+                        value={user.address || ''}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        rows={3}
+                        className={`w-full pl-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 ${errors.address ? 'border-red-500' : 'border-transparent'} rounded-2xl outline-none text-sm font-bold text-midnight dark:text-white min-h-[90px] focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all disabled:opacity-60 disabled:bg-slate-50`}
+                      /> <ErrorMessage message={errors.address} />
                   </div>
                 </div>
               </div>
+            </div>
+            
             </div>
 
             <div className="bg-sidebar-bg/20 rounded-[3rem] p-8 border border-sidebar-bg/50">
@@ -304,24 +322,47 @@ const ParentProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
             </div>
 
             <div className="pt-10 border-t border-slate-100">
-              <div className="bg-midnight rounded-[3rem] p-8 md:p-12 shadow-2xl">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Current Password</label>
-                    <input type="password" placeholder="••••••••" value={passwords.current} onChange={(e) => setPasswords({ ...passwords, current: e.target.value })} className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl text-white text-sm outline-none" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">New Password</label>
-                    <input type="password" placeholder="Enter new password" value={passwords.new} onChange={(e) => setPasswords({ ...passwords, new: e.target.value })} className={`w-full p-4 bg-white/5 border ${errors.new ? 'border-red-500' : 'border-white/10'} rounded-2xl text-white text-sm outline-none`} />
-                    <ErrorMessage message={errors.new} />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Confirm New</label>
-                    <div className="flex gap-3">
-                      <input type="password" placeholder="Confirm password" value={passwords.confirm} onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })} className={`w-full p-4 bg-white/5 border ${errors.confirm ? 'border-red-500' : 'border-white/10'} rounded-2xl text-white text-sm outline-none`} />
-                      <button onClick={handlePasswordUpdate} className="bg-primary-500 p-4 rounded-2xl text-white active:scale-95">{isChangingPassword ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}</button>
+              <div className="bg-white dark:bg-[#0f172a] rounded-[3rem] shadow-[0_20px_60px_rgba(10,6,55,0.03)] border border-slate-100 dark:border-slate-800/60 p-8 md:p-12 relative overflow-hidden">
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-10">
+                    <div className="space-y-2">
+                      <h4 className="text-xl font-black text-midnight dark:text-white uppercase tracking-tight flex items-center gap-4">
+                        <div className="w-10 h-10 bg-primary-50 rounded-xl flex items-center justify-center text-primary-500"><ShieldCheck size={20} /></div>
+                        Security & Credentials
+                      </h4>
+                      <p className="text-slate-500 dark:text-slate-400 text-xs tracking-wider">Manage your parent portal access keys.</p>
                     </div>
-                    <ErrorMessage message={errors.confirm} />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="space-y-2 text-left">
+                      <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Current Password</label>
+                      <div className="relative">
+                        <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                        <input type="password" placeholder="••••••••" value={passwords.current} onChange={(e) => setPasswords({ ...passwords, current: e.target.value })} className="w-full pl-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 border-transparent rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all" />
+                      </div>
+                    </div>
+                    <div className="space-y-2 text-left">
+                      <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">New Password</label>
+                      <div className="relative">
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                        <input type="password" placeholder="Enter new password" value={passwords.new} onChange={(e) => setPasswords({ ...passwords, new: e.target.value })} className={`w-full pl-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 ${errors.new ? 'border-red-500' : 'border-transparent'} rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all`} />
+                      </div>
+                      <ErrorMessage message={errors.new} />
+                    </div>
+                    <div className="space-y-2 text-left">
+                      <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Confirm New</label>
+                      <div className="relative flex gap-3">
+                        <div className="relative flex-1">
+                          <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                          <input type="password" placeholder="Confirm password" value={passwords.confirm} onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })} className={`w-full pl-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 ${errors.confirm ? 'border-red-500' : 'border-transparent'} rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all`} />
+                        </div>
+                        <button onClick={handlePasswordUpdate} disabled={isChangingPassword || !passwords.current || !passwords.new} className="bg-primary-500 hover:bg-primary-600 disabled:bg-slate-300 p-4 rounded-2xl text-white transition-all shadow-lg active:scale-95 flex items-center justify-center">
+                          {isChangingPassword ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+                        </button>
+                      </div>
+                      <ErrorMessage message={errors.confirm} />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -333,12 +374,15 @@ const ParentProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
   );
 };
 
-const ParentInput = ({ label, icon: Icon, error, value, ...props }: any) => (
-  <div className="space-y-2 group">
-    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{label}</label>
+const ProfileInput = ({ label, icon: Icon, error, ...props }: any) => (
+  <div className="space-y-2 group text-left">
+    <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">{label}</label>
     <div className="relative">
-      <Icon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-      <input {...props} value={value || ''} className={`w-full pl-12 p-4 bg-white border-2 ${error ? 'border-red-500' : 'border-slate-100'} rounded-2xl outline-none text-sm font-bold text-midnight disabled:bg-slate-50 transition-all`} />
+      <Icon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary-500 transition-colors" size={18} />
+      <input
+        {...props}
+        className={`w-full pl-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 ${error ? 'border-red-500' : 'border-transparent'} rounded-2xl focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all outline-none text-sm font-bold text-midnight dark:text-white disabled:opacity-60 disabled:bg-slate-50`}
+      />
     </div>
     <ErrorMessage message={error} />
   </div>
