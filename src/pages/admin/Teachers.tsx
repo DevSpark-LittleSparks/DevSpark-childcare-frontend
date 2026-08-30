@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, Search, Trash2, Eye, User, Mail, Phone,
-  MapPin, ShieldCheck, UserCheck, UserX, MoreVertical, CheckSquare, Square
+  ArrowLeft, Search, Trash2, Eye, Mail, Phone,
+  MapPin, ShieldCheck, CheckSquare, Square, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 import { apiClient } from '../../services/axiosInstance';
@@ -35,7 +35,6 @@ const getAvatarStyle = (role: string) => {
 };
 
 const Teachers = () => {
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [teachers, setTeachers] = useState<TeacherData[]>([]);
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
@@ -45,14 +44,14 @@ const Teachers = () => {
 
   // Pagination States
   const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
 
   const loadTeachers = async () => {
     try {
       // Fetch staff records
-      const response = await apiClient.get(`/api/v1/auth/admin/all-teachers?page=${currentPage}&size=10`);
+      const response = await apiClient.get('/api/v1/auth/admin/all-teachers?size=1000');
       const liveData = response.data.data.content || [];
-      setTotalPages(response.data.data.totalPages || 0);
+      setTotalElements(response.data.data.totalElements || liveData.length);
 
       const mappedTeachers = liveData.map((t: any) => ({
         id: t.id || t.teacherId || t.email,
@@ -83,10 +82,14 @@ const Teachers = () => {
     loadTeachers();
     window.addEventListener('storage', loadTeachers);
     return () => window.removeEventListener('storage', loadTeachers);
-  }, [currentPage]);
+  }, []);
+
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [searchTerm, filter]);
 
   const handleNextPage = () => {
-    if (currentPage < totalPages - 1) setCurrentPage(prev => prev + 1);
+    setCurrentPage(prev => prev + 1);
   };
 
   const handlePrevPage = () => {
@@ -134,6 +137,9 @@ const Teachers = () => {
     return matchesSearch && matchesFilter;
   });
 
+  const totalPages = Math.max(1, Math.ceil(filteredTeachers.length / 10));
+  const paginatedTeachers = filteredTeachers.slice(currentPage * 10, (currentPage + 1) * 10);
+
   return (
     <div className="min-h-screen w-full bg-surface-secondary dark:bg-slate-950 transition-colors duration-300 font-sans text-slate-900 dark:text-slate-100 pb-16">
 
@@ -143,7 +149,7 @@ const Teachers = () => {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Staff</h1>
             <span className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-black rounded-full border border-slate-200 dark:border-slate-700">
-              {loading ? '...' : teachers.length}
+              {loading ? '...' : totalElements}
             </span>
           </div>
 
@@ -240,8 +246,8 @@ const Teachers = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50/80 dark:divide-slate-800/60">
-              {filteredTeachers.map((t) => (
-                <tr key={t.id} className={`hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50/50 transition-all group ${selectedTeachers.includes(t.id) ? 'bg-primary-50/20' : ''}`}>
+              {paginatedTeachers.map((t) => (
+                <tr key={t.id} className={`dark:bg-slate-800/40 transition-all group ${selectedTeachers.includes(t.id) ? 'bg-primary-50/20' : 'hover:bg-white dark:hover:bg-[#0f172a]/60'}`}>
                   <td className="px-8 py-6">
                     <button onClick={() => toggleSelect(t.id)} className="text-slate-300 hover:text-primary-500 transition-colors">
                       {selectedTeachers.includes(t.id) ? <CheckSquare size={20} className="text-primary-500" /> : <Square size={20} />}
@@ -259,7 +265,7 @@ const Teachers = () => {
                         </div>
                       )}
                       <div>
-                        <p className="font-bold text-slate-900 dark:text-white tracking-tight">{t.firstName} {t.lastName}</p>
+                        <p className="font-bold text-slate-900 dark:text-white text-sm tracking-tight group-hover:text-primary-600 transition-colors">{t.firstName} {t.lastName}</p>
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider mt-1 ${getRoleBadge(t.role)}`}>
                           {t.role}
                         </span>
@@ -315,26 +321,67 @@ const Teachers = () => {
         
         {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-4 pt-4 mt-6 border-t border-slate-100 dark:border-slate-800">
-            <Button
-              variant="secondary"
-              onClick={handlePrevPage}
-              disabled={currentPage === 0}
-              className="px-4 py-2 text-xs disabled:opacity-50"
-            >
-              Previous
-            </Button>
-            <span className="text-xs font-bold text-slate-500">
-              Page {currentPage + 1} of {totalPages}
-            </span>
-            <Button
-              variant="secondary"
-              onClick={handleNextPage}
-              disabled={currentPage >= totalPages - 1}
-              className="px-4 py-2 text-xs disabled:opacity-50"
-            >
-              Next
-            </Button>
+          <div className="flex items-center justify-between pt-6 mt-6 border-t border-slate-100 dark:border-slate-800">
+            <div className="text-xs font-semibold text-slate-500">
+              Showing page {currentPage + 1} of {totalPages}
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="secondary"
+                onClick={handlePrevPage}
+                disabled={currentPage === 0}
+                className="p-2 aspect-square text-slate-500 disabled:opacity-40"
+              >
+                <ChevronLeft size={16} />
+              </Button>
+              
+              {/* Page Numbers */}
+              <div className="flex items-center gap-1 hidden sm:flex">
+                {Array.from({ length: totalPages }).map((_, i) => {
+                  if (
+                    i === 0 ||
+                    i === totalPages - 1 ||
+                    (i >= currentPage - 1 && i <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentPage(i)}
+                        className={`w-8 h-8 flex items-center justify-center rounded-xl text-xs font-bold transition-all ${
+                          currentPage === i
+                            ? 'bg-primary-600 text-white shadow-md shadow-primary-500/20'
+                            : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    );
+                  }
+                  
+                  if (
+                    (i === 1 && currentPage > 2) ||
+                    (i === totalPages - 2 && currentPage < totalPages - 3)
+                  ) {
+                    return (
+                      <div key={i} className="w-8 h-8 flex items-center justify-center text-slate-400">
+                        <MoreHorizontal size={14} />
+                      </div>
+                    );
+                  }
+                  
+                  return null;
+                })}
+              </div>
+
+              <Button
+                variant="secondary"
+                onClick={handleNextPage}
+                disabled={currentPage >= totalPages - 1}
+                className="p-2 aspect-square text-slate-500 disabled:opacity-40"
+              >
+                <ChevronRight size={16} />
+              </Button>
+            </div>
           </div>
         )}
         </>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trash2, Eye, Search, Plus, Users } from 'lucide-react';
+import { Trash2, Eye, Search, Plus, Users, ChevronLeft, ChevronRight, MoreHorizontal, Square, CheckSquare } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 import { apiClient } from '../../services/axiosInstance';
 
@@ -18,22 +18,16 @@ interface StudentData {
 // ─── Status Config ───────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; dot: string }> = {
   ENROLLED: {
-    label: 'Enrolled',
-    bg: 'bg-sky-500/10 dark:bg-sky-500/20',
-    text: 'text-sky-600 dark:text-sky-300',
-    dot: 'bg-sky-500',
-  },
-  BIG_SCHOOL_READY: {
-    label: 'Big School Ready',
-    bg: 'bg-amber-500/10 dark:bg-amber-500/20',
-    text: 'text-amber-600 dark:text-amber-300',
-    dot: 'bg-amber-500',
-  },
-  ALUMNI: {
-    label: 'Alumni',
+    label: 'Preschool',
     bg: 'bg-emerald-500/10 dark:bg-emerald-500/20',
     text: 'text-emerald-600 dark:text-emerald-300',
     dot: 'bg-emerald-500',
+  },
+  BIG_SCHOOL_READY: {
+    label: 'School Age',
+    bg: 'bg-amber-500/10 dark:bg-amber-500/20',
+    text: 'text-amber-600 dark:text-amber-300',
+    dot: 'bg-amber-500',
   },
 };
 
@@ -44,6 +38,8 @@ const getStatusConfig = (status: string) =>
     text: 'text-slate-500 dark:text-slate-300',
     dot: 'bg-slate-400',
   };
+
+
 
 // ─── Avatar Component ────────────────────────────────────────────────────────
 const StudentAvatar = ({
@@ -100,19 +96,21 @@ const Students = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [students, setStudents] = useState<StudentData[]>([]);
   const [filter, setFilter] = useState<'all' | 'male' | 'female'>('all');
+  const [ageGroup, setAgeGroup] = useState<'all' | 'preschool' | 'school-age'>('all');
   const [loading, setLoading] = useState(true);
-  
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+
   // Pagination States
   const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
 
   React.useEffect(() => {
     const fetchStudents = async () => {
       setLoading(true);
       try {
-        const response = await apiClient.get(`/api/v1/auth/admin/all-children?page=${currentPage}&size=10`);
+        const response = await apiClient.get('/api/v1/auth/admin/all-children?size=1000');
         const liveData = response.data.data.content || [];
-        setTotalPages(response.data.data.totalPages || 0);
+        setTotalElements(response.data.data.totalElements || liveData.length);
         const mappedStudents: StudentData[] = liveData.map((c: any) => ({
           id: c.childId,
           firstName: c.firstName,
@@ -135,7 +133,22 @@ const Students = () => {
       }
     };
     fetchStudents();
-  }, [currentPage]);
+  }, []);
+
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [searchTerm, filter, ageGroup]);
+
+  const handlePrevPage = () => setCurrentPage((p) => Math.max(0, p - 1));
+  const handleNextPage = () => setCurrentPage((p) => p + 1);
+
+  const toggleSelect = (id: string) => {
+    if (selectedStudents.includes(id)) {
+      setSelectedStudents(selectedStudents.filter(sid => sid !== id));
+    } else {
+      setSelectedStudents([...selectedStudents, id]);
+    }
+  };
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to remove this student?')) {
@@ -150,12 +163,35 @@ const Students = () => {
 
   const filtered = students.filter((s) => {
     const matchesSearch = `${s.firstName} ${s.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filter === 'all' || s.gender.toLowerCase() === filter;
-    return matchesSearch && matchesFilter;
+    
+    let matchesAge = true;
+    if (ageGroup === 'preschool') matchesAge = s.status !== 'BIG_SCHOOL_READY';
+    if (ageGroup === 'school-age') matchesAge = s.status === 'BIG_SCHOOL_READY';
+    
+    return matchesSearch && matchesAge;
   });
 
-  const maleStudents = filtered.filter((s) => s.gender === 'Male');
-  const femaleStudents = filtered.filter((s) => s.gender === 'Female');
+  const allMales = filtered.filter(s => s.gender === 'Male');
+  const allFemales = filtered.filter(s => s.gender === 'Female');
+
+  let maleStudents: StudentData[] = [];
+  let femaleStudents: StudentData[] = [];
+  let totalPages = 1;
+
+  if (filter === 'all') {
+    const malePages = Math.ceil(allMales.length / 5);
+    const femalePages = Math.ceil(allFemales.length / 5);
+    totalPages = Math.max(1, malePages, femalePages);
+    
+    maleStudents = allMales.slice(currentPage * 5, (currentPage + 1) * 5);
+    femaleStudents = allFemales.slice(currentPage * 5, (currentPage + 1) * 5);
+  } else if (filter === 'male') {
+    totalPages = Math.max(1, Math.ceil(allMales.length / 10));
+    maleStudents = allMales.slice(currentPage * 10, (currentPage + 1) * 10);
+  } else if (filter === 'female') {
+    totalPages = Math.max(1, Math.ceil(allFemales.length / 10));
+    femaleStudents = allFemales.slice(currentPage * 10, (currentPage + 1) * 10);
+  }
 
   return (
     <div className="min-h-screen w-full bg-surface-secondary dark:bg-slate-950 transition-colors duration-300 font-sans text-slate-900 dark:text-slate-100 pb-16">
@@ -166,23 +202,64 @@ const Students = () => {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Students</h1>
             <span className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-black rounded-full border border-slate-200 dark:border-slate-700">
-              {loading ? '...' : students.length}
+              {loading ? '...' : totalElements}
             </span>
           </div>
-          <Button
-            onClick={() => navigate('/admin/admissions')}
-            variant="primary"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold shadow-md shadow-primary-500/20 text-sm"
-          >
-            <Plus size={15} strokeWidth={3} />
-            Add Student
-          </Button>
+          <div className="flex items-center gap-3">
+            {selectedStudents.length > 0 && (
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  if (window.confirm(`Delete ${selectedStudents.length} selected students?`)) {
+                    try {
+                      await Promise.all(selectedStudents.map(id => apiClient.delete(`/api/v1/auth/admin/child/${id}`)));
+                      setStudents(students.filter(s => !selectedStudents.includes(s.id)));
+                      setSelectedStudents([]);
+                    } catch {
+                      alert('Failed to delete some students. Please try again.');
+                    }
+                  }
+                }}
+                className="bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100 text-xs px-4 py-2 rounded-xl"
+              >
+                Delete ({selectedStudents.length})
+              </Button>
+            )}
+            <Button
+              onClick={() => navigate('/admin/admissions')}
+              variant="primary"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold shadow-md shadow-primary-500/20 text-sm"
+            >
+              <Plus size={15} strokeWidth={3} />
+              Add Student
+            </Button>
+          </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-6 space-y-4">
 
-        {/* Toolbar: Search + Filters */}
+        {/* Age Group Main Tabs */}
+        <div className="flex items-center gap-6 border-b border-slate-200 dark:border-slate-800 mb-6">
+          {(['all', 'preschool', 'school-age'] as const).map((ag) => {
+            const active = ageGroup === ag;
+            const labels = { all: 'All Ages', preschool: 'Preschool (3-5)', 'school-age': 'School Age (6+)' };
+            return (
+              <button
+                key={ag}
+                onClick={() => setAgeGroup(ag)}
+                className={`pb-3 text-sm font-bold transition-all relative ${active ? 'text-primary-500' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+              >
+                {labels[ag]}
+                {active && (
+                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-500 rounded-t-full" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Toolbar: Search + Secondary Filters */}
         <div className="flex items-center gap-3 flex-wrap">
           {/* Compact search bar */}
           <div className="relative w-72">
@@ -196,26 +273,29 @@ const Students = () => {
             />
           </div>
 
-          {/* Filter chips */}
-          <div className="flex items-center gap-1.5">
-            {(['all', 'male', 'female'] as const).map((f) => {
-              const active = filter === f;
-              const colors = {
-                all: active ? 'bg-slate-800 text-white shadow-sm' : 'bg-white text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700/60 hover:border-slate-300 hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50',
-                male: active ? 'bg-sky-500 text-white shadow-sm' : 'bg-white text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700/60 hover:border-sky-200 hover:bg-sky-50',
-                female: active ? 'bg-rose-500 text-white shadow-sm' : 'bg-white text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700/60 hover:border-rose-200 hover:bg-rose-50',
-              }[f];
-              const labels = { all: 'All', male: 'Male', female: 'Female' };
-              return (
-                <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  className={`px-3.5 py-2 rounded-xl text-[11px] font-bold transition-all ${colors}`}
-                >
-                  {labels[f]}
-                </button>
-              );
-            })}
+          {/* Gender Filter chips */}
+          <div className="flex items-center gap-2 ml-2">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Gender:</span>
+            <div className="flex items-center gap-1.5">
+              {(['all', 'male', 'female'] as const).map((f) => {
+                const active = filter === f;
+                const colors = {
+                  all: active ? 'bg-slate-800 text-white shadow-sm' : 'bg-white text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700/60 hover:border-slate-300 hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50',
+                  male: active ? 'bg-sky-500 text-white shadow-sm' : 'bg-white text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700/60 hover:border-sky-200 hover:bg-sky-50',
+                  female: active ? 'bg-pink-500 text-white shadow-sm' : 'bg-white text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700/60 hover:border-pink-200 hover:bg-pink-50',
+                }[f];
+                const labels = { all: 'All', male: 'Male', female: 'Female' };
+                return (
+                  <button
+                    key={f}
+                    onClick={() => setFilter(f)}
+                    className={`px-3.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${colors}`}
+                  >
+                    {labels[f]}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Status legend */}
@@ -226,6 +306,10 @@ const Students = () => {
                 {cfg.label}
               </span>
             ))}
+            <span className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-400">
+              <span className="w-2 h-2 rounded-full bg-rose-500" />
+              10+ Yrs (Action Required)
+            </span>
           </div>
         </div>
 
@@ -237,10 +321,26 @@ const Students = () => {
         ) : (
           <div className="space-y-5">
             {filter !== 'female' && maleStudents.length > 0 && (
-              <StudentTable title="Male Sparks" accentColor="sky" data={maleStudents} onDelete={handleDelete} />
+              <StudentTable title="Male Sparks" accentColor="sky" data={maleStudents} onDelete={handleDelete} selected={selectedStudents} onToggleSelect={toggleSelect} onToggleSelectAll={() => {
+                const allSelected = maleStudents.every(s => selectedStudents.includes(s.id));
+                if (allSelected) {
+                  setSelectedStudents(selectedStudents.filter(id => !maleStudents.some(s => s.id === id)));
+                } else {
+                  const newIds = maleStudents.map(s => s.id).filter(id => !selectedStudents.includes(id));
+                  setSelectedStudents([...selectedStudents, ...newIds]);
+                }
+              }} />
             )}
             {filter !== 'male' && femaleStudents.length > 0 && (
-              <StudentTable title="Female Sparks" accentColor="rose" data={femaleStudents} onDelete={handleDelete} />
+              <StudentTable title="Female Sparks" accentColor="pink" data={femaleStudents} onDelete={handleDelete} selected={selectedStudents} onToggleSelect={toggleSelect} onToggleSelectAll={() => {
+                const allSelected = femaleStudents.every(s => selectedStudents.includes(s.id));
+                if (allSelected) {
+                  setSelectedStudents(selectedStudents.filter(id => !femaleStudents.some(s => s.id === id)));
+                } else {
+                  const newIds = femaleStudents.map(s => s.id).filter(id => !selectedStudents.includes(id));
+                  setSelectedStudents([...selectedStudents, ...newIds]);
+                }
+              }} />
             )}
             {filtered.length === 0 && (
               <div className="bg-white dark:bg-[#0f172a]/60 backdrop-blur-md border border-white/80 rounded-3xl p-16 text-center">
@@ -253,26 +353,67 @@ const Students = () => {
             )}
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-4 pt-4 mt-6 border-t border-slate-100 dark:border-slate-800">
-                <Button
-                  variant="secondary"
-                  onClick={handlePrevPage}
-                  disabled={currentPage === 0}
-                  className="px-4 py-2 text-xs disabled:opacity-50"
-                >
-                  Previous
-                </Button>
-                <span className="text-xs font-bold text-slate-500">
-                  Page {currentPage + 1} of {totalPages}
-                </span>
-                <Button
-                  variant="secondary"
-                  onClick={handleNextPage}
-                  disabled={currentPage >= totalPages - 1}
-                  className="px-4 py-2 text-xs disabled:opacity-50"
-                >
-                  Next
-                </Button>
+              <div className="flex items-center justify-between pt-6 mt-6 border-t border-slate-100 dark:border-slate-800">
+                <div className="text-xs font-semibold text-slate-500">
+                  Showing page {currentPage + 1} of {totalPages}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    variant="secondary"
+                    onClick={handlePrevPage}
+                    disabled={currentPage === 0}
+                    className="p-2 aspect-square text-slate-500 disabled:opacity-40"
+                  >
+                    <ChevronLeft size={16} />
+                  </Button>
+                  
+                  {/* Page Numbers */}
+                  <div className="flex items-center gap-1 hidden sm:flex">
+                    {Array.from({ length: totalPages }).map((_, i) => {
+                      if (
+                        i === 0 ||
+                        i === totalPages - 1 ||
+                        (i >= currentPage - 1 && i <= currentPage + 1)
+                      ) {
+                        return (
+                          <button
+                            key={i}
+                            onClick={() => setCurrentPage(i)}
+                            className={`w-8 h-8 flex items-center justify-center rounded-xl text-xs font-bold transition-all ${
+                              currentPage === i
+                                ? 'bg-primary-600 text-white shadow-md shadow-primary-500/20'
+                                : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            }`}
+                          >
+                            {i + 1}
+                          </button>
+                        );
+                      }
+                      
+                      if (
+                        (i === 1 && currentPage > 2) ||
+                        (i === totalPages - 2 && currentPage < totalPages - 3)
+                      ) {
+                        return (
+                          <div key={i} className="w-8 h-8 flex items-center justify-center text-slate-400">
+                            <MoreHorizontal size={14} />
+                          </div>
+                        );
+                      }
+                      
+                      return null;
+                    })}
+                  </div>
+
+                  <Button
+                    variant="secondary"
+                    onClick={handleNextPage}
+                    disabled={currentPage >= totalPages - 1}
+                    className="p-2 aspect-square text-slate-500 disabled:opacity-40"
+                  >
+                    <ChevronRight size={16} />
+                  </Button>
+                </div>
               </div>
             )}
           </div>
@@ -288,11 +429,17 @@ const StudentTable = ({
   accentColor,
   data,
   onDelete,
+  selected,
+  onToggleSelect,
+  onToggleSelectAll,
 }: {
   title: string;
-  accentColor: 'sky' | 'rose';
+  accentColor: 'sky' | 'pink';
   data: StudentData[];
   onDelete: (id: string) => void;
+  selected: string[];
+  onToggleSelect: (id: string) => void;
+  onToggleSelectAll: () => void;
 }) => {
   const navigate = useNavigate();
   const accent = {
@@ -302,11 +449,11 @@ const StudentTable = ({
       symbol: '♂',
       symbolBg: 'bg-sky-100 dark:bg-sky-500/20 text-sky-600 dark:text-sky-300',
     },
-    rose: {
-      icon: 'text-rose-500',
-      count: 'bg-rose-500/10 dark:bg-rose-500/20 text-rose-600 dark:text-rose-300',
+    pink: {
+      icon: 'text-pink-500',
+      count: 'bg-pink-500/10 dark:bg-pink-500/20 text-pink-600 dark:text-pink-300',
       symbol: '♀',
-      symbolBg: 'bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-300',
+      symbolBg: 'bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-300',
     },
   }[accentColor];
 
@@ -327,7 +474,10 @@ const StudentTable = ({
       </div>
 
       {/* Column labels */}
-      <div className="grid grid-cols-[2fr_1fr_1.5fr_auto] gap-4 px-7 py-2.5 bg-slate-50 dark:bg-slate-800/40 border-b border-slate-100">
+      <div className="grid grid-cols-[auto_2fr_1fr_1.5fr_auto] gap-4 px-7 py-2.5 bg-slate-50 dark:bg-slate-800/40 border-b border-slate-100 items-center">
+        <button onClick={onToggleSelectAll} className="w-5 text-slate-400 hover:text-primary-500 transition-colors">
+          {data.length > 0 && data.every(s => selected.includes(s.id)) ? <CheckSquare size={16} className="text-primary-500" /> : <Square size={16} />}
+        </button>
         <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">Student</span>
         <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">Age</span>
         <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">Status</span>
@@ -336,12 +486,38 @@ const StudentTable = ({
 
       {/* Rows */}
       <div className="divide-y divide-slate-50/80 dark:divide-slate-800/60">
-        {data.map((s) => (
+        {data.map((s) => {
+          const isActionRequired = s.age >= 10;
+          
+          let displayStatus = s.status;
+          if (displayStatus === 'ALUMNI') {
+            displayStatus = s.age >= 6 ? 'BIG_SCHOOL_READY' : 'ENROLLED';
+          }
+          if (isActionRequired) {
+            displayStatus = 'BIG_SCHOOL_READY';
+          }
+
+          return (
           <div
             key={s.id}
             onClick={() => navigate(`/admin/students/${s.id}`)}
-            className="grid grid-cols-[2fr_1fr_1.5fr_auto] gap-4 px-7 py-4 hover:bg-white dark:bg-[#0f172a]/60 transition-all cursor-pointer items-center group"
+            className={`grid grid-cols-[auto_2fr_1fr_1.5fr_auto] gap-4 px-7 py-4 transition-all cursor-pointer items-center group border-l-4 ${
+              isActionRequired 
+                ? 'bg-rose-50/50 hover:bg-rose-50 dark:bg-rose-500/5 dark:hover:bg-rose-500/10 border-rose-500' 
+                : 'hover:bg-white dark:bg-[#0f172a]/60 border-transparent'
+            } ${selected.includes(s.id) ? 'bg-primary-50/20' : ''}`}
           >
+            {/* Checkbox */}
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleSelect(s.id);
+              }} 
+              className="text-slate-300 hover:text-primary-500 transition-colors w-5"
+            >
+              {selected.includes(s.id) ? <CheckSquare size={20} className="text-primary-500" /> : <Square size={20} />}
+            </button>
+
             {/* Student info */}
             <div className="flex items-center gap-4">
               <StudentAvatar
@@ -369,28 +545,28 @@ const StudentTable = ({
 
             {/* Status */}
             <div>
-              <StatusBadge status={s.status} />
+              <StatusBadge status={displayStatus} />
             </div>
 
             {/* Actions */}
             <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={() => navigate(`/admin/students/${s.id}`)}
-                className="p-2.5 rounded-xl text-slate-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-500/10 transition-all"
+                className={`p-2.5 rounded-xl transition-all ${isActionRequired ? 'text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-500/20' : 'text-slate-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-500/10'}`}
                 title="View Profile"
               >
                 <Eye size={16} />
               </button>
               <button
                 onClick={() => onDelete(s.id)}
-                className="p-2.5 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all"
+                className={`p-2.5 rounded-xl transition-all ${isActionRequired ? 'text-rose-600 hover:bg-rose-200 dark:hover:bg-rose-500/30' : 'text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10'}`}
                 title="Delete Student"
               >
                 <Trash2 size={16} />
               </button>
             </div>
           </div>
-        ))}
+        )})}
       </div>
     </div>
   );
