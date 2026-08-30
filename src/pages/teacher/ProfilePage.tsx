@@ -2,12 +2,14 @@ import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
 import {
   User, Mail, Phone, MapPin, Save, Edit2, ArrowLeft,
   Key, CheckCircle2, AlertCircle, Loader2, Camera, GraduationCap,
-  ShieldCheck, Briefcase, Send
+  ShieldCheck, Briefcase, Send, Lock, FileText
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAppSelector } from '../../store';
+import { useAppSelector, useAppDispatch } from '../../store';
+import { setUser } from '../../store/slices/authSlice';
 import { Button } from '../../components/common/Button';
 import { PhoneInput } from '../../components/common/PhoneInput';
+import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { apiClient } from '../../services/axiosInstance';
 import { UserProfile } from '../../types/user.types';
 
@@ -19,12 +21,15 @@ interface TeacherProfileData {
   role: string;
   designation: string;
   phone: string;
+  phone1?: string;
   address: string;
   maxDailyActivities: number;
+  qualifications?: string;
 }
 
 const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const reduxUser = useAppSelector((state) => state.auth.user);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [user, setUser] = useState<TeacherProfileData>({
@@ -35,11 +40,14 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
     role: '',
     designation: '',
     phone: '',
+    phone1: '',
     address: '',
-    maxDailyActivities: 0
+    maxDailyActivities: 0,
+    qualifications: ''
   });
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
@@ -79,6 +87,9 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
       value = "+94" + value.replace(/^\+94\s?/, '');
     }
     setUser(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -91,11 +102,30 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
   };
 
   const handleSaveData = async () => {
+    const newErrors: Record<string, string> = {};
+    if (!user.fullName?.trim()) newErrors.fullName = 'Full Name is required';
+    if (!user.address?.trim()) newErrors.address = 'Address is required';
+    if (!user.qualifications?.trim()) newErrors.qualifications = 'Qualifications are required';
+    const slPhoneRegex = /^\+94\d{9}$/;
+    if (user.phone1 && !slPhoneRegex.test(user.phone1)) newErrors.phone1 = 'Invalid phone number';
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+
     setIsSaving(true);
     try {
-      await apiClient.put('/api/v1/teacher/profile', user);
+      const payload = {
+        fullName: user.fullName,
+        phone: user.phone1,
+        address: user.address,
+        profilePicture: user.profilePicture
+      };
+      await apiClient.put('/api/v1/teacher/profile', payload);
       setIsEditing(false);
       setStatusMessage({ type: 'success', text: 'Professional profile updated successfully.' });
+      if (reduxUser) {
+        dispatch(setUser({ ...reduxUser, displayName: user.fullName, photoURL: user.profilePicture || reduxUser.photoURL }));
+      }
       fetchProfile();
     } catch (err: any) {
       console.error("Update failed:", err);
@@ -106,12 +136,16 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
   };
 
   const handlePasswordUpdate = async () => {
+    const newErrors: Record<string, string> = {};
     if (passwords.new !== passwords.confirm) {
-      return setStatusMessage({ type: 'error', text: 'Passwords do not match.' });
+      newErrors.confirm = 'Passwords do not match.';
     }
     if (passwords.new.length < 6) {
-      return setStatusMessage({ type: 'error', text: 'New password must be at least 6 characters.' });
+      newErrors.new = 'New password must be at least 6 characters.';
     }
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
 
     setIsChangingPassword(true);
     try {
@@ -133,10 +167,13 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
 
 
   const handleSubmitRequest = async () => {
-    if (!requestType || !requestDescription.trim()) {
-      setStatusMessage({ type: 'error', text: 'Please fill in all request fields.' });
-      return;
-    }
+    const newErrors: Record<string, string> = {};
+    if (!requestType) newErrors.requestType = 'Please select a request type';
+    if (!requestDescription.trim()) newErrors.requestDescription = 'Please provide a description';
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+
     if (!reduxUser?.uid) return;
 
     setIsSubmittingRequest(true);
@@ -263,17 +300,18 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
                   <div className="w-10 h-[3px] bg-primary-500 rounded-full"></div> Personal Information
                 </h3>
                 <div className="space-y-6">
-                  <TeacherInput label="Full Name" name="fullName" icon={User} value={user.fullName} onChange={handleInputChange} disabled={!isEditing} />
+                  <TeacherInput label="Full Name" name="fullName" icon={User} value={user.fullName} onChange={handleInputChange} disabled={!isEditing} error={errors.fullName} />
                   <TeacherInput label="Registered Email" name="email" icon={Mail} value={user.email} disabled={true} />
                   
                   <div className="space-y-2 group">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Primary Phone</label>
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Contact Number</label>
                     <PhoneInput 
-                      name="phone" 
+                      name="phone1" 
                       variant="profile"
-                      value={user.phone} 
+                      value={user.phone1} 
                       onChange={handleInputChange} 
                       disabled={!isEditing}
+                      error={errors.phone1}
                     />
                   </div>
                 </div>
@@ -293,12 +331,14 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
                       <MapPin className="absolute left-4 top-4 text-slate-300" size={18} />
                       <textarea
                         name="address"
-                        value={user.address}
+                        value={user.address || ''}
                         onChange={handleInputChange}
                         disabled={!isEditing}
-                        className="w-full pl-12 p-4 bg-white border-2 border-slate-100 rounded-2xl outline-none text-sm font-bold text-midnight min-h-[90px] focus:border-primary-500 transition-all disabled:bg-slate-50"
+                        rows={3}
+                        className={`w-full pl-11 p-4 bg-white border-2 ${errors.address ? 'border-red-500' : 'border-slate-100'} rounded-2xl outline-none focus:border-primary-500 transition-all resize-none text-sm font-bold text-midnight disabled:opacity-60 disabled:bg-slate-50`}
                       />
                     </div>
+                    <ErrorMessage message={errors.address} />
                   </div>
                 </div>
               </div>
@@ -314,30 +354,29 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Request Category</label>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2"><Send size={12} className="text-secondary-500" /> Request Type</label>
                   <select
                     value={requestType}
                     onChange={(e) => setRequestType(e.target.value)}
-                    className="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-primary-500 outline-none font-bold text-sm text-midnight appearance-none"
+                    className={`w-full p-4 bg-white border-2 ${errors.requestType ? 'border-red-500' : 'border-slate-100'} rounded-2xl outline-none focus:border-secondary-500 transition-all text-sm font-bold text-midnight appearance-none`}
                   >
-                    <option value="">Select Type</option>
-                    <option value="leave-request">Leave Request</option>
-                    <option value="material-request">Classroom Materials</option>
-                    <option value="incident-report">Incident Report</option>
-                    <option value="schedule-change">Schedule Change</option>
-                    <option value="other">Other</option>
+                    <option value="" disabled>Select inquiry type</option>
+                    <option value="Schedule Change">Schedule Change</option>
+                    <option value="Classroom Supplies">Classroom Supplies</option>
+                    <option value="Leave Request">Leave Request</option>
+                    <option value="Other">Other</option>
                   </select>
+                  <ErrorMessage message={errors.requestType} />
                 </div>
                 <div className="md:col-span-2 space-y-3">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Description</label>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2"><FileText size={12} className="text-secondary-500" /> Description</label>
                   <div className="flex gap-3">
-                    <input
-                      type="text"
+                    <textarea
                       value={requestDescription}
                       onChange={(e) => setRequestDescription(e.target.value)}
-                      placeholder="Detail your request here..."
-                      autoComplete="off"
-                      className="flex-1 p-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-primary-500 outline-none font-bold text-sm text-midnight"
+                      placeholder="Provide details about your request..."
+                      rows={1}
+                      className={`flex-1 p-4 bg-white border-2 ${errors.requestDescription ? 'border-red-500' : 'border-slate-100'} rounded-2xl outline-none focus:border-secondary-500 transition-all text-sm font-medium text-slate-700`}
                     />
                     <Button
                       onClick={handleSubmitRequest}
@@ -347,6 +386,7 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
                       {isSubmittingRequest ? <Loader2 className="animate-spin" size={16} /> : "SUBMIT"}
                     </Button>
                   </div>
+                  <ErrorMessage message={errors.requestDescription} />
                 </div>
               </div>
             </div>
@@ -382,17 +422,18 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">New Key</label>
+                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">New Password</label>
                       <div className="relative">
-                        <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
                         <input
                           type="password"
-                          placeholder="New access key"
+                          placeholder="Enter new password"
                           value={passwords.new}
                           onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
-                          className="w-full pl-11 p-4 bg-white/5 border border-white/10 rounded-2xl text-white text-sm outline-none focus:border-primary-500 transition-all"
+                          className={`w-full pl-11 p-4 bg-white/5 border ${errors.new ? 'border-red-500' : 'border-white/10'} rounded-2xl text-white text-sm outline-none focus:border-primary-500 transition-all`}
                         />
                       </div>
+                      <ErrorMessage message={errors.new} />
                     </div>
 
                     <div className="space-y-2">
@@ -402,10 +443,10 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
                           <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
                           <input
                             type="password"
-                            placeholder="Confirm key"
+                            placeholder="Confirm password"
                             value={passwords.confirm}
                             onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
-                            className="w-full pl-11 p-4 bg-white/5 border border-white/10 rounded-2xl text-white text-sm outline-none focus:border-primary-500 transition-all"
+                            className={`w-full pl-11 p-4 bg-white/5 border ${errors.confirm ? 'border-red-500' : 'border-white/10'} rounded-2xl text-white text-sm outline-none focus:border-primary-500 transition-all`}
                           />
                         </div>
                         <button
@@ -416,6 +457,7 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
                           {isChangingPassword ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
                         </button>
                       </div>
+                      <ErrorMessage message={errors.confirm} />
                     </div>
                   </div>
                 </div>
@@ -430,16 +472,14 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
 
 
 // Reusable Input Component (Matches Admin Style)
-const TeacherInput = ({ label, icon: Icon, ...props }: any) => (
+const TeacherInput = ({ label, icon: Icon, error, value, ...props }: any) => (
   <div className="space-y-2 group">
     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{label}</label>
     <div className="relative">
-      <Icon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary-500 transition-colors" size={18} />
-      <input
-        {...props}
-        className="w-full pl-12 p-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-primary-500 outline-none text-sm font-bold text-midnight disabled:opacity-60 disabled:bg-slate-50 transition-all"
-      />
+      <Icon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+      <input {...props} value={value || ''} className={`w-full pl-12 p-4 bg-white border-2 ${error ? 'border-red-500' : 'border-slate-100'} rounded-2xl outline-none text-sm font-bold text-midnight disabled:bg-slate-50 transition-all`} />
     </div>
+    <ErrorMessage message={error} />
   </div>
 );
 
