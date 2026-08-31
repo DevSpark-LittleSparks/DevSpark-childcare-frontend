@@ -194,11 +194,22 @@ const AdmissionsPage = () => {
             <div className="bg-white dark:bg-[#0f172a] px-6 py-2.5 rounded-2xl border border-slate-100 dark:border-slate-800/60 shadow-sm flex flex-col items-center min-w-[120px] relative overflow-hidden group">
               {/* Animated Water Background */}
               <div 
-                className="absolute left-1/2 bg-primary-500/20 dark:bg-primary-500/30 rounded-[43%] animate-wave transition-all duration-1000 ease-in-out"
+                className="absolute left-1/2 -translate-x-1/2 bg-primary-500/30 dark:bg-primary-500/40 rounded-[40%] animate-wave transition-all duration-1000 ease-in-out"
+                style={{ 
+                  width: '320px', 
+                  height: '320px', 
+                  top: `${100 - capacityPercentage}%`,
+                  zIndex: 0
+                }}
+              />
+              <div 
+                className="absolute left-1/2 -translate-x-1/2 bg-primary-500/20 dark:bg-primary-500/30 rounded-[43%] animate-wave transition-all duration-1000 ease-in-out"
                 style={{ 
                   width: '300px', 
                   height: '300px', 
-                  top: `${100 - capacityPercentage}%`,
+                  top: `${100 - capacityPercentage + 2}%`,
+                  animationDuration: '10s',
+                  animationDirection: 'reverse',
                   zIndex: 0
                 }}
               />
@@ -329,16 +340,20 @@ const AdmissionsPage = () => {
 
           {/* Right Column: Guardian Section */}
           <div className="space-y-8 animate-fadeUp" style={{ animationDelay: '0.2s' }}>
-            <div className="bg-midnight rounded-[3rem] p-10 shadow-2xl relative overflow-hidden">
+            <div className="bg-midnight rounded-[3rem] p-10 shadow-2xl relative overflow-hidden text-white">
+              {/* Animated Blur Background */}
+              <div className="absolute -top-32 -right-32 w-64 h-64 bg-primary-500/20 rounded-full blur-[80px] animate-pulse"></div>
+              <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-indigo-500/20 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '1s' }}></div>
+
               <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
                 <Users size={120} />
               </div>
 
-              <div className="flex items-center gap-4 mb-8 relative z-10 text-white">
+              <div className="flex items-center gap-4 mb-10 relative z-10 text-white">
                 <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center">
                   <Users size={20} className="text-white" />
                 </div>
-                <h3 className="font-black text-lg uppercase tracking-tight">Guardian Details</h3>
+                <h3 className="font-black text-lg uppercase tracking-tight">Parental Record</h3>
               </div>
 
               <div className="space-y-5 text-left relative z-10">
