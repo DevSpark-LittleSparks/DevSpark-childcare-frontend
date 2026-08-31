@@ -8,6 +8,7 @@ import staffReducer from './slices/staffSlice';
 import settingsReducer from '../features/settings/model/settingsSlice';
 import activityReducer from './slices/activitySlice';
 import attendanceReducer from './slices/attendanceSlice';
+import mealReducer from './slices/mealSlice';
 
 export const store = configureStore({
   reducer: {
@@ -19,6 +20,7 @@ export const store = configureStore({
     settings: settingsReducer,
     activity: activityReducer,
     attendance: attendanceReducer,
+    meal: mealReducer,
   },
   devTools: true,
 });

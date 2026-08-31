@@ -25,6 +25,7 @@ import ParentManagement from './pages/admin/ParentManagement';
 import Teachers from './pages/admin/Teachers';
 import BroadcastPortal from './pages/admin/BroadcastPortal';
 import AdminActivityPage from './pages/admin/AdminActivityPage';
+import MealsPage from './pages/admin/MealsPage';
 
 // Parent Pages
 import ParentProfilePage from './pages/parent/ProfilePage';
@@ -35,11 +36,11 @@ import ParentDashboard from './pages/parent/dashboard/ParentDashboard';
 // Teacher Pages
 import TeacherProfilePage from './pages/teacher/ProfilePage';
 import AttendancePage from './pages/AttendancePage';
-import TeacherActivityPage from './pages/TeacherActivityPage'; // 💡 ඔයාගේ ඔරිජිනල් එක!
+import TeacherActivityPage from './pages/TeacherActivityPage';
+import TeacherMealsPage from './pages/teacher/TeacherMealsPage';
 
 // Other Management Pages
 import BillingPage from './pages/BillingPage';
-import MealsPage from './pages/MealsPage';
 
 // Import Types
 import { UserProfile } from './types/user.types';
@@ -82,7 +83,7 @@ export const router = createBrowserRouter([
       { path: 'parents', element: <ParentManagement /> },
       { path: 'teachers', element: <Teachers /> },
       { path: 'billing', element: <BillingPage /> },
-      { path: 'meal', element: <MealsPage /> },
+      { path: 'meals', element: <MealsPage /> },
       { path: 'broadcast', element: <BroadcastPortal /> },
       { path: 'activities', element: <AdminActivityPage /> },
       { path: 'schedules', element: <AdminActivityPage /> },
@@ -92,7 +93,7 @@ export const router = createBrowserRouter([
   // --- PARENT SECTION ---
   {
     path: '/parent',
-    element: <ParentLayout />, 
+    element: <ParentLayout />,
     children: [
       { path: 'dashboard', element: <ParentDashboard /> },
       { path: 'profile', element: <ParentProfilePage initialUser={mockUser} /> },
@@ -115,9 +116,9 @@ export const router = createBrowserRouter([
         path: 'profile',
         element: <TeacherProfilePage initialUser={{ ...mockUser, role: 'TEACHER' }} />,
       },
-      { path: 'attendance', element: <AttendancePage /> }, // 💡 ඔයාගේ ඔරිජිනල් Attendance පේජ් එක!
-      { path: 'activities', element: <TeacherActivityPage /> }, // 💡 ඔයාගේ ඔරිජිනල් Activity පේජ් එක!
-      { path: 'meals', element: <div>Meals</div> },
+      { path: 'attendance', element: <AttendancePage /> },
+      { path: 'activities', element: <TeacherActivityPage /> },
+      { path: 'meals', element: <TeacherMealsPage /> },
       { path: 'messages', element: <div>Messaging</div> },
     ],
   },
