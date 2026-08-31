@@ -4,7 +4,7 @@ import {
   MdDashboard, MdAssignmentInd, MdPeople, MdManageAccounts,
   MdCreditCard, MdPayments, MdChat, MdRestaurant, MdSecurity, MdHistory,
   MdLogout, MdSettings, MdPerson, MdKeyboardArrowUp,
-  MdMenuOpen, MdMenu, MdAttachMoney, MdCampaign
+  MdMenuOpen, MdMenu, MdAttachMoney, MdCampaign, MdFamilyRestroom, MdBadge
 } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
 import { logout, selectUser } from "../../features/auth/model/authSlice";
@@ -114,8 +114,8 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, onOpenSettin
 
         <NavGroup title="School Management" isCollapsed={isCollapsed}>
           <SidebarLink to="/admin/students" icon={<MdPeople />} label="Students" isCollapsed={isCollapsed} />
-          <SidebarLink to="/admin/parents" icon={<MdPeople />} label="Parents" isCollapsed={isCollapsed} />
-          <SidebarLink to="/admin/teachers" icon={<MdManageAccounts />} label="Staff" isCollapsed={isCollapsed} />
+          <SidebarLink to="/admin/parents" icon={<MdFamilyRestroom />} label="Parents" isCollapsed={isCollapsed} />
+          <SidebarLink to="/admin/teachers" icon={<MdBadge />} label="Staff" isCollapsed={isCollapsed} />
         </NavGroup>
 
         <NavGroup title="Supervision" isCollapsed={isCollapsed}>
@@ -159,14 +159,20 @@ export default function AdminSidebar({ isCollapsed, setIsCollapsed, onOpenSettin
           className={`flex items-center gap-3 p-2 rounded-2xl cursor-pointer transition-all border ${profileOpen ? 'bg-white dark:bg-slate-800 shadow-md border-cyan-200 dark:border-slate-700' : 'hover:bg-white/50 dark:hover:bg-slate-800/50 border-transparent'} ${isCollapsed ? 'justify-center' : ''}`}
           onClick={() => setProfileOpen(!profileOpen)}
         >
-          <img
-            src={user?.photoURL && user.photoURL !== "null" && user.photoURL.trim() !== "" ? user.photoURL : adminAvatar}
-            alt="Profile"
-            className="w-10 h-10 rounded-xl object-cover border-2 border-white dark:border-slate-700 shadow-sm shrink-0"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = adminAvatar;
-            }}
-          />
+          {user?.photoURL && user.photoURL !== "null" && user.photoURL.trim() !== "" ? (
+            <img
+              src={user.photoURL}
+              alt="Profile"
+              className="w-10 h-10 rounded-xl object-cover border-2 border-white dark:border-slate-700 shadow-sm shrink-0"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23cbd5e1"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+              }}
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-700 flex items-center justify-center text-white font-black text-lg border-2 border-white dark:border-slate-700 shadow-sm shrink-0">
+              {user?.displayName ? user.displayName.charAt(0).toUpperCase() : "A"}
+            </div>
+          )}
 
           {!isCollapsed && (
             <div className="flex-1 min-w-0">

@@ -39,7 +39,7 @@ interface FormData {
   message: string;
 }
 
-const RequiredAsterisk = () => <span className="text-black ml-1">*</span>;
+const RequiredAsterisk = () => <span className="text-red-500 ml-1">*</span>;
 const ErrorMessage = ({ message }: { message?: string }) => message ? <p className="text-red-500 text-xs mt-1">{message}</p> : null;
 
 const SignupRequestForm: React.FC = () => {
@@ -356,7 +356,6 @@ const SignupRequestForm: React.FC = () => {
                 error={errors.phone}
                 required={false}
               />
-              <ErrorMessage message={errors.phone} />
 
               {/* Dynamic Role Fields */}
               <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-500">
@@ -466,8 +465,8 @@ const SignupRequestForm: React.FC = () => {
         </section>
 
         <section className="hidden lg:flex flex-1 bg-gradient-to-br from-cyan-600 to-blue-700 p-12 items-center justify-center relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-white dark:bg-[#0f172a]/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-cyan-400/20 rounded-full blur-3xl translate-x-1/4 translate-y-1/4" />
+          <div className="absolute top-0 left-0 w-96 h-96 bg-white/10 dark:bg-[#0f172a]/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+          <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-white/10 dark:bg-cyan-400/20 rounded-full blur-3xl translate-x-1/4 translate-y-1/4" />
 
           <div className="relative z-10 w-full flex flex-col items-center">
             <div className="w-full max-w-[540px] mb-12 relative group transition-all duration-700 transform hover:scale-[1.02]">

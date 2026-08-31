@@ -14,7 +14,7 @@ const ParentLayout: React.FC = () => {
   const isMessaging = location.pathname.startsWith("/parent/messages");
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 overflow-x-hidden flex w-full">
       {/* Pass state to sidebar */}
       <ParentSidebar
         isCollapsed={isCollapsed}
@@ -23,9 +23,9 @@ const ParentLayout: React.FC = () => {
       />
 
       <main
-        className="flex-1 bg-[#f8fafc] dark:bg-slate-950 transition-all duration-300 ease-in-out"
+        className="transition-all duration-300 ease-in-out min-h-screen w-full"
         style={{
-          marginLeft: isCollapsed ? "80px" : "280px",
+          paddingLeft: isCollapsed ? "80px" : "280px",
           ...(isMessaging
             ? { height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column" as const }
             : {}),

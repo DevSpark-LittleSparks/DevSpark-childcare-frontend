@@ -9,11 +9,14 @@ import {
   useScroll,
   useTransform,
   useInView,
+  useMotionValue,
+  animate
 } from 'framer-motion';
 import land2Img from '../assets/images/hero-navy2.png';
 import land3Img from '../assets/images/land3.jfif';
 import land4Img from '../assets/images/land4.png';
 import c1Img from '../assets/images/c1.jpg';
+import { apiClient } from '../services/axiosInstance';
 
 // ==========================================
 // 1) Logo Component
@@ -312,13 +315,13 @@ const HeroCarousel: React.FC<{ onCta: (idx: number) => void }> = ({ onCta }) => 
         {/* Arrow controls */}
         <button
           onClick={() => paginate(-1)}
-          className="p-3 bg-white dark:bg-[#0f172a]/10 hover:bg-white/20 border border-white/10 rounded-full text-white transition-all active:scale-95 backdrop-blur-sm"
+          className="p-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full text-white transition-all active:scale-95 backdrop-blur-sm"
         >
           <ChevronLeft size={20} />
         </button>
         <button
           onClick={() => paginate(1)}
-          className="p-3 bg-white dark:bg-[#0f172a]/10 hover:bg-white/20 border border-white/10 rounded-full text-white transition-all active:scale-95 backdrop-blur-sm"
+          className="p-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full text-white transition-all active:scale-95 backdrop-blur-sm"
         >
           <ChevronRight size={20} />
         </button>
@@ -330,17 +333,69 @@ const HeroCarousel: React.FC<{ onCta: (idx: number) => void }> = ({ onCta }) => 
 // ==========================================
 // 5) Stats Ticker & Parallax Section
 // ==========================================
-const stats = [
-  { val: '500+', label: 'Childcare Centers' },
-  { val: '10K+', label: 'Children Enrolled' },
-  { val: '98%', label: 'Parent Satisfaction' },
-  { val: '40hrs', label: 'Saved Per Month' },
-];
+const AnimatedNumber: React.FC<{ value: number; suffix?: string; label: string; delay?: number }> = ({ value, suffix = '', label, delay = 0 }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-50px' });
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    if (inView && value > 0) {
+      const controls = animate(0, value, { 
+        duration: 2, 
+        delay: delay,
+        onUpdate: (v) => setDisplayValue(Math.round(v))
+      });
+      return controls.stop;
+    }
+  }, [value, inView, delay]);
+
+  return (
+    <motion.div
+      ref={ref}
+      whileHover={{ scale: 1.05, y: -5 }}
+      className="p-5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary-500/50 transition-all backdrop-blur-md text-center shadow-xl shadow-black/20 group cursor-default"
+    >
+      <motion.div
+        className="text-4xl font-black mb-2 group-hover:scale-110 transition-transform duration-300 inline-block"
+        initial={{ opacity: 0, scale: 0.5 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        transition={{ type: "spring", stiffness: 200, delay }}
+      >
+        <span className="text-transparent bg-clip-text bg-gradient-to-br from-primary-500 to-purple-400">
+          {displayValue}{suffix}
+        </span>
+      </motion.div>
+      <div className="text-slate-300 text-xs font-black uppercase tracking-[0.2em]">{label}</div>
+    </motion.div>
+  );
+};
 
 const ParallaxSection: React.FC<{ id: string; navigate: (path: string) => void }> = ({ id, navigate }) => {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
   const y = useTransform(scrollYProgress, [0, 1], ['0%', '-20%']);
+
+  const [statsData, setStatsData] = useState({
+    childrenEnrolled: 0,
+    expertStaff: 0,
+    happyFamilies: 0,
+    yearsOfExcellence: 0
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await apiClient.get('/api/v1/public/landing-stats');
+        if (res.data.success) {
+          setStatsData(res.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch landing stats", err);
+      }
+    };
+    fetchStats();
+  }, []);
 
   return (
     <div ref={ref} id={id} className="relative min-h-[450px] flex items-center overflow-hidden bg-midnight">
@@ -368,7 +423,7 @@ const ParallaxSection: React.FC<{ id: string; navigate: (path: string) => void }
         <RevealSection className="max-w-2xl mt-4">
           <span className="text-xs font-black text-primary-500 uppercase tracking-[0.3em] block mb-4">Why LittleSparks</span>
           <h2 className="text-4xl md:text-5xl font-black text-white mb-6 leading-tight flex flex-wrap items-center gap-3">
-            Why Choose <span className="text-primary-500 tracking-tighter" style={{ fontFamily: "'Nunito', sans-serif" }}>LittleSparks</span>?
+            Why Choose <span className="tracking-tighter" style={{ fontFamily: "'Nunito', sans-serif" }}>Little<span className="text-primary-500">Sparks</span></span>?
           </h2>
           <p className="text-lg text-slate-300 mb-10">
             The nursery and childcare management platform that handles almost everything — so your team can focus on what really matters.
@@ -383,25 +438,18 @@ const ParallaxSection: React.FC<{ id: string; navigate: (path: string) => void }
         </RevealSection>
 
         <div className="mt-auto pt-24 grid grid-cols-2 md:grid-cols-4 gap-6 w-full">
-          {stats.map((s, i) => (
-            <RevealSection key={s.label} delay={i * 0.15}>
-              <motion.div
-                whileHover={{ scale: 1.05, y: -5 }}
-                className="p-3 rounded-xl bg-white dark:bg-[#0f172a]/5 hover:bg-white/10 transition-colors border border-white/10 hover:border-primary-500/30 backdrop-blur-md text-center"
-              >
-                <motion.div
-                  className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-purple-400 mb-1"
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ type: "spring", stiffness: 200, delay: i * 0.1 + 0.3 }}
-                >
-                  {s.val}
-                </motion.div>
-                <div className="text-slate-400 dark:text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest">{s.label}</div>
-              </motion.div>
-            </RevealSection>
-          ))}
+          <RevealSection delay={0.15}>
+            <AnimatedNumber value={statsData.childrenEnrolled} suffix="+" label="Bright Minds" delay={0.4} />
+          </RevealSection>
+          <RevealSection delay={0.30}>
+            <AnimatedNumber value={statsData.expertStaff} suffix="+" label="Passionate Educators" delay={0.5} />
+          </RevealSection>
+          <RevealSection delay={0.45}>
+            <AnimatedNumber value={statsData.happyFamilies} suffix="+" label="Happy Families" delay={0.6} />
+          </RevealSection>
+          <RevealSection delay={0.60}>
+            <AnimatedNumber value={statsData.yearsOfExcellence} suffix="+" label="Years of Excellence" delay={0.7} />
+          </RevealSection>
         </div>
       </div>
     </div>
@@ -433,13 +481,13 @@ const Card: React.FC<CardProps> = ({ icon, title, text, to = '#', delay = 0 }) =
     >
       <Link
         to={to}
-        className="block bg-white dark:bg-[#0f172a]/5 border border-white/10 p-8 rounded-3xl hover:bg-white/10 hover:border-primary-500/30 transition-all cursor-pointer backdrop-blur-sm"
+        className="block bg-white/5 border border-white/10 p-8 rounded-3xl hover:bg-white/10 hover:border-primary-500/30 transition-all cursor-pointer backdrop-blur-sm"
       >
-        <div className="mb-6 w-14 h-14 bg-white dark:bg-[#0f172a]/5 border border-white/10 rounded-2xl flex items-center justify-center">
+        <div className="mb-6 w-14 h-14 bg-white/10 border border-white/10 rounded-2xl flex items-center justify-center">
           {icon}
         </div>
         <h3 className="text-xl font-black text-white mb-3">{title}</h3>
-        <p className="text-slate-400 dark:text-slate-500 dark:text-slate-400 leading-relaxed">{text}</p>
+        <p className="text-slate-300 leading-relaxed">{text}</p>
       </Link>
     </motion.div>
   );
@@ -495,12 +543,12 @@ const FeaturesCarousel: React.FC = () => {
             transition={{ duration: 0.5, ease: "easeInOut" }}
             onClick={() => setActive(i)}
           >
-            <div className={`h-full bg-white dark:bg-[#0f172a]/5 border border-white/10 p-8 rounded-3xl backdrop-blur-sm transition-colors duration-500 ${isActive ? 'bg-white/10 border-primary-500/50 shadow-2xl dark:border dark:border-slate-800/60' : 'hover:bg-white/10'}`}>
-              <div className="mb-6 w-14 h-14 bg-white dark:bg-[#0f172a]/5 border border-white/10 rounded-2xl flex items-center justify-center transition-transform duration-500">
+            <div className={`h-full bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-sm transition-colors duration-500 ${isActive ? 'bg-white/10 border-primary-500/50 shadow-2xl' : 'hover:bg-white/10'}`}>
+              <div className="mb-6 w-14 h-14 bg-white/10 border border-white/10 rounded-2xl flex items-center justify-center transition-transform duration-500">
                 {feature.icon}
               </div>
               <h3 className="text-xl font-black text-white mb-3">{feature.title}</h3>
-              <p className="text-slate-400 dark:text-slate-500 dark:text-slate-400 leading-relaxed text-sm">{feature.text}</p>
+              <p className="text-slate-300 leading-relaxed text-sm">{feature.text}</p>
             </div>
           </motion.div>
         );

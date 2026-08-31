@@ -69,6 +69,15 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         nunito: ['Nunito', 'sans-serif'], // Added for consistent use of Nunito across the app
       },
+      keyframes: {
+        wave: {
+          '0%': { transform: 'translateX(-50%) rotate(0deg)' },
+          '100%': { transform: 'translateX(-50%) rotate(360deg)' },
+        }
+      },
+      animation: {
+        wave: 'wave 8s infinite linear',
+      }
     },
   },
   plugins: [],

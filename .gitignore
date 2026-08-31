@@ -24,4 +24,4 @@ dist-ssr
 *.sln
 *.sw?
 dev-dist/
-.claude/
+.claude/*.tsbuildinfo

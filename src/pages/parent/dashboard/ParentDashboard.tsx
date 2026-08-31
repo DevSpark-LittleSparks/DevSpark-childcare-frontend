@@ -227,13 +227,18 @@ const ParentDashboard = () => {
             </div>
           )}
 
-          <Button
+          <button
             onClick={() => navigate('/parent/profile')}
-            variant="primary"
-            className="h-11 w-11 p-0 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20 active:scale-95"
+            className="h-11 w-11 p-0 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20 active:scale-95 transition-all overflow-hidden border-2 border-white dark:border-slate-800"
           >
-            <User size={20} />
-          </Button>
+            {reduxUser?.photoURL && reduxUser.photoURL !== "null" && reduxUser.photoURL.trim() !== "" ? (
+              <img src={reduxUser.photoURL} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-indigo-400 to-purple-600 flex items-center justify-center text-white font-black text-lg">
+                {reduxUser?.displayName ? reduxUser.displayName.charAt(0).toUpperCase() : 'P'}
+              </div>
+            )}
+          </button>
         </div>
       </header>
 
