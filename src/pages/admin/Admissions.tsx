@@ -16,7 +16,26 @@ const AdmissionsPage = () => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [age, setAge] = useState<string>("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [capacity, setCapacity] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const statsRes = await apiClient.get('/api/v1/auth/admin/stats');
+        setTotalStudents(statsRes.data.data.totalStudents || 0);
+        
+        const profileRes = await apiClient.get('/api/v1/auth/admin/profile');
+        setCapacity(parseInt(profileRes.data.data.capacity) || 0);
+      } catch (err) {
+        console.error("Failed to fetch capacity stats:", err);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const capacityPercentage = capacity > 0 ? Math.min(Math.round((totalStudents / capacity) * 100), 100) : 0;
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -172,9 +191,30 @@ const AdmissionsPage = () => {
           </div>
 
           <div className="hidden sm:flex items-center gap-4">
-            <div className="bg-white dark:bg-[#0f172a] px-6 py-2.5 rounded-2xl border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 shadow-sm flex flex-col items-center min-w-[120px]">
-              <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-tighter">Capacity</span>
-              <span className="text-sm font-black text-midnight dark:text-white leading-none mt-1">85% Full</span>
+            <div className="bg-white dark:bg-[#0f172a] px-6 py-2.5 rounded-2xl border border-slate-100 dark:border-slate-800/60 shadow-sm flex flex-col items-center min-w-[120px] relative overflow-hidden group">
+              {/* Animated Water Background */}
+              <div 
+                className="absolute left-1/2 -translate-x-1/2 bg-primary-500/30 dark:bg-primary-500/40 rounded-[40%] animate-wave transition-all duration-1000 ease-in-out"
+                style={{ 
+                  width: '320px', 
+                  height: '320px', 
+                  top: `${100 - capacityPercentage}%`,
+                  zIndex: 0
+                }}
+              />
+              <div 
+                className="absolute left-1/2 -translate-x-1/2 bg-primary-500/20 dark:bg-primary-500/30 rounded-[43%] animate-wave transition-all duration-1000 ease-in-out"
+                style={{ 
+                  width: '300px', 
+                  height: '300px', 
+                  top: `${100 - capacityPercentage + 2}%`,
+                  animationDuration: '10s',
+                  animationDirection: 'reverse',
+                  zIndex: 0
+                }}
+              />
+              <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-tighter relative z-10">Capacity</span>
+              <span className="text-sm font-black text-midnight dark:text-white leading-none mt-1 relative z-10 group-hover:scale-110 transition-transform">{capacityPercentage}% Full</span>
             </div>
           </div>
         </div>
@@ -300,10 +340,23 @@ const AdmissionsPage = () => {
 
           {/* Right Column: Guardian Section */}
           <div className="space-y-8 animate-fadeUp" style={{ animationDelay: '0.2s' }}>
-            <div className="bg-midnight rounded-[3rem] p-10 shadow-2xl relative overflow-hidden">
-              <h3 className="text-white font-black text-lg uppercase tracking-tight mb-8">Guardian Details</h3>
+            <div className="bg-midnight rounded-[3rem] p-10 shadow-2xl relative overflow-hidden text-white">
+              {/* Animated Blur Background */}
+              <div className="absolute -top-32 -right-32 w-64 h-64 bg-primary-500/20 rounded-full blur-[80px] animate-pulse"></div>
+              <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-indigo-500/20 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '1s' }}></div>
 
-              <div className="space-y-5 text-left">
+              <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                <Users size={120} />
+              </div>
+
+              <div className="flex items-center gap-4 mb-10 relative z-10 text-white">
+                <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center">
+                  <Users size={20} className="text-white" />
+                </div>
+                <h3 className="font-black text-lg uppercase tracking-tight">Parental Record</h3>
+              </div>
+
+              <div className="space-y-5 text-left relative z-10">
                 <div className="space-y-2 text-left">
                   <label className="text-[10px] font-black uppercase tracking-widest ml-1 text-slate-400 dark:text-slate-500 dark:text-slate-400">
                     Relationship
@@ -311,7 +364,7 @@ const AdmissionsPage = () => {
                   <select
                     name="relationship"
                     onChange={handleInputChange}
-                    className={`w-full p-4 bg-white dark:bg-[#0f172a]/5 border ${errors.relationship ? 'border-red-500' : 'border-white/10'} rounded-2xl outline-none text-sm font-bold text-white appearance-none focus:border-primary-500`}
+                    className={`w-full p-4 bg-white/10 border-2 ${errors.relationship ? 'border-red-500' : 'border-white/20'} rounded-2xl outline-none text-sm font-bold text-white appearance-none focus:bg-white/15 focus:border-primary-500 shadow-inner transition-all cursor-pointer`}
                   >
                     <option value="" className="bg-midnight">Select Relationship</option>
                     <option value="father" className="bg-midnight">Father</option>
@@ -324,16 +377,16 @@ const AdmissionsPage = () => {
                 <LittleInput dark label={<span className="flex items-center gap-1"><Users size={10} /> Guardian Name</span>} name="parentFullName" placeholder="Primary parent name" onChange={handleInputChange} error={errors.parentFullName} />
                 {/* Pre-register parent email */}
                 <LittleInput dark label={<span className="flex items-center gap-1"><Mail size={10} /> Email Address</span>} name="parentEmail" placeholder="auth@littlesparks.com" onChange={handleInputChange} error={errors.parentEmail} />
-                
+
                 <div className="space-y-2 text-left">
                   <label className="text-[10px] font-black uppercase tracking-widest ml-1 text-slate-400 dark:text-slate-500 dark:text-slate-400 flex items-center gap-1">
                     <Phone size={10} /> Mobile
                   </label>
-                  <PhoneInput 
-                    name="parentContact" 
+                  <PhoneInput
+                    name="parentContact"
                     variant="dark"
-                    onChange={handleInputChange} 
-                    value={formData.parentContact} 
+                    onChange={handleInputChange}
+                    value={formData.parentContact}
                     className="border-white/10"
                     error={errors.parentContact}
                   />

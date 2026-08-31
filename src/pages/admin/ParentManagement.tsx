@@ -4,6 +4,24 @@ import { Mail, Phone, MapPin, ShieldCheck, ChevronRight, Search, Square, CheckSq
 import { Button } from '../../components/common/Button';
 import { apiClient } from '../../services/axiosInstance';
 
+const formatPhoneNumber = (phone: string | undefined) => {
+  if (!phone || phone === 'N/A') return 'N/A';
+  let cleaned = phone.replace(/[^\d+]/g, '');
+  
+  if (cleaned.startsWith('0')) {
+    cleaned = '+94' + cleaned.substring(1);
+  } else if (!cleaned.startsWith('+') && cleaned.startsWith('94')) {
+    cleaned = '+' + cleaned;
+  } else if (!cleaned.startsWith('+') && cleaned.length === 9) {
+    cleaned = '+94' + cleaned;
+  }
+
+  if (cleaned.length === 12 && cleaned.startsWith('+94')) {
+    return `${cleaned.substring(0, 3)} ${cleaned.substring(3, 5)} ${cleaned.substring(5, 8)} ${cleaned.substring(8)}`;
+  }
+  return cleaned;
+};
+
 const ParentManagement = () => {
   const navigate = useNavigate();
   const [parents, setParents] = useState<any[]>([]);
@@ -39,7 +57,7 @@ const ParentManagement = () => {
           parentId: p.parentId,
           email: email,
           fullName: p.fullName || "Unknown",
-          contact: p.phone || "N/A",
+          contact: formatPhoneNumber(p.phone || "N/A"),
           idNumber: p.nic || "N/A",
           relationship: p.relationship || "Guardian",
           status: status,
