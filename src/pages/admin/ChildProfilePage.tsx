@@ -302,7 +302,7 @@ const ChildViewPage = () => {
                     <div className="space-y-4">
                       <div>
                         <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">{formData.fullName}</h2>
-                        <p className="text-xs md:text-sm font-bold text-slate-400 mt-1 uppercase tracking-widest">{formData.nameWithInitials}</p>
+                        <p className="text-[10px] md:text-[11px] font-black text-slate-400 mt-1.5 uppercase tracking-[0.2em]">{formData.nameWithInitials}</p>
                       </div>
                       <div className="pt-2">
                         <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusConfig(formData.status).bg} ${getStatusConfig(formData.status).text} w-fit`}>
@@ -375,6 +375,10 @@ const ChildViewPage = () => {
           {/* --- GUARDIAN CARD --- */}
           <div className="space-y-8">
             <div className="bg-midnight rounded-[3rem] p-10 shadow-2xl text-white relative overflow-hidden">
+              {/* Animated Blur Background */}
+              <div className="absolute -top-32 -right-32 w-64 h-64 bg-primary-500/20 rounded-full blur-[80px] animate-pulse"></div>
+              <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-indigo-500/20 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '1s' }}></div>
+
               <div className="absolute top-0 right-0 p-8 opacity-5">
                 <Users size={120} />
               </div>
@@ -429,8 +433,8 @@ const ChildViewPage = () => {
 // --- HELPER COMPONENTS ---
 
 const InputField = ({ label, value, isEditing, name, dark, type = "text", options, onChange, error }: any) => (
-  <div className="space-y-2 text-left">
-    <label className={`text-[10px] font-black uppercase tracking-widest ml-1 ${dark ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500 dark:text-slate-400'}`}>{label}</label>
+  <div className="space-y-1.5 text-left">
+    <label className={`text-[11px] font-black uppercase tracking-wider ml-1 ${dark ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500'}`}>{label}</label>
     {isEditing ? (
       <>
         {type === 'select' ? (
@@ -438,7 +442,7 @@ const InputField = ({ label, value, isEditing, name, dark, type = "text", option
             name={name}
             value={value}
             onChange={onChange}
-            className={`w-full p-4 rounded-2xl outline-none text-sm font-bold transition-all ${dark ? `bg-white/5 border ${error ? 'border-red-500' : 'border-white/10'} text-white focus:bg-white/10 focus:border-primary-500` : `bg-slate-100 dark:bg-slate-800/40 border-2 ${error ? 'border-red-500' : 'border-transparent'} focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] text-slate-900 dark:text-white shadow-sm`}`}
+            className={`w-full p-3.5 rounded-2xl outline-none text-sm font-bold transition-all ${dark ? `bg-white/5 border ${error ? 'border-red-500' : 'border-white/10'} text-white focus:bg-white/10 focus:border-primary-500` : `bg-slate-100 dark:bg-slate-800/40 border-2 ${error ? 'border-red-500' : 'border-transparent'} focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] text-slate-900 dark:text-white shadow-sm`}`}
           >
             {options.map((opt: string) => <option key={opt} value={opt} className="text-slate-900 dark:text-white bg-white dark:bg-[#0f172a]">{opt.toUpperCase()}</option>)}
           </select>
@@ -448,13 +452,13 @@ const InputField = ({ label, value, isEditing, name, dark, type = "text", option
             name={name}
             value={value}
             onChange={onChange}
-            className={`w-full p-4 rounded-2xl outline-none text-sm font-bold transition-all ${dark ? `bg-white/5 border ${error ? 'border-red-500' : 'border-white/10'} text-white focus:bg-white/10 focus:border-primary-500` : `bg-slate-100 dark:bg-slate-800/40 border-2 ${error ? 'border-red-500' : 'border-transparent'} focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] text-slate-900 dark:text-white shadow-sm`}`}
+            className={`w-full p-3.5 rounded-2xl outline-none text-sm font-bold transition-all ${dark ? `bg-white/5 border ${error ? 'border-red-500' : 'border-white/10'} text-white focus:bg-white/10 focus:border-primary-500` : `bg-slate-100 dark:bg-slate-800/40 border-2 ${error ? 'border-red-500' : 'border-transparent'} focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] text-slate-900 dark:text-white shadow-sm`}`}
           />
         )}
         {error && <span className="text-xs font-bold text-red-500 ml-1">{error}</span>}
       </>
     ) : (
-      <p className={`text-base font-bold ml-1 tracking-tight ${dark ? 'text-white' : 'text-slate-900 dark:text-white'}`}>{value || "---"}</p>
+      <p className={`text-[15px] font-bold ml-1 tracking-tight ${dark ? 'text-slate-100' : 'text-slate-800 dark:text-slate-200'}`}>{value || "---"}</p>
     )}
   </div>
 );

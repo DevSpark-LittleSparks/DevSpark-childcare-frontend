@@ -156,13 +156,15 @@ const AdminDashboard = () => {
 
           <div className="relative">
             <Button
-              variant="secondary"
+              variant="outline"
               onClick={() => setShowAdminNotifs(!showAdminNotifs)}
-              className={`p-2.5 bg-white border border-slate-100 dark:border-slate-800/60 rounded-xl transition-all shadow-sm relative ${showAdminNotifs ? 'ring-2 ring-primary-500/20 border-primary-500' : ''}`}
+              className={`h-11 w-11 p-0 rounded-xl transition-all shadow-sm relative border-2 ${showAdminNotifs ? 'border-primary-500 bg-primary-50/50' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
             >
-              <Bell size={20} className={showAdminNotifs ? 'text-primary-500' : 'text-slate-400 dark:text-slate-500 dark:text-slate-400'} />
+              <Bell size={20} className={showAdminNotifs ? 'text-primary-500' : 'text-slate-500'} />
               {pendingRequests.length > 0 && (
-                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
+                <span className="absolute -top-1.5 -right-1.5 flex h-[22px] w-[22px] items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white ring-4 ring-white animate-in zoom-in duration-300 shadow-sm">
+                  {pendingRequests.length}
+                </span>
               )}
             </Button>
 
@@ -242,12 +244,12 @@ const AdminDashboard = () => {
 
           <button
             onClick={() => navigate('/admin/profile')}
-            className="h-11 w-11 p-0 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20 active:scale-95 transition-all overflow-hidden border-2 border-white dark:border-slate-800"
+            className="h-11 w-11 p-0 rounded-xl flex items-center justify-center shadow-md active:scale-95 transition-all overflow-hidden border-2 border-slate-200 dark:border-slate-700 bg-white"
           >
             {reduxUser?.photoURL && reduxUser.photoURL !== "null" && reduxUser.photoURL.trim() !== "" ? (
               <img src={reduxUser.photoURL} alt="Profile" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-primary-400 to-indigo-500 flex items-center justify-center text-white font-black text-lg">
+              <div className="w-full h-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-black text-lg">
                 {reduxUser?.displayName ? reduxUser.displayName.charAt(0).toUpperCase() : 'A'}
               </div>
             )}
