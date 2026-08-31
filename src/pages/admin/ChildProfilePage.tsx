@@ -2,8 +2,8 @@ import React, { useState, useRef, ChangeEvent, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import {
   Camera, User, MapPin, ArrowLeft, Loader2, Save,
-  Edit3, X, Sparkles, Scale, Ruler, Droplets,
-  ClipboardList, Users, Mail, Phone, Hash, Calendar, Heart
+  Edit3, X, Scale, Ruler, Droplets,
+  ClipboardList, Users, Calendar, Heart
 } from 'lucide-react';
 import { apiClient } from '../../services/axiosInstance';
 import { Button } from '../../components/common/Button';
@@ -12,6 +12,29 @@ import { Button } from '../../components/common/Button';
  * ChildViewPage - Admin Management View
  * Synchronized with AdmissionsPage data structure for Sprouty.
  */
+
+const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; dot: string }> = {
+  ENROLLED: {
+    label: 'Preschool',
+    bg: 'bg-emerald-500/10 dark:bg-emerald-500/20',
+    text: 'text-emerald-600 dark:text-emerald-300',
+    dot: 'bg-emerald-500',
+  },
+  BIG_SCHOOL_READY: {
+    label: 'School Age',
+    bg: 'bg-amber-500/10 dark:bg-amber-500/20',
+    text: 'text-amber-600 dark:text-amber-300',
+    dot: 'bg-amber-500',
+  },
+};
+
+const getStatusConfig = (status: string) =>
+  STATUS_CONFIG[status] ?? {
+    label: status?.replace(/_/g, ' ') || 'Unknown',
+    bg: 'bg-slate-50 dark:bg-slate-800/10',
+    text: 'text-slate-500 dark:text-slate-300',
+    dot: 'bg-slate-400',
+  };
 
 const ChildViewPage = () => {
   const navigate = useNavigate();
@@ -25,6 +48,7 @@ const ChildViewPage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [age, setAge] = useState<string>("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form State: Keys match the AdmissionsPage exactly
@@ -46,7 +70,7 @@ const ChildViewPage = () => {
     status: 'ENROLLED'
   });
 
-  // Calculate age dynamically if DOB is changed during edit
+  // Calculate Age dynamically
   useEffect(() => {
     if (formData.dob) {
       const birthDate = new Date(formData.dob);
@@ -57,6 +81,17 @@ const ChildViewPage = () => {
         calculatedAge--;
       }
       setAge(calculatedAge >= 0 ? `${calculatedAge} Years` : "");
+
+      // Auto update status based on age
+      if (calculatedAge >= 0) {
+        const newStatus = calculatedAge >= 6 ? 'BIG_SCHOOL_READY' : 'ENROLLED';
+        setFormData(prev => {
+          if (prev.status !== 'ALUMNI' && prev.status !== newStatus) {
+            return { ...prev, status: newStatus };
+          }
+          return prev;
+        });
+      }
     }
   }, [formData.dob]);
 
@@ -111,8 +146,60 @@ const ChildViewPage = () => {
     }
   };
 
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    const requiredFields = [
+      'fullName', 'nameWithInitials', 'dob', 'gender', 'bloodGroup',
+      'height', 'weight'
+    ];
+
+    requiredFields.forEach(field => {
+      const value = formData[field as keyof typeof formData];
+      if (typeof value === 'string' ? value.trim() === "" : !value) {
+        newErrors[field] = "Required";
+      }
+    });
+
+    if (formData.dob) {
+      const dob = new Date(formData.dob);
+      const today = new Date();
+      const ageInYears = Math.floor((today.getTime() - dob.getTime()) / 31557600000);
+
+      if (dob > today) {
+        newErrors['dob'] = "Cannot be in future";
+      } else if (ageInYears < 3) {
+        newErrors['dob'] = "Must be at least 3 years";
+      } else if (ageInYears > 10) {
+        newErrors['dob'] = "Must be <= 10 years";
+      }
+    }
+
+    if (formData.height) {
+      const h = Number(formData.height);
+      if (isNaN(h) || h < 30 || h > 200) {
+        newErrors['height'] = "Height must be between 30 and 200";
+      }
+    }
+
+    if (formData.weight) {
+      const w = Number(formData.weight);
+      if (isNaN(w) || w < 2 || w > 100) {
+        newErrors['weight'] = "Weight must be between 2 and 100";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSave = async () => {
+    if (!validateForm()) {
+      alert("Please check the form for errors.");
+      return;
+    }
+    
     setIsSaving(true);
+
     try {
       // Split fullName back to first/last for backend if needed
       const nameParts = formData.fullName.split(' ');
@@ -155,38 +242,22 @@ const ChildViewPage = () => {
           <div className="flex items-center gap-6">
             <button
               onClick={() => navigate(-1)}
-              className="p-3 bg-white dark:bg-[#0f172a] rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50 transition-all group"
+              className="p-3 bg-white dark:bg-[#0f172a] rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800/60 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group"
             >
               <ArrowLeft className="text-slate-400 dark:text-slate-500 dark:text-slate-400 group-hover:text-primary-500" size={20} />
             </button>
             <div>
-              <div className="flex items-center gap-2 mb-1 text-primary-500">
-                <Sparkles size={14} className="fill-primary-500" />
-                <p className="text-[10px] font-black uppercase tracking-[0.3em]">LittleSparks Student Management</p>
-              </div>
-              <h1 className="text-3xl font-black text-midnight dark:text-white tracking-tight italic font-sans">
-                {isEditing ? "Modify Spark Details" : formData.nameWithInitials}
+              <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                Student Profile
               </h1>
             </div>
           </div>
 
-          {isAdmin && (
+          {isAdmin && !isEditing && (
             <div className="flex gap-3">
-              {isEditing ? (
-                <>
-                  <Button variant="ghost" onClick={() => setIsEditing(false)} className="rounded-xl border-2 px-6">
-                    <X size={18} className="mr-2" /> Cancel
-                  </Button>
-                  <Button onClick={handleSave} disabled={isSaving} className="rounded-xl shadow-lg shadow-primary-500/20 px-8">
-                    {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} className="mr-2" />}
-                    Save Data
-                  </Button>
-                </>
-              ) : (
-                <Button onClick={() => setIsEditing(true)} className="rounded-xl px-10 shadow-lg active:scale-95">
-                  <Edit3 size={18} className="mr-2" /> Edit Profile
-                </Button>
-              )}
+              <Button onClick={() => setIsEditing(true)} className="rounded-xl px-10 shadow-lg active:scale-95">
+                <Edit3 size={18} className="mr-2" /> Edit Profile
+              </Button>
             </div>
           )}
         </div>
@@ -197,7 +268,7 @@ const ChildViewPage = () => {
 
           {/* --- STUDENT BIO SECTION --- */}
           <div className="lg:col-span-2 space-y-8">
-            <div className="bg-white dark:bg-[#0f172a] rounded-[3rem] shadow-[0_20px_60px_rgba(10,6,55,0.02)] border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 p-8 md:p-12 relative overflow-hidden">
+            <div className="bg-white dark:bg-[#0f172a] rounded-[3rem] shadow-[0_20px_60px_rgba(10,6,55,0.02)] border border-slate-100 dark:border-slate-800/60 p-8 md:p-12 relative overflow-hidden">
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
                 <div className="flex flex-col items-center">
@@ -219,21 +290,48 @@ const ChildViewPage = () => {
                     )}
                   </div>
                   <input type="file" ref={fileInputRef} onChange={handleImageChange} className="hidden" accept="image/*" />
-                  <p className="mt-5 text-[9px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest text-center">Reference ID: {studentId || 'SP-000'}</p>
                 </div>
 
-                <div className="md:col-span-3 space-y-7">
-                  <InputField label="Full Legal Name" name="fullName" value={formData.fullName} isEditing={isEditing} onChange={handleInputChange} />
-                  <InputField label="Name with Initials" name="nameWithInitials" value={formData.nameWithInitials} isEditing={isEditing} onChange={handleInputChange} />
+                <div className="md:col-span-3 space-y-7 flex flex-col justify-center">
+                  {isEditing ? (
+                    <>
+                      <InputField label="Full Legal Name" name="fullName" value={formData.fullName} isEditing={isEditing} onChange={handleInputChange} error={errors.fullName} />
+                      <InputField label="Name with Initials" name="nameWithInitials" value={formData.nameWithInitials} isEditing={isEditing} onChange={handleInputChange} error={errors.nameWithInitials} />
+                    </>
+                  ) : (
+                    <div className="space-y-4">
+                      <div>
+                        <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">{formData.fullName}</h2>
+                        <p className="text-[10px] md:text-[11px] font-black text-slate-400 mt-1.5 uppercase tracking-[0.2em]">{formData.nameWithInitials}</p>
+                      </div>
+                      <div className="pt-2">
+                        <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusConfig(formData.status).bg} ${getStatusConfig(formData.status).text} w-fit`}>
+                          <span className={`w-2 h-2 rounded-full ${getStatusConfig(formData.status).dot} shrink-0`} />
+                          {getStatusConfig(formData.status).label}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Physical Data Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-5 p-7 bg-slate-50 dark:bg-slate-800/40/50 rounded-[2.5rem] border border-slate-100 dark:border-slate-800/60/50">
-                <MiniStat icon={<Calendar size={14} />} label="DOB" value={formData.dob} isEditing={isEditing} name="dob" type="date" onChange={handleInputChange} />
-                <MiniStat icon={<Heart size={14} />} label="Calculated Age" value={age} />
-                <MiniStat icon={<Ruler size={14} />} label="Height (CM)" value={formData.height} isEditing={isEditing} name="height" type="number" onChange={handleInputChange} />
-                <MiniStat icon={<Scale size={14} />} label="Weight (KG)" value={formData.weight} isEditing={isEditing} name="weight" type="number" onChange={handleInputChange} />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-5 p-7 bg-slate-50 dark:bg-slate-800/40 rounded-[2.5rem] border border-slate-100 dark:border-slate-800/60">
+                <MiniStat 
+                  icon={<Calendar size={14} />} 
+                  label="DOB" 
+                  value={formData.dob} 
+                  isEditing={isEditing} 
+                  name="dob" 
+                  type="date" 
+                  onChange={handleInputChange} 
+                  error={errors.dob}
+                  max={new Date(new Date().setFullYear(new Date().getFullYear() - 3)).toISOString().split('T')[0]}
+                  min={new Date(new Date().setFullYear(new Date().getFullYear() - 10)).toISOString().split('T')[0]}
+                />
+                <MiniStat icon={<Heart size={14} />} label="Calculated Age" value={`${age || '---'}`} isEditing={false} />
+                <MiniStat icon={<Ruler size={14} />} label="Height (cm)" value={formData.height} isEditing={isEditing} name="height" type="number" onChange={handleInputChange} error={errors.height} />
+                <MiniStat icon={<Scale size={14} />} label="Weight (kg)" value={formData.weight} isEditing={isEditing} name="weight" type="number" onChange={handleInputChange} error={errors.weight} />
               </div>
 
               {/* Health & Demographics */}
@@ -243,25 +341,27 @@ const ChildViewPage = () => {
                     <Droplets size={16} />
                   </div>
                   {/* Display health info */}
-                  <h3 className="text-xs font-black text-midnight dark:text-white uppercase tracking-[0.2em]">Medical & Safety</h3>
+                  <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-[0.2em]">Medical & Safety</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <InputField label="Blood Group" name="bloodGroup" value={formData.bloodGroup} isEditing={isEditing} type="select" options={['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']} onChange={handleInputChange} />
-                  <InputField label="Gender" name="gender" value={formData.gender} isEditing={isEditing} type="select" options={['male', 'female']} onChange={handleInputChange} />
-                  <InputField label="Status" name="status" value={formData.status} isEditing={isEditing} type="select" options={['ENROLLED', 'BIG_SCHOOL_READY', 'ALUMNI']} onChange={handleInputChange} />
+                  <InputField label="Blood Group" name="bloodGroup" value={formData.bloodGroup} isEditing={isEditing} type="select" options={['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']} onChange={handleInputChange} error={errors.bloodGroup} />
+                  <InputField label="Gender" name="gender" value={formData.gender} isEditing={isEditing} type="select" options={['male', 'female']} onChange={handleInputChange} error={errors.gender} />
                 </div>
                 <div className="space-y-3 text-left">
                   <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
                     <ClipboardList size={12} className="text-primary-500" /> Important Health Notes
                   </label>
                   {isEditing ? (
-                    <textarea
-                      name="specialNote"
-                      value={formData.specialNote}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className="w-full p-5 bg-slate-50 dark:bg-slate-800/40 border-2 border-primary-500/10 focus:border-primary-500 rounded-3xl outline-none text-sm font-bold transition-all"
-                    />
+                    <>
+                      <textarea
+                        name="specialNote"
+                        value={formData.specialNote}
+                        onChange={handleInputChange}
+                        rows={3}
+                        className={`w-full p-6 bg-slate-100 dark:bg-slate-800/40 border-2 ${errors.specialNote ? 'border-red-500' : 'border-transparent focus:border-primary-500'} focus:bg-white dark:focus:bg-[#0f172a] rounded-[2rem] outline-none text-sm font-bold text-slate-900 dark:text-white transition-all resize-none`}
+                      />
+                      {errors.specialNote && <span className="text-xs font-bold text-red-500 ml-2 mt-1 block">{errors.specialNote}</span>}
+                    </>
                   ) : (
                     <div className="p-6 bg-primary-50/20 border border-primary-100/30 rounded-3xl text-sm font-bold text-slate-600 dark:text-slate-300 leading-relaxed italic">
                       {formData.specialNote || "No medical conditions reported."}
@@ -275,23 +375,30 @@ const ChildViewPage = () => {
           {/* --- GUARDIAN CARD --- */}
           <div className="space-y-8">
             <div className="bg-midnight rounded-[3rem] p-10 shadow-2xl text-white relative overflow-hidden">
+              {/* Animated Blur Background */}
+              <div className="absolute -top-32 -right-32 w-64 h-64 bg-primary-500/20 rounded-full blur-[80px] animate-pulse"></div>
+              <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-indigo-500/20 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '1s' }}></div>
+
               <div className="absolute top-0 right-0 p-8 opacity-5">
                 <Users size={120} />
               </div>
 
               <div className="flex items-center gap-4 mb-10 relative z-10">
-                <div className="h-10 w-10 bg-white dark:bg-[#0f172a]/10 rounded-xl flex items-center justify-center">
-                  <Users size={20} className="text-primary-400" />
+                <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center">
+                  <Users size={20} className="text-white" />
                 </div>
                 <h3 className="font-black text-lg uppercase tracking-tight">Parental Record</h3>
               </div>
 
               <div className="space-y-7 relative z-10">
-                <InputField dark label="Relationship" name="relationship" value={formData.relationship} isEditing={isEditing} type="select" options={['father', 'mother', 'guardian']} onChange={handleInputChange} />
-                <InputField dark label="Guardian Name" name="parentFullName" value={formData.parentFullName} isEditing={isEditing} onChange={handleInputChange} />
-                <InputField dark label="Email Contact" name="parentEmail" value={formData.parentEmail} isEditing={isEditing} onChange={handleInputChange} />
-                <InputField dark label="Mobile Number" name="parentContact" value={formData.parentContact} isEditing={isEditing} onChange={handleInputChange} />
-                <InputField dark label="ID Number (NIC)" name="parentID" value={formData.parentID} isEditing={isEditing} onChange={handleInputChange} />
+                <InputField dark label="Relationship" name="relationship" value={formData.relationship} isEditing={false} type="select" options={['father', 'mother', 'guardian']} onChange={handleInputChange} error={errors.relationship} />
+                <InputField dark label="Guardian Name" name="parentFullName" value={formData.parentFullName} isEditing={false} onChange={handleInputChange} error={errors.parentFullName} />
+                <InputField dark label="Email Contact" name="parentEmail" value={formData.parentEmail} isEditing={false} onChange={handleInputChange} error={errors.parentEmail} />
+                <InputField dark label="Mobile Number" name="parentContact" value={formData.parentContact} isEditing={false} onChange={handleInputChange} error={errors.parentContact} />
+                <InputField dark label="ID Number (NIC)" name="parentID" value={formData.parentID} isEditing={false} onChange={handleInputChange} error={errors.parentID} />
+                {isEditing && (
+                  <InputField dark label="Address" name="address" value={formData.address} isEditing={false} onChange={handleInputChange} error={errors.address} />
+                )}
               </div>
 
               {!isEditing && (
@@ -305,6 +412,19 @@ const ChildViewPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Action Buttons at the bottom */}
+        {isEditing && (
+          <div className="flex items-center justify-end gap-4 pt-6 mt-8 border-t border-slate-200 dark:border-slate-800">
+            <Button variant="ghost" onClick={() => setIsEditing(false)} className="rounded-xl border-2 px-8 py-3 font-bold">
+              <X size={18} className="mr-2" /> Cancel Changes
+            </Button>
+            <Button onClick={handleSave} disabled={isSaving} className="rounded-xl shadow-lg shadow-primary-500/20 px-10 py-3 font-bold bg-primary-600 hover:bg-primary-700 text-white">
+              {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} className="mr-2" />}
+              Save Profile
+            </Button>
+          </div>
+        )}
       </main>
     </div>
   );
@@ -312,47 +432,54 @@ const ChildViewPage = () => {
 
 // --- HELPER COMPONENTS ---
 
-const InputField = ({ label, value, isEditing, name, dark, type = "text", options, onChange }: any) => (
-  <div className="space-y-2 text-left">
-    <label className={`text-[10px] font-black uppercase tracking-widest ml-1 ${dark ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500 dark:text-slate-400'}`}>{label}</label>
+const InputField = ({ label, value, isEditing, name, dark, type = "text", options, onChange, error }: any) => (
+  <div className="space-y-1.5 text-left">
+    <label className={`text-[11px] font-black uppercase tracking-wider ml-1 ${dark ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500'}`}>{label}</label>
     {isEditing ? (
-      type === "select" ? (
-        <select
-          name={name}
-          value={value}
-          onChange={onChange}
-          className={`w-full p-4 rounded-2xl outline-none text-sm font-bold transition-all border-2 ${dark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 dark:bg-slate-800/40 border-primary-500/10 focus:border-primary-500 text-midnight'}`}
-        >
-          {options.map((opt: string) => <option key={opt} value={opt} className="text-midnight dark:text-white">{opt.toUpperCase()}</option>)}
-        </select>
-      ) : (
+      <>
+        {type === 'select' ? (
+          <select
+            name={name}
+            value={value}
+            onChange={onChange}
+            className={`w-full p-3.5 rounded-2xl outline-none text-sm font-bold transition-all ${dark ? `bg-white/5 border ${error ? 'border-red-500' : 'border-white/10'} text-white focus:bg-white/10 focus:border-primary-500` : `bg-slate-100 dark:bg-slate-800/40 border-2 ${error ? 'border-red-500' : 'border-transparent'} focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] text-slate-900 dark:text-white shadow-sm`}`}
+          >
+            {options.map((opt: string) => <option key={opt} value={opt} className="text-slate-900 dark:text-white bg-white dark:bg-[#0f172a]">{opt.toUpperCase()}</option>)}
+          </select>
+        ) : (
+          <input
+            type={type}
+            name={name}
+            value={value}
+            onChange={onChange}
+            className={`w-full p-3.5 rounded-2xl outline-none text-sm font-bold transition-all ${dark ? `bg-white/5 border ${error ? 'border-red-500' : 'border-white/10'} text-white focus:bg-white/10 focus:border-primary-500` : `bg-slate-100 dark:bg-slate-800/40 border-2 ${error ? 'border-red-500' : 'border-transparent'} focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] text-slate-900 dark:text-white shadow-sm`}`}
+          />
+        )}
+        {error && <span className="text-xs font-bold text-red-500 ml-1">{error}</span>}
+      </>
+    ) : (
+      <p className={`text-[15px] font-bold ml-1 tracking-tight ${dark ? 'text-slate-100' : 'text-slate-800 dark:text-slate-200'}`}>{value || "---"}</p>
+    )}
+  </div>
+);
+
+const MiniStat = ({ icon, label, value, isEditing, name, type, onChange, error, ...props }: any) => (
+  <div className="flex flex-col text-left">
+    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-tighter flex items-center gap-1.5 mb-2">{icon} {label}</span>
+    {isEditing && name ? (
+      <>
         <input
           type={type}
           name={name}
           value={value}
           onChange={onChange}
-          className={`w-full p-4 rounded-2xl outline-none text-sm font-bold transition-all border-2 ${dark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 dark:bg-slate-800/40 border-primary-500/10 focus:border-primary-500 text-midnight'}`}
+          {...props}
+          className={`w-full mt-1 p-3 bg-slate-100 dark:bg-[#0f172a] border-2 ${error ? 'border-red-500' : 'border-transparent'} focus:border-primary-500 rounded-xl outline-none text-sm font-bold text-slate-900 dark:text-white transition-all shadow-sm focus:bg-white`}
         />
-      )
+        {error && <span className="text-xs font-bold text-red-500 mt-1 ml-1">{error}</span>}
+      </>
     ) : (
-      <p className={`text-base font-bold ml-1 tracking-tight ${dark ? 'text-white' : 'text-midnight'}`}>{value || "---"}</p>
-    )}
-  </div>
-);
-
-const MiniStat = ({ icon, label, value, isEditing, name, type, onChange }: any) => (
-  <div className="flex flex-col text-left">
-    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-tighter flex items-center gap-1.5 mb-2">{icon} {label}</span>
-    {isEditing && name ? (
-      <input
-        type={type}
-        name={name}
-        value={value}
-        onChange={onChange}
-        className="bg-transparent border-b-2 border-primary-500/40 outline-none text-sm font-black text-midnight dark:text-white w-full pb-1"
-      />
-    ) : (
-      <span className="text-sm font-black text-midnight dark:text-white tracking-tight">{value}</span>
+      <span className="text-sm font-black text-slate-900 dark:text-white tracking-tight">{value}</span>
     )}
   </div>
 );

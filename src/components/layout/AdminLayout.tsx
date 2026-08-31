@@ -1,14 +1,16 @@
+
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar";
 import SettingsDrawer from "./SettingsDrawer";
+import UniversalSmartAssistant from "../chatbots/UniversalSmartAssistant";
 
 const AdminLayout: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 overflow-x-hidden flex w-full">
       <AdminSidebar
         isCollapsed={isCollapsed}
         setIsCollapsed={setIsCollapsed}
@@ -16,17 +18,20 @@ const AdminLayout: React.FC = () => {
       />
 
       <main
-        className="flex-1 bg-[#f8fafc] dark:bg-slate-950 transition-all duration-300 ease-in-out"
-        style={{ marginLeft: isCollapsed ? "80px" : "280px" }}
+        className="transition-all duration-300 ease-in-out min-h-screen w-full"
+        style={{ paddingLeft: isCollapsed ? "80px" : "280px" }}
       >
         <Outlet />
       </main>
 
       {/* Slide-in settings drawer */}
       <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      
+      {/* Smart Assistant from dev branch */}
+      <UniversalSmartAssistant />
     </div>
   );
 };
 
 export default AdminLayout;
-
+

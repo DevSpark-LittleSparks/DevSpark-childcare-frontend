@@ -1,8 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Phone, MapPin, User, Users, ShieldCheck, ChevronRight, ArrowLeft, Search, Square, CheckSquare, Trash2, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Mail, Phone, MapPin, ShieldCheck, ChevronRight, Search, Square, CheckSquare, Trash2, Eye, ChevronLeft, MoreHorizontal, X, Users, User } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 import { apiClient } from '../../services/axiosInstance';
+
+const formatPhoneNumber = (phone: string | undefined) => {
+  if (!phone || phone === 'N/A') return 'N/A';
+  let cleaned = phone.replace(/[^\d+]/g, '');
+  
+  if (cleaned.startsWith('0')) {
+    cleaned = '+94' + cleaned.substring(1);
+  } else if (!cleaned.startsWith('+') && cleaned.startsWith('94')) {
+    cleaned = '+' + cleaned;
+  } else if (!cleaned.startsWith('+') && cleaned.length === 9) {
+    cleaned = '+94' + cleaned;
+  }
+
+  if (cleaned.length === 12 && cleaned.startsWith('+94')) {
+    return `${cleaned.substring(0, 3)} ${cleaned.substring(3, 5)} ${cleaned.substring(5, 8)} ${cleaned.substring(8)}`;
+  }
+  return cleaned;
+};
 
 const ParentManagement = () => {
   const navigate = useNavigate();
@@ -14,18 +32,17 @@ const ParentManagement = () => {
 
   // Pagination States
   const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
 
   const loadParents = async () => {
     try {
       // Fetch parent records
       const [parentsRes, childrenRes] = await Promise.all([
-        apiClient.get(`/api/v1/auth/admin/all-parents?page=${currentPage}&size=10`),
-        apiClient.get('/api/v1/auth/admin/all-children')
+        apiClient.get('/api/v1/auth/admin/all-parents?size=1000'),
+        apiClient.get('/api/v1/auth/admin/all-children?size=1000')
       ]);
 
       const liveParents = parentsRes.data.data.content || [];
-      setTotalPages(parentsRes.data.data.totalPages || 0);
       const liveChildren = childrenRes.data.data.content || [];
 
       const parentsMap = new Map();
@@ -40,10 +57,11 @@ const ParentManagement = () => {
           parentId: p.parentId,
           email: email,
           fullName: p.fullName || "Unknown",
-          contact: p.phone || "N/A",
+          contact: formatPhoneNumber(p.phone || "N/A"),
           idNumber: p.nic || "N/A",
           relationship: p.relationship || "Guardian",
           status: status,
+          profilePic: p.profilePic || null,
           children: []
         });
       });
@@ -61,10 +79,12 @@ const ParentManagement = () => {
         }
       });
 
-      const sortedParents = Array.from(parentsMap.values()).sort((a: any, b: any) => 
+      const validParents = Array.from(parentsMap.values()).filter((p: any) => p.children.length > 0);
+      const sortedParents = validParents.sort((a: any, b: any) => 
         a.fullName.localeCompare(b.fullName)
       );
       setParents(sortedParents);
+      setTotalElements(sortedParents.length);
     } catch (err) {
       console.error("Failed to load parents and children:", err);
     } finally {
@@ -74,21 +94,27 @@ const ParentManagement = () => {
 
   useEffect(() => {
     loadParents();
-    window.addEventListener('storage', loadParents);
-    return () => window.removeEventListener('storage', loadParents);
-  }, [currentPage]);
+  }, []);
+
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [searchTerm]);
 
   const handleNextPage = () => {
-    if (currentPage < totalPages - 1) setCurrentPage(prev => prev + 1);
+    setCurrentPage(prev => prev + 1);
   };
 
   const handlePrevPage = () => {
     if (currentPage > 0) setCurrentPage(prev => prev - 1);
   };
 
-  const filteredParents = parents.filter(p =>
-    `${p.fullName} ${p.email}`.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredParents = parents.filter((p) => {
+    const searchLower = searchTerm.toLowerCase();
+    return p.fullName.toLowerCase().includes(searchLower) || p.email.toLowerCase().includes(searchLower);
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filteredParents.length / 10));
+  const paginatedParents = filteredParents.slice(currentPage * 10, (currentPage + 1) * 10);
 
   const handleDelete = async (email: string) => {
     if (window.confirm("Are you sure you want to remove this parent and their linked records?")) {
@@ -118,7 +144,7 @@ const ParentManagement = () => {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Parents</h1>
             <span className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-black rounded-full border border-slate-200 dark:border-slate-700">
-              {loading ? '...' : parents.length}
+              {loading ? '...' : totalElements}
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -182,11 +208,11 @@ const ParentManagement = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50/80 dark:divide-slate-800/60">
-              {filteredParents.map((parent, idx) => (
+              {paginatedParents.map((parent) => (
                 <tr 
-                  key={idx} 
+                  key={parent.parentId || parent.email} 
                   onClick={() => setViewingParent(parent)}
-                  className={`hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50/50 transition-all group cursor-pointer ${selectedParents.includes(parent.email) ? 'bg-primary-50/20' : ''}`}
+                  className={`dark:bg-slate-800/40 transition-all group cursor-pointer ${selectedParents.includes(parent.email) ? 'bg-primary-50/20' : 'hover:bg-white dark:hover:bg-[#0f172a]/60'}`}
                 >
                   <td className="px-8 py-6 text-center" onClick={e => e.stopPropagation()}>
                     <button onClick={() => toggleSelect(parent.email)} className="text-slate-300 hover:text-primary-500 transition-colors">
@@ -195,11 +221,15 @@ const ParentManagement = () => {
                   </td>
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 bg-cyan-50 text-cyan-600 rounded-xl flex items-center justify-center font-black text-lg border border-cyan-100 shadow-sm">
-                        {parent.fullName?.charAt(0) || 'P'}
-                      </div>
+                      {parent.profilePic ? (
+                        <img src={parent.profilePic} alt={parent.fullName} className="h-12 w-12 rounded-xl object-cover shadow-sm border border-slate-200 dark:border-slate-700" />
+                      ) : (
+                        <div className="h-12 w-12 bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-xl flex items-center justify-center font-black text-lg border border-cyan-100 dark:border-cyan-800 shadow-sm">
+                          {parent.fullName?.charAt(0) || 'P'}
+                        </div>
+                      )}
                       <div>
-                        <p className="font-bold text-slate-900 dark:text-white tracking-tight">{parent.fullName}</p>
+                        <p className="font-bold text-slate-900 dark:text-white text-sm tracking-tight group-hover:text-primary-600 transition-colors">{parent.fullName}</p>
                         <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">{parent.relationship || 'Guardian'}</p>
                       </div>
                     </div>
@@ -260,26 +290,67 @@ const ParentManagement = () => {
         
         {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-4 pt-4 mt-6 border-t border-slate-100 dark:border-slate-800">
-            <Button
-              variant="secondary"
-              onClick={handlePrevPage}
-              disabled={currentPage === 0}
-              className="px-4 py-2 text-xs disabled:opacity-50"
-            >
-              Previous
-            </Button>
-            <span className="text-xs font-bold text-slate-500">
-              Page {currentPage + 1} of {totalPages}
-            </span>
-            <Button
-              variant="secondary"
-              onClick={handleNextPage}
-              disabled={currentPage >= totalPages - 1}
-              className="px-4 py-2 text-xs disabled:opacity-50"
-            >
-              Next
-            </Button>
+          <div className="flex items-center justify-between pt-6 mt-6 border-t border-slate-100 dark:border-slate-800">
+            <div className="text-xs font-semibold text-slate-500">
+              Showing page {currentPage + 1} of {totalPages}
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="secondary"
+                onClick={handlePrevPage}
+                disabled={currentPage === 0}
+                className="p-2 aspect-square text-slate-500 disabled:opacity-40"
+              >
+                <ChevronLeft size={16} />
+              </Button>
+              
+              {/* Page Numbers */}
+              <div className="flex items-center gap-1 hidden sm:flex">
+                {Array.from({ length: totalPages }).map((_, i) => {
+                  if (
+                    i === 0 ||
+                    i === totalPages - 1 ||
+                    (i >= currentPage - 1 && i <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentPage(i)}
+                        className={`w-8 h-8 flex items-center justify-center rounded-xl text-xs font-bold transition-all ${
+                          currentPage === i
+                            ? 'bg-primary-600 text-white shadow-md shadow-primary-500/20'
+                            : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    );
+                  }
+                  
+                  if (
+                    (i === 1 && currentPage > 2) ||
+                    (i === totalPages - 2 && currentPage < totalPages - 3)
+                  ) {
+                    return (
+                      <div key={i} className="w-8 h-8 flex items-center justify-center text-slate-400">
+                        <MoreHorizontal size={14} />
+                      </div>
+                    );
+                  }
+                  
+                  return null;
+                })}
+              </div>
+
+              <Button
+                variant="secondary"
+                onClick={handleNextPage}
+                disabled={currentPage >= totalPages - 1}
+                className="p-2 aspect-square text-slate-500 disabled:opacity-40"
+              >
+                <ChevronRight size={16} />
+              </Button>
+            </div>
           </div>
         )}
         </>
@@ -288,69 +359,84 @@ const ParentManagement = () => {
 
       {/* --- PARENT DETAILS MODAL --- */}
       {viewingParent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setViewingParent(null)}>
-          <div className="bg-white dark:bg-[#0f172a] rounded-[3rem] w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fadeIn" onClick={() => setViewingParent(null)}>
+          <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh] animate-scaleUp" onClick={e => e.stopPropagation()}>
             
-            <div className="relative h-40 bg-gradient-to-br from-cyan-500 to-blue-600">
-               <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
-               <div className="absolute -bottom-12 left-10">
-                  <div className="h-24 w-24 bg-white dark:bg-[#0f172a] p-2 rounded-[2rem] shadow-xl">
-                    <div className="h-full w-full bg-cyan-50 rounded-[1.5rem] flex items-center justify-center text-cyan-600 font-black text-3xl">
-                      {viewingParent.fullName?.charAt(0) || 'P'}
-                    </div>
-                  </div>
-               </div>
-               <button 
-                 onClick={() => setViewingParent(null)}
-                 className="absolute top-6 right-6 p-2 bg-white dark:bg-[#0f172a]/20 hover:bg-white/30 rounded-full text-white transition-all"
-               >
-                 <ArrowLeft className="rotate-180" size={20} />
-               </button>
+            {/* Header Area */}
+            <div className="relative p-8 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 flex justify-between items-start">
+              <div className="flex gap-6 items-center">
+                 <div className="h-20 w-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-[1.5rem] p-1 shadow-lg shadow-primary-500/30">
+                    {viewingParent.profilePic ? (
+                      <img src={viewingParent.profilePic} alt={viewingParent.fullName} className="h-full w-full rounded-[1.25rem] object-cover" />
+                    ) : (
+                      <div className="h-full w-full bg-white dark:bg-slate-900 rounded-[1.25rem] flex items-center justify-center text-primary-500 font-black text-4xl">
+                         {viewingParent.fullName?.charAt(0) || 'P'}
+                      </div>
+                    )}
+                 </div>
+                 <div>
+                    <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{viewingParent.fullName}</h2>
+                    <p className="text-primary-600 dark:text-primary-400 font-black uppercase text-[10px] tracking-[0.2em] mt-1 flex items-center gap-1.5">
+                       <User size={12} /> {viewingParent.relationship || 'Primary Guardian'}
+                    </p>
+                 </div>
+              </div>
+              <button 
+                onClick={() => setViewingParent(null)}
+                className="h-10 w-10 flex items-center justify-center bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors shadow-sm"
+              >
+                <X size={20} />
+              </button>
             </div>
 
-            <div className="pt-16 p-10 space-y-8">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{viewingParent.fullName}</h2>
-                  <p className="text-cyan-500 font-black uppercase text-[10px] tracking-[0.3em] mt-1">{viewingParent.relationship || 'Primary Guardian'}</p>
-                </div>
-                <div className="bg-slate-50 dark:bg-slate-800/40 px-4 py-2 rounded-2xl border border-slate-100">
-                   <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest text-center">Linked Records</p>
-                   <p className="text-sm font-black text-slate-700 dark:text-slate-300 text-center">{viewingParent.children.length} Children</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-8 border-y border-slate-50 dark:border-slate-800/60 py-8">
-                <DetailItem icon={<Mail size={16} className="text-cyan-500"/>} label="Email Address" value={viewingParent.email} />
-                <DetailItem icon={<Phone size={16} className="text-cyan-500"/>} label="Contact Number" value={viewingParent.contact} />
-                <DetailItem icon={<ShieldCheck size={16} className="text-cyan-500"/>} label="ID Number" value={viewingParent.idNumber} />
-                <DetailItem icon={<MapPin size={16} className="text-cyan-500"/>} label="Relationship" value={viewingParent.relationship} />
+            {/* Content Area */}
+            <div className="p-8 overflow-y-auto space-y-8 bg-white dark:bg-slate-900">
+               
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-slate-50/50 dark:bg-slate-800/20 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800/60">
+                <DetailItem icon={<Mail size={16} className="text-primary-500"/>} label="Email Address" value={viewingParent.email} />
+                <DetailItem icon={<Phone size={16} className="text-primary-500"/>} label="Contact Number" value={viewingParent.contact} />
+                <DetailItem icon={<ShieldCheck size={16} className="text-primary-500"/>} label="ID Number (NIC)" value={viewingParent.idNumber} />
+                <DetailItem icon={<MapPin size={16} className="text-primary-500"/>} label="Relationship" value={viewingParent.relationship} />
               </div>
 
               <div className="space-y-4">
-                 <h3 className="text-xs font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">Enrolled Children</h3>
+                 <div className="flex items-center justify-between">
+                   <h3 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                     <Users size={14} /> Enrolled Children
+                   </h3>
+                   <span className="bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                     {viewingParent.children.length} {viewingParent.children.length === 1 ? 'Child' : 'Children'}
+                   </span>
+                 </div>
+                 
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {viewingParent.children.map((child: any) => (
-                      <div key={child.id} className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-3xl border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 hover:bg-white dark:bg-[#0f172a] hover:shadow-md transition-all group">
-                         <img src={child.image} alt={child.name} className="h-14 w-14 rounded-2xl object-cover shadow-sm group-hover:scale-105 transition-transform" />
+                      <div 
+                        key={child.id} 
+                        onClick={() => navigate(`/admin/students/${child.id}`)}
+                        className="flex items-center gap-4 bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-md transition-all group cursor-pointer"
+                      >
+                         <img src={child.image} alt={child.name} className="h-12 w-12 rounded-[1rem] object-cover shadow-sm group-hover:scale-105 transition-transform" />
                          <div>
-                            <p className="font-bold text-slate-900 dark:text-white text-sm tracking-tight">{child.name}</p>
-                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-0.5">{child.age} Years • {child.gender}</p>
+                            <p className="font-bold text-slate-900 dark:text-white text-sm tracking-tight group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{child.name}</p>
+                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">{child.age} Years • {child.gender}</p>
                          </div>
                       </div>
                     ))}
                  </div>
               </div>
-
-              <div className="pt-4">
-                <Button 
-                  onClick={() => setViewingParent(null)}
-                  className="w-full py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-cyan-500/10"
-                >
-                  Close Profile
-                </Button>
-              </div>
             </div>
+
+            {/* Footer Area */}
+            <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-end">
+              <Button 
+                onClick={() => setViewingParent(null)}
+                className="rounded-xl font-bold bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/20 px-8 py-2.5 flex items-center gap-2"
+              >
+                Close Profile
+              </Button>
+            </div>
+
           </div>
         </div>
       )}
@@ -360,7 +446,7 @@ const ParentManagement = () => {
 
 const DetailItem = ({ icon, label, value }: any) => (
   <div className="space-y-1">
-    <div className="flex items-center gap-2 text-slate-400">
+    <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500">
       {icon}
       <span className="text-[9px] font-black uppercase tracking-widest">{label}</span>
     </div>

@@ -131,12 +131,18 @@ const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ open, onClose }) => {
           </button>
 
           <div className="mt-4 mb-3">
-            <img
-              src={user?.photoURL && user.photoURL !== "null" && user.photoURL.trim() !== "" ? user.photoURL : adminAvatar}
-              alt="Profile"
-              className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md mx-auto dark:border-slate-800"
-              onError={(e) => { (e.target as HTMLImageElement).src = adminAvatar; }}
-            />
+            {user?.photoURL && user.photoURL !== "null" && user.photoURL.trim() !== "" ? (
+              <img
+                src={user.photoURL}
+                alt="Profile"
+                className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md mx-auto dark:border-slate-800"
+                onError={(e) => { (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23cbd5e1"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>'; }}
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-700 flex items-center justify-center text-white font-black text-3xl border-4 border-white shadow-md mx-auto dark:border-slate-800">
+                {user?.displayName ? user.displayName.charAt(0).toUpperCase() : "A"}
+              </div>
+            )}
           </div>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
             {user?.displayName || "Admin User"}

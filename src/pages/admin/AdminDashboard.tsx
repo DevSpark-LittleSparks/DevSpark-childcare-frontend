@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Users, Briefcase, MessageSquare, TrendingUp,
-  Search, Bell, Check, X, Calendar, MessageCircle, Sparkles, ShieldCheck, User, Megaphone
+  Search, Bell, Check, X, Calendar, MessageCircle, Sparkles, ShieldCheck, User, Megaphone, Mail, FileText, Clock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
@@ -156,13 +156,15 @@ const AdminDashboard = () => {
 
           <div className="relative">
             <Button
-              variant="secondary"
+              variant="outline"
               onClick={() => setShowAdminNotifs(!showAdminNotifs)}
-              className={`p-2.5 bg-white border border-slate-100 dark:border-slate-800/60 rounded-xl transition-all shadow-sm relative ${showAdminNotifs ? 'ring-2 ring-primary-500/20 border-primary-500' : ''}`}
+              className={`h-11 w-11 p-0 rounded-xl transition-all shadow-sm relative border-2 ${showAdminNotifs ? 'border-primary-500 bg-primary-50/50' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
             >
-              <Bell size={20} className={showAdminNotifs ? 'text-primary-500' : 'text-slate-400 dark:text-slate-500 dark:text-slate-400'} />
+              <Bell size={20} className={showAdminNotifs ? 'text-primary-500' : 'text-slate-500'} />
               {pendingRequests.length > 0 && (
-                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
+                <span className="absolute -top-1.5 -right-1.5 flex h-[22px] w-[22px] items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white ring-4 ring-white animate-in zoom-in duration-300 shadow-sm">
+                  {pendingRequests.length}
+                </span>
               )}
             </Button>
 
@@ -240,13 +242,18 @@ const AdminDashboard = () => {
             )}
           </div>
 
-          <Button
+          <button
             onClick={() => navigate('/admin/profile')}
-            variant="primary"
-            className="h-11 w-11 p-0 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20 active:scale-95"
+            className="h-11 w-11 p-0 rounded-xl flex items-center justify-center shadow-md active:scale-95 transition-all overflow-hidden border-2 border-slate-200 dark:border-slate-700 bg-white"
           >
-            <User size={20} />
-          </Button>
+            {reduxUser?.photoURL && reduxUser.photoURL !== "null" && reduxUser.photoURL.trim() !== "" ? (
+              <img src={reduxUser.photoURL} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-black text-lg">
+                {reduxUser?.displayName ? reduxUser.displayName.charAt(0).toUpperCase() : 'A'}
+              </div>
+            )}
+          </button>
         </div>
       </header>
 
@@ -353,8 +360,8 @@ const AdminDashboard = () => {
           <div className="bg-gradient-to-br from-primary-500 to-indigo-600 rounded-[3rem] p-10 shadow-[0_25px_60px_rgba(6,197,212,0.3)] relative overflow-hidden group cursor-pointer"
             onClick={() => navigate('/admin/broadcast')}>
             {/* Abstract Decorative Circles */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white dark:bg-[#0f172a]/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
-            <div className="absolute bottom-0 left-0 w-40 h-40 bg-indigo-400/20 rounded-full blur-2xl -ml-20 -mb-20"></div>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 dark:bg-[#0f172a]/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
+            <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/10 dark:bg-indigo-400/20 rounded-full blur-2xl -ml-20 -mb-20"></div>
 
             <div className="relative z-10 flex flex-col h-full justify-between">
               <div className="flex items-center gap-5">
@@ -411,69 +418,89 @@ const AdminDashboard = () => {
 
       {/* Modal for Request Details */}
       {selectedRequest && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setSelectedRequest(null)}>
-          <div
-            className="bg-white dark:bg-[#0f172a] rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="p-6 pb-4 border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
-              <h3 className="text-xl font-black text-slate-900 dark:text-white">Request Details</h3>
-              <button onClick={() => setSelectedRequest(null)} className="p-2 text-slate-400 dark:text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 rounded-full transition-all">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fadeIn" onClick={() => setSelectedRequest(null)}>
+          <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh] animate-scaleUp" onClick={e => e.stopPropagation()}>
+            
+            {/* Header Area */}
+            <div className="relative p-8 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 flex justify-between items-start">
+              <div className="flex gap-6 items-center">
+                 <div>
+                    <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{selectedRequest.fullName}</h2>
+                    <p className="text-primary-600 dark:text-primary-400 font-black uppercase text-[10px] tracking-[0.2em] mt-1 flex items-center gap-1.5">
+                       <User size={12} /> {selectedRequest.role || 'New Request'}
+                    </p>
+                 </div>
+              </div>
+              <button 
+                onClick={() => setSelectedRequest(null)}
+                className="h-10 w-10 flex items-center justify-center bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors shadow-sm"
+              >
                 <X size={20} />
               </button>
             </div>
 
-            {/* Modal Content */}
-            <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
-              {/* Display all details depending on role */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
-                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider">Full Name</p>
-                  <p className="font-bold text-slate-900 dark:text-white">{selectedRequest.fullName}</p>
+            {/* Content Area */}
+            <div className="p-8 overflow-y-auto space-y-8 bg-white dark:bg-slate-900">
+               
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-slate-50/50 dark:bg-slate-800/20 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800/60">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500">
+                    <Mail size={16} className="text-primary-500"/>
+                    <span className="text-[9px] font-black uppercase tracking-widest">Email Address</span>
+                  </div>
+                  <p className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-6 break-all">{selectedRequest.email}</p>
                 </div>
-                <div className="col-span-2">
-                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email</p>
-                  <p className="font-bold text-slate-900 dark:text-white">{selectedRequest.email}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider">Role</p>
-                  <span className="inline-block mt-1 px-2 py-0.5 bg-cyan-50 dark:bg-cyan-500/10 text-[10px] font-black text-cyan-600 dark:text-cyan-400 uppercase rounded-md tracking-wider">
-                    {selectedRequest.role}
-                  </span>
-                </div>
-
-                <div className="col-span-2">
-                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider">Additional Information</p>
-                  <p className="font-medium text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl mt-1 text-sm border border-slate-100 dark:border-slate-800/60">
-                    {selectedRequest.extraInfo || 'No additional details provided.'}
-                  </p>
-                </div>
-
-                <div className="col-span-2">
-                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider">Submitted At</p>
-                  <p className="font-bold text-slate-900 dark:text-white">
+                
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500">
+                    <Clock size={16} className="text-primary-500"/>
+                    <span className="text-[9px] font-black uppercase tracking-widest">Submitted At</span>
+                  </div>
+                  <p className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-6">
                     {selectedRequest.submittedAt ? new Date(selectedRequest.submittedAt).toLocaleString() : 'N/A'}
                   </p>
                 </div>
               </div>
+
+                 <div className="space-y-4">
+                 <h3 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                   <FileText size={14} /> Additional Information
+                 </h3>
+                 <div className="bg-slate-50/50 dark:bg-slate-800/20 p-5 rounded-[1.5rem] border border-slate-100 dark:border-slate-800/60">
+                    {selectedRequest.additionalDetails && Object.keys(selectedRequest.additionalDetails).length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {Object.entries(selectedRequest.additionalDetails).map(([key, value]) => (
+                          <div key={key} className="flex flex-col">
+                            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">{key}</span>
+                            <span className="text-sm font-bold text-slate-700 dark:text-slate-300 mt-0.5">{value as React.ReactNode}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-relaxed">
+                        {selectedRequest.extraInfo || 'No additional details provided by the user.'}
+                      </p>
+                    )}
+                 </div>
+              </div>
             </div>
 
-            {/* Modal Footer with Actions */}
-            <div className="p-6 bg-slate-50 dark:bg-slate-800/40 flex items-center justify-end gap-3 border-t border-slate-100">
+            {/* Footer Area */}
+            <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-3">
               <button
                 onClick={() => { handleReject(selectedRequest); }}
-                className="px-6 py-3 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50 transition-all shadow-sm"
+                className="px-6 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-800/30 transition-all shadow-sm"
               >
-                Reject
+                Reject Request
               </button>
-              <button
+              <Button
                 onClick={() => { handleApprove(selectedRequest); setSelectedRequest(null); }}
-                className="px-6 py-3 bg-midnight text-white text-sm font-bold rounded-xl hover:opacity-90 transition-all shadow-md"
+                className="rounded-xl font-bold bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/20 px-8 py-2.5 flex items-center gap-2"
               >
-                Approve
-              </button>
+                Approve Request
+              </Button>
             </div>
+
           </div>
         </div>
       )}

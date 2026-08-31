@@ -1,6 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 
-// Layouts Import
+// Layouts
 import AdminLayout from './components/layout/AdminLayout';
 import ParentLayout from './components/layout/ParentLayout';
 import TeacherLayout from './components/layout/TeacherLayout';
@@ -24,6 +24,7 @@ import ChildProfilePage from './pages/admin/ChildProfilePage';
 import ParentManagement from './pages/admin/ParentManagement';
 import Teachers from './pages/admin/Teachers';
 import BroadcastPortal from './pages/admin/BroadcastPortal';
+import AdminProgressPage from './pages/AdminProgressPage'; // ← Progress/Chatbot feature
 import AdminActivityPage from './pages/admin/AdminActivityPage';
 import MealsPage from './pages/admin/MealsPage';
 
@@ -32,20 +33,19 @@ import ParentProfilePage from './pages/parent/ProfilePage';
 import ChildViewPage from './pages/parent/ChildViewPage';
 import MyChildren from './pages/parent/MyChildren';
 import ParentDashboard from './pages/parent/dashboard/ParentDashboard';
+import ParentProgressPage from './pages/ParentProgressPage'; // ← Progress/Chatbot feature
 
 // Teacher Pages
 import TeacherProfilePage from './pages/teacher/ProfilePage';
-import AttendancePage from './pages/AttendancePage';
-import TeacherActivityPage from './pages/TeacherActivityPage';
+import TeacherDashboardPage from './pages/TeacherDashboardPage'; // ← Progress/Chatbot feature
+import AttendancePage from './pages/AttendancePage'; // ← Activity/Schedule feature
+import TeacherActivityPage from './pages/TeacherActivityPage'; // ← Activity/Schedule feature
 import TeacherMealsPage from './pages/teacher/TeacherMealsPage';
-
 // Other Management Pages
 import BillingPage from './pages/BillingPage';
 
-// Import Types
 import { UserProfile } from './types/user.types';
 
-// Mock data for initial profile states
 const mockUser: UserProfile = {
   id: '1',
   name: 'John Doe',
@@ -60,7 +60,7 @@ const mockUser: UserProfile = {
 };
 
 export const router = createBrowserRouter([
-  // --- PUBLIC ROUTES ---
+  // ── PUBLIC ──────────────────────────────────────────────────────────────
   { path: '/', element: <LandingPage /> },
   { path: '/signup-request', element: <SignupRequestForm /> },
   { path: '/request-confirmed', element: <RequestConfirmedPage /> },
@@ -70,7 +70,7 @@ export const router = createBrowserRouter([
   { path: '/about', element: <AboutUsPage /> },
   { path: '/contact', element: <ContactPage /> },
 
-  // --- ADMIN SECTION ---
+  // ── ADMIN ────────────────────────────────────────────────────────────────
   {
     path: '/admin',
     element: <AdminLayout />,
@@ -85,12 +85,13 @@ export const router = createBrowserRouter([
       { path: 'billing', element: <BillingPage /> },
       { path: 'meals', element: <MealsPage /> },
       { path: 'broadcast', element: <BroadcastPortal /> },
+      { path: 'learning', element: <AdminProgressPage /> },
       { path: 'activities', element: <AdminActivityPage /> },
       { path: 'schedules', element: <AdminActivityPage /> },
     ],
   },
 
-  // --- PARENT SECTION ---
+  // ── PARENT ───────────────────────────────────────────────────────────────
   {
     path: '/parent',
     element: <ParentLayout />,
@@ -99,19 +100,19 @@ export const router = createBrowserRouter([
       { path: 'profile', element: <ParentProfilePage initialUser={mockUser} /> },
       { path: 'children', element: <MyChildren /> },
       { path: 'child-profile/:studentId', element: <ChildViewPage /> },
-      { path: 'progress', element: <div>Progress</div> },
+      { path: 'progress', element: <ParentProgressPage /> },
       { path: 'payments', element: <div>Payments</div> },
       { path: 'notifications', element: <div>Notifications</div> },
       { path: 'messaging', element: <div>Messaging</div> },
     ],
   },
 
-  // --- TEACHER SECTION ---
+  // ── TEACHER ──────────────────────────────────────────────────────────────
   {
     path: '/teacher',
     element: <TeacherLayout />,
     children: [
-      { path: 'dashboard', element: <div>Teacher Dashboard</div> },
+      { path: 'dashboard', element: <TeacherDashboardPage /> },
       {
         path: 'profile',
         element: <TeacherProfilePage initialUser={{ ...mockUser, role: 'TEACHER' }} />,

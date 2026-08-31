@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, Search, Trash2, Eye, User, Mail, Phone,
-  MapPin, ShieldCheck, UserCheck, UserX, MoreVertical, CheckSquare, Square
+  ArrowLeft, Search, Trash2, Eye, Mail, Phone, X,
+  MapPin, ShieldCheck, CheckSquare, Square, ChevronLeft, ChevronRight, MoreHorizontal
 } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 import { apiClient } from '../../services/axiosInstance';
@@ -34,8 +34,25 @@ const getAvatarStyle = (role: string) => {
   return 'bg-slate-50 dark:bg-slate-800/40 text-slate-600 dark:text-slate-300 border-slate-100 dark:border-slate-800/60';
 };
 
+const formatPhoneNumber = (phone: string | undefined) => {
+  if (!phone || phone === 'N/A') return 'N/A';
+  let cleaned = phone.replace(/[^\d+]/g, '');
+  
+  if (cleaned.startsWith('0')) {
+    cleaned = '+94' + cleaned.substring(1);
+  } else if (!cleaned.startsWith('+') && cleaned.startsWith('94')) {
+    cleaned = '+' + cleaned;
+  } else if (!cleaned.startsWith('+') && cleaned.length === 9) {
+    cleaned = '+94' + cleaned;
+  }
+
+  if (cleaned.length === 12 && cleaned.startsWith('+94')) {
+    return `${cleaned.substring(0, 3)} ${cleaned.substring(3, 5)} ${cleaned.substring(5, 8)} ${cleaned.substring(8)}`;
+  }
+  return cleaned;
+};
+
 const Teachers = () => {
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [teachers, setTeachers] = useState<TeacherData[]>([]);
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
@@ -45,14 +62,14 @@ const Teachers = () => {
 
   // Pagination States
   const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
 
   const loadTeachers = async () => {
     try {
       // Fetch staff records
-      const response = await apiClient.get(`/api/v1/auth/admin/all-teachers?page=${currentPage}&size=10`);
+      const response = await apiClient.get('/api/v1/auth/admin/all-teachers?size=1000');
       const liveData = response.data.data.content || [];
-      setTotalPages(response.data.data.totalPages || 0);
+      setTotalElements(response.data.data.totalElements || liveData.length);
 
       const mappedTeachers = liveData.map((t: any) => ({
         id: t.id || t.teacherId || t.email,
@@ -61,7 +78,7 @@ const Teachers = () => {
         email: t.email,
         role: t.role || 'Teacher',
         status: t.status?.toLowerCase() === 'active' ? 'active' : 'inactive',
-        phone: t.phoneNumber || 'N/A',
+        phone: formatPhoneNumber(t.phoneNumber || 'N/A'),
         address: t.address || 'N/A',
         joinedAt: t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'N/A',
         profilePicture: t.profilePicture || undefined,
@@ -83,10 +100,14 @@ const Teachers = () => {
     loadTeachers();
     window.addEventListener('storage', loadTeachers);
     return () => window.removeEventListener('storage', loadTeachers);
-  }, [currentPage]);
+  }, []);
+
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [searchTerm, filter]);
 
   const handleNextPage = () => {
-    if (currentPage < totalPages - 1) setCurrentPage(prev => prev + 1);
+    setCurrentPage(prev => prev + 1);
   };
 
   const handlePrevPage = () => {
@@ -134,6 +155,9 @@ const Teachers = () => {
     return matchesSearch && matchesFilter;
   });
 
+  const totalPages = Math.max(1, Math.ceil(filteredTeachers.length / 10));
+  const paginatedTeachers = filteredTeachers.slice(currentPage * 10, (currentPage + 1) * 10);
+
   return (
     <div className="min-h-screen w-full bg-surface-secondary dark:bg-slate-950 transition-colors duration-300 font-sans text-slate-900 dark:text-slate-100 pb-16">
 
@@ -143,7 +167,7 @@ const Teachers = () => {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Staff</h1>
             <span className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-black rounded-full border border-slate-200 dark:border-slate-700">
-              {loading ? '...' : teachers.length}
+              {loading ? '...' : totalElements}
             </span>
           </div>
 
@@ -240,9 +264,13 @@ const Teachers = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50/80 dark:divide-slate-800/60">
-              {filteredTeachers.map((t) => (
-                <tr key={t.id} className={`hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50/50 transition-all group ${selectedTeachers.includes(t.id) ? 'bg-primary-50/20' : ''}`}>
-                  <td className="px-8 py-6">
+              {paginatedTeachers.map((t) => (
+                <tr 
+                  key={t.id} 
+                  onClick={() => setViewingTeacher(t)}
+                  className={`dark:bg-slate-800/40 transition-all group cursor-pointer ${selectedTeachers.includes(t.id) ? 'bg-primary-50/20' : 'hover:bg-white dark:hover:bg-[#0f172a]/60'}`}
+                >
+                  <td className="px-8 py-6" onClick={e => e.stopPropagation()}>
                     <button onClick={() => toggleSelect(t.id)} className="text-slate-300 hover:text-primary-500 transition-colors">
                       {selectedTeachers.includes(t.id) ? <CheckSquare size={20} className="text-primary-500" /> : <Square size={20} />}
                     </button>
@@ -259,7 +287,7 @@ const Teachers = () => {
                         </div>
                       )}
                       <div>
-                        <p className="font-bold text-slate-900 dark:text-white tracking-tight">{t.firstName} {t.lastName}</p>
+                        <p className="font-bold text-slate-900 dark:text-white text-sm tracking-tight group-hover:text-primary-600 transition-colors">{t.firstName} {t.lastName}</p>
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider mt-1 ${getRoleBadge(t.role)}`}>
                           {t.role}
                         </span>
@@ -278,7 +306,7 @@ const Teachers = () => {
                       </div>
                     </div>
                   </td>
-                  <td className="px-8 py-6 text-center">
+                  <td className="px-8 py-6 text-center" onClick={e => e.stopPropagation()}>
                     <button
                       onClick={() => toggleStatus(t.id)}
                       className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${t.status === 'active'
@@ -289,7 +317,7 @@ const Teachers = () => {
                       {t.status === 'active' ? 'Active' : 'Inactive'}
                     </button>
                   </td>
-                  <td className="px-8 py-6 text-right">
+                  <td className="px-8 py-6 text-right" onClick={e => e.stopPropagation()}>
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => setViewingTeacher(t)}
@@ -315,26 +343,67 @@ const Teachers = () => {
         
         {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-4 pt-4 mt-6 border-t border-slate-100 dark:border-slate-800">
-            <Button
-              variant="secondary"
-              onClick={handlePrevPage}
-              disabled={currentPage === 0}
-              className="px-4 py-2 text-xs disabled:opacity-50"
-            >
-              Previous
-            </Button>
-            <span className="text-xs font-bold text-slate-500">
-              Page {currentPage + 1} of {totalPages}
-            </span>
-            <Button
-              variant="secondary"
-              onClick={handleNextPage}
-              disabled={currentPage >= totalPages - 1}
-              className="px-4 py-2 text-xs disabled:opacity-50"
-            >
-              Next
-            </Button>
+          <div className="flex items-center justify-between pt-6 mt-6 border-t border-slate-100 dark:border-slate-800">
+            <div className="text-xs font-semibold text-slate-500">
+              Showing page {currentPage + 1} of {totalPages}
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="secondary"
+                onClick={handlePrevPage}
+                disabled={currentPage === 0}
+                className="p-2 aspect-square text-slate-500 disabled:opacity-40"
+              >
+                <ChevronLeft size={16} />
+              </Button>
+              
+              {/* Page Numbers */}
+              <div className="flex items-center gap-1 hidden sm:flex">
+                {Array.from({ length: totalPages }).map((_, i) => {
+                  if (
+                    i === 0 ||
+                    i === totalPages - 1 ||
+                    (i >= currentPage - 1 && i <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentPage(i)}
+                        className={`w-8 h-8 flex items-center justify-center rounded-xl text-xs font-bold transition-all ${
+                          currentPage === i
+                            ? 'bg-primary-600 text-white shadow-md shadow-primary-500/20'
+                            : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    );
+                  }
+                  
+                  if (
+                    (i === 1 && currentPage > 2) ||
+                    (i === totalPages - 2 && currentPage < totalPages - 3)
+                  ) {
+                    return (
+                      <div key={i} className="w-8 h-8 flex items-center justify-center text-slate-400">
+                        <MoreHorizontal size={14} />
+                      </div>
+                    );
+                  }
+                  
+                  return null;
+                })}
+              </div>
+
+              <Button
+                variant="secondary"
+                onClick={handleNextPage}
+                disabled={currentPage >= totalPages - 1}
+                className="p-2 aspect-square text-slate-500 disabled:opacity-40"
+              >
+                <ChevronRight size={16} />
+              </Button>
+            </div>
           </div>
         )}
         </>
@@ -343,58 +412,69 @@ const Teachers = () => {
 
       {/* --- TEACHER DETAILS MODAL --- */}
       {viewingTeacher && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setViewingTeacher(null)}>
-          <div className="bg-white dark:bg-[#0f172a] rounded-[3rem] w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
-
-            <div className="relative h-40 bg-gradient-to-br from-indigo-500 to-primary-600">
-              <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
-              <div className="absolute -bottom-12 left-10">
-                <div className="h-24 w-24 bg-white dark:bg-[#0f172a] p-2 rounded-[2rem] shadow-xl">
-                  {viewingTeacher.profilePicture ? (
-                    <div className="h-full w-full rounded-[1.5rem] overflow-hidden">
-                      <img src={viewingTeacher.profilePicture} alt={viewingTeacher.firstName} className="w-full h-full object-cover" />
-                    </div>
-                  ) : (
-                    <div className={`h-full w-full rounded-[1.5rem] flex items-center justify-center font-black text-3xl ${getAvatarStyle(viewingTeacher.role)}`}>
-                      {viewingTeacher.firstName[0]}{viewingTeacher.lastName[0]}
-                    </div>
-                  )}
-                </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fadeIn" onClick={() => setViewingTeacher(null)}>
+          <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh] animate-scaleUp" onClick={e => e.stopPropagation()}>
+            
+            {/* Header Area */}
+            <div className="relative p-8 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 flex justify-between items-start">
+              <div className="flex gap-6 items-center">
+                 <div className="h-20 w-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-[1.5rem] p-1 shadow-lg shadow-primary-500/30">
+                    {viewingTeacher.profilePicture ? (
+                      <img src={viewingTeacher.profilePicture} alt={viewingTeacher.firstName} className="h-full w-full rounded-[1.25rem] object-cover" />
+                    ) : (
+                      <div className="h-full w-full bg-white dark:bg-slate-900 rounded-[1.25rem] flex items-center justify-center text-primary-500 font-black text-4xl">
+                         {viewingTeacher.firstName[0]}
+                      </div>
+                    )}
+                 </div>
+                 <div>
+                    <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{viewingTeacher.firstName} {viewingTeacher.lastName}</h2>
+                    <p className="text-primary-600 dark:text-primary-400 font-black uppercase text-[10px] tracking-[0.2em] mt-1 flex items-center gap-1.5">
+                       <ShieldCheck size={12} /> {viewingTeacher.role}
+                    </p>
+                 </div>
               </div>
-              <button
+              <button 
                 onClick={() => setViewingTeacher(null)}
-                className="absolute top-6 right-6 p-2 bg-white dark:bg-[#0f172a]/20 hover:bg-white/30 rounded-full text-white transition-all"
+                className="h-10 w-10 flex items-center justify-center bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors shadow-sm"
               >
-                <ArrowLeft className="rotate-180" size={20} />
+                <X size={20} />
               </button>
             </div>
 
-            <div className="pt-16 p-10 space-y-8">
-              <div>
-                <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{viewingTeacher.firstName} {viewingTeacher.lastName}</h2>
-                <p className="text-primary-500 font-black uppercase text-[10px] tracking-[0.3em] mt-1">{viewingTeacher.role}</p>
+            {/* Content Area */}
+            <div className="p-8 overflow-y-auto space-y-8 bg-white dark:bg-slate-900">
+               
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-slate-50/50 dark:bg-slate-800/20 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800/60">
+                <DetailItem icon={<Mail size={16} className="text-primary-500"/>} label="Work Email" value={viewingTeacher.email} />
+                <DetailItem icon={<Phone size={16} className="text-primary-500"/>} label="Mobile Number" value={viewingTeacher.phone} />
+                <DetailItem icon={<ShieldCheck size={16} className="text-primary-500"/>} label="Staff Status" value={viewingTeacher.status.toUpperCase()} />
+                <DetailItem icon={<MapPin size={16} className="text-primary-500"/>} label="Resident Address" value={viewingTeacher.address} />
               </div>
 
-              <div className="grid grid-cols-2 gap-8 border-y border-slate-50 dark:border-slate-800/60 py-8">
-                <DetailItem icon={<Mail size={16} />} label="Work Email" value={viewingTeacher.email} />
-                <DetailItem icon={<Phone size={16} />} label="Mobile Number" value={viewingTeacher.phone} />
-                <DetailItem icon={<MapPin size={16} />} label="Resident Address" value={viewingTeacher.address} />
-                <DetailItem icon={<ShieldCheck size={16} />} label="Staff Status" value={viewingTeacher.status.toUpperCase()} />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Joined On</p>
-                  <p className="text-sm font-bold text-slate-500">{viewingTeacher.joinedAt}</p>
-                </div>
-                <Button
-                  onClick={() => setViewingTeacher(null)}
-                  className="px-10 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest"
-                >
-                  Close Profile
-                </Button>
+              <div className="space-y-4">
+                 <div className="flex items-center justify-between">
+                   <h3 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                     <ShieldCheck size={14} /> Joined On
+                   </h3>
+                 </div>
+                 
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <p className="text-sm font-bold text-slate-500">{viewingTeacher.joinedAt}</p>
+                 </div>
               </div>
             </div>
+
+            {/* Footer Area */}
+            <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-end">
+              <Button 
+                onClick={() => setViewingTeacher(null)}
+                className="rounded-xl font-bold bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/20 px-8 py-2.5 flex items-center gap-2"
+              >
+                Close Profile
+              </Button>
+            </div>
+
           </div>
         </div>
       )}
