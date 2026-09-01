@@ -9,14 +9,14 @@ import { useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store';
 import {
   toggleChatbot, closeChatbot, addMessage, replaceLastMessage,
-  setTyping, setChatError, clearMessages,
+  setTyping, setChatError, clearMessages, syncContext,
   selectChatbotOpen, selectChatMessages, selectChatTyping,
 } from '../../store/slices/chatbotSlice';
 import { selectUser } from '../../features/auth/model/authSlice';
 import { apiClient } from '../../services/axiosInstance';
 import type { ChatMessage, MessageRole } from '../../types/chatbot.types';
 import { X, Send, MessageCircle, Trash2, Bot } from 'lucide-react';
-import sproutyImg from '../../assets/chatbot/chatbotimg.png';
+import { LogoIcon } from '../common/Logo';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const makeId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -39,11 +39,20 @@ const TypingDots = () => (
   </div>
 );
 
+interface UniversalSmartAssistantProps {
+  /** Force the public/guest experience regardless of a background login
+   *  session — used on the landing page, since Firebase keeps a user
+   *  signed in site-wide and this widget must not leak their real
+   *  role/name into the anonymous marketing page. */
+  guestOnly?: boolean;
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
-const UniversalSmartAssistant: React.FC = () => {
+const UniversalSmartAssistant: React.FC<UniversalSmartAssistantProps> = ({ guestOnly = false }) => {
   const dispatch  = useAppDispatch();
   const location  = useLocation();
-  const user      = useAppSelector(selectUser);
+  const authUser  = useAppSelector(selectUser);
+  const user      = guestOnly ? null : authUser;
   const isOpen    = useAppSelector(selectChatbotOpen);
   const messages  = useAppSelector(selectChatMessages);
   const isTyping  = useAppSelector(selectChatTyping);
@@ -51,6 +60,15 @@ const UniversalSmartAssistant: React.FC = () => {
   const [input, setInput] = useState('');
   const bottomRef         = useRef<HTMLDivElement>(null);
   const inputRef          = useRef<HTMLInputElement>(null);
+
+  // Whoever this mount of the widget currently represents. Kept in Redux (not a
+  // local ref) so it survives the full unmount/remount that happens when the
+  // router swaps LandingPage for a portal layout — a plain ref would just reset
+  // to its initial value on every navigation and never detect the switch.
+  const identityKey = guestOnly ? 'GUEST' : (authUser?.uid ?? 'pending');
+  useEffect(() => {
+    dispatch(syncContext(identityKey));
+  }, [identityKey, dispatch]);
 
   // Scroll to bottom whenever messages change
   useEffect(() => {
@@ -144,15 +162,20 @@ const UniversalSmartAssistant: React.FC = () => {
           style={{ animation: 'slideUp 0.2s ease' }}
         >
           {/* Header */}
-          <div className="flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-[#06B6D4] to-[#0891B2]">
+          <div className="flex items-center gap-3 px-5 py-4 bg-midnight">
             <div className="relative">
-              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden">
-                <img src={sproutyImg} alt="Sprouty" className="w-full h-full object-cover" />
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden p-1.5">
+                <LogoIcon color="#FFFFFF" className="w-full h-full" />
               </div>
               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-white" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-black text-white">LittleSpark Assistant</p>
+              <p
+                className="text-sm font-bold tracking-tight text-white"
+                style={{ fontFamily: "'Nunito', sans-serif" }}
+              >
+                Little<span style={{ color: '#06C5D4' }}>Sparks</span> Assistant
+              </p>
               <p className="text-[10px] text-white/70 font-bold uppercase tracking-wider">
                 Online | Ready to Help
               </p>
@@ -182,8 +205,8 @@ const UniversalSmartAssistant: React.FC = () => {
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {msg.role === 'assistant' && (
-                  <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 mr-2 mt-1 shadow-sm">
-                    <img src={sproutyImg} alt="Sprouty" className="w-full h-full object-cover" />
+                  <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 mr-2 mt-1 shadow-sm bg-midnight flex items-center justify-center p-1">
+                    <LogoIcon color="#FFFFFF" className="w-full h-full" />
                   </div>
                 )}
                 <div
@@ -223,7 +246,7 @@ const UniversalSmartAssistant: React.FC = () => {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask Sprouty something…"
+              placeholder="Ask Assistant something…"
               disabled={isTyping}
               className="flex-1 text-sm text-slate-700 font-medium placeholder:text-slate-300 bg-transparent outline-none disabled:opacity-50"
             />
@@ -244,9 +267,9 @@ const UniversalSmartAssistant: React.FC = () => {
         className={`fixed bottom-6 right-6 z-[9999] w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl transition-all active:scale-95 ${
           isOpen
             ? 'bg-slate-800 hover:bg-slate-700'
-            : 'bg-[#06B6D4] hover:bg-[#0891B2]'
+            : 'bg-midnight hover:bg-[#140f52]'
         }`}
-        title="Chat with Sprouty"
+        title="Chat with Assistant"
       >
         {isOpen
           ? <X size={22} className="text-white" />
