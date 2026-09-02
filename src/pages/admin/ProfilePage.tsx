@@ -52,7 +52,21 @@ const AdminProfilePage: React.FC = () => {
     try {
       const res = await apiClient.get('/api/v1/auth/admin/profile');
       if (res.data.success) {
-        setUser(res.data.data);
+        const data = res.data.data;
+        if (data.phone1) {
+          data.phone1 = data.phone1.replace(/\s+/g, '');
+          data.phone1 = data.phone1.startsWith('+94') ? data.phone1 : "+94" + data.phone1.replace(/^0+/, '');
+        }
+        if (data.phone2) {
+          data.phone2 = data.phone2.replace(/\s+/g, '');
+          data.phone2 = data.phone2.startsWith('+94') ? data.phone2 : "+94" + data.phone2.replace(/^0+/, '');
+        }
+        setUser(prev => ({
+          ...prev,
+          ...data,
+          phone1: data.phone1 || '',
+          phone2: data.phone2 || ''
+        }));
       }
     } catch (err) {
       console.error("Failed to fetch admin profile:", err);
@@ -71,10 +85,10 @@ const AdminProfilePage: React.FC = () => {
     }
   }, [statusMessage]);
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     let { name, value } = e.target;
     if (name === 'phone1' || name === 'phone2') {
-      value = "+94" + value.replace(/^\+94\s?/, '');
+      value = "+94" + value.replace(/^\+94\s?/, '').replace(/\s+/g, '');
     }
     setUser(prev => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));

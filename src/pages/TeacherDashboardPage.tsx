@@ -142,11 +142,11 @@ const TeacherDashboardPage: React.FC = () => {
     dispatch(setLoading(true));
     try {
       const [s, a, m, ac, l] = await Promise.all([
-        apiClient.get('/teacher/dashboard/class-status'),
-        apiClient.get('/teacher/dashboard/safety-alerts'),
-        apiClient.get('//teacher/dashboard/parent-messages'),
-        apiClient.get('/teacher/dashboard/upcoming-activities'),
-        apiClient.get('/teacher/dashboard/activity-logs', {
+        apiClient.get('/api/v1/teacher/dashboard/class-status'),
+        apiClient.get('/api/v1/teacher/dashboard/safety-alerts'),
+        apiClient.get('/api/v1/teacher/dashboard/parent-messages'),
+        apiClient.get('/api/v1/teacher/dashboard/upcoming-activities'),
+        apiClient.get('/api/v1/teacher/dashboard/activity-logs', {
           params: { sortBy: sortBy || undefined },
         }),
       ]);
@@ -164,7 +164,7 @@ const TeacherDashboardPage: React.FC = () => {
 
   const fetchLogs = async (sort: string) => {
     try {
-      const res = await apiClient.get('/teacher/dashboard/activity-logs', {
+      const res = await apiClient.get('/api/v1/teacher/dashboard/activity-logs', {
         params: { sortBy: sort || undefined },
       });
       if (res.data.success) dispatch(setActivityLogs(res.data.data || []));
@@ -176,7 +176,7 @@ const TeacherDashboardPage: React.FC = () => {
     fetchAll();
     const interval = setInterval(async () => {
       try {
-        const r = await apiClient.get('/teacher/dashboard/class-status');
+        const r = await apiClient.get('/api/v1/teacher/dashboard/class-status');
         if (r.data.success) dispatch(setClassStatus(r.data.data));
       } catch {}
     }, 60_000);
