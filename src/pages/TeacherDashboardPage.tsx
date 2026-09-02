@@ -9,62 +9,94 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store';
 import {
-  setClassStatus, setSafetyAlerts, setParentMessages,
-  setUpcomingActivities, setActivityLogs,
-  setLoading, setError,
-  selectClassStatus, selectSafetyAlerts, selectParentMessages,
-  selectUpcomingActivities, selectActivityLogs,
-  selectUnreadMessageCount, selectTeacherLoading,
+  setClassStatus,
+  setSafetyAlerts,
+  setParentMessages,
+  setUpcomingActivities,
+  setActivityLogs,
+  setLoading,
+  setError,
+  selectClassStatus,
+  selectSafetyAlerts,
+  selectParentMessages,
+  selectUpcomingActivities,
+  selectActivityLogs,
+  selectUnreadMessageCount,
+  selectTeacherLoading,
 } from '../store/slices/teacherSlice';
 import { selectUser } from '../features/auth/model/authSlice';
 import { apiClient } from '../services/axiosInstance';
 import {
-  Bell, ShieldAlert, Calendar, Search,
-  CheckCircle2, UtensilsCrossed, Zap,
-  ArrowDown, ChevronDown, MessageCircle,
+  Bell,
+  ShieldAlert,
+  Calendar,
+  Search,
+  CheckCircle2,
+  UtensilsCrossed,
+  Zap,
+  ArrowDown,
+  ChevronDown,
+  MessageCircle,
 } from 'lucide-react';
 
 // ── Donut chart ───────────────────────────────────────────────────
 const DonutChart = ({ checkedIn, expected }: { checkedIn: number; expected: number }) => {
   const size = 100;
-  const r    = 34;
-  const cx   = size / 2;
-  const cy   = size / 2;
+  const r = 34;
+  const cx = size / 2;
+  const cy = size / 2;
   const circ = 2 * Math.PI * r;
-  const pct  = expected > 0 ? Math.min((checkedIn / expected) * 100, 100) : 0;
+  const pct = expected > 0 ? Math.min((checkedIn / expected) * 100, 100) : 0;
   const dash = (pct / 100) * circ;
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0">
       <circle cx={cx} cy={cy} r={r} fill="none" stroke="#f1f5f9" strokeWidth={10} />
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="#06B6D4" strokeWidth={10}
-        strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
+      <circle
+        cx={cx}
+        cy={cy}
+        r={r}
+        fill="none"
+        stroke="#06B6D4"
+        strokeWidth={10}
+        strokeDasharray={`${dash} ${circ}`}
+        strokeLinecap="round"
         transform={`rotate(-90 ${cx} ${cy})`}
-        style={{ transition: 'stroke-dasharray 0.6s ease' }} />
+        style={{ transition: 'stroke-dasharray 0.6s ease' }}
+      />
     </svg>
   );
 };
 
 // ── Log icon ──────────────────────────────────────────────────────
 const LogIcon = ({ type }: { type: string }) => {
-  if (type === 'MEAL')     return <UtensilsCrossed size={13} className="text-amber-500" />;
+  if (type === 'MEAL') return <UtensilsCrossed size={13} className="text-amber-500" />;
   if (type === 'ACTIVITY') return <CheckCircle2 size={13} className="text-emerald-500" />;
   return <Zap size={13} className="text-[#06B6D4]" />;
 };
 
 const SORT_OPTIONS = [
-  { value: '',              label: 'Recent first'      },
-  { value: 'name_asc',     label: 'Name A → Z'        },
-  { value: 'name_desc',    label: 'Name Z → A'        },
-  { value: 'type_meal',    label: 'Meals first'        },
-  { value: 'type_activity',label: 'Activities first'  },
+  { value: '', label: 'Recent first' },
+  { value: 'name_asc', label: 'Name A → Z' },
+  { value: 'name_desc', label: 'Name Z → A' },
+  { value: 'type_meal', label: 'Meals first' },
+  { value: 'type_activity', label: 'Activities first' },
 ];
 
 // ── Interactive card wrapper ───────────────────────────────────────
 const InteractiveCard = ({
-  title, subtitle, badge, icon, children, onClick,
+  title,
+  subtitle,
+  badge,
+  icon,
+  children,
+  onClick,
 }: {
-  title: string; subtitle: string; badge?: React.ReactNode;
-  icon?: React.ReactNode; children: React.ReactNode; onClick?: () => void;
+  title: string;
+  subtitle: string;
+  badge?: React.ReactNode;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+  onClick?: () => void;
 }) => {
   return (
     <div
@@ -90,37 +122,39 @@ const InteractiveCard = ({
 
 // ── Main Page ─────────────────────────────────────────────────────
 const TeacherDashboardPage: React.FC = () => {
-  const dispatch    = useAppDispatch();
-  const navigate    = useNavigate();
-  const user        = useAppSelector(selectUser);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const user = useAppSelector(selectUser);
   const classStatus = useAppSelector(selectClassStatus);
-  const alerts      = useAppSelector(selectSafetyAlerts);
-  const messages    = useAppSelector(selectParentMessages);
-  const activities  = useAppSelector(selectUpcomingActivities);
-  const logs        = useAppSelector(selectActivityLogs);
-  const unread      = useAppSelector(selectUnreadMessageCount);
-  const loading     = useAppSelector(selectTeacherLoading);
+  const alerts = useAppSelector(selectSafetyAlerts);
+  const messages = useAppSelector(selectParentMessages);
+  const activities = useAppSelector(selectUpcomingActivities);
+  const logs = useAppSelector(selectActivityLogs);
+  const unread = useAppSelector(selectUnreadMessageCount);
+  const loading = useAppSelector(selectTeacherLoading);
 
-  const [logSearch,   setLogSearch]   = useState('');
+  const [logSearch, setLogSearch] = useState('');
   const [showAllLogs, setShowAllLogs] = useState(false);
-  const [sortBy,      setSortBy]      = useState('');
-  const [showSort,    setShowSort]    = useState(false);
+  const [sortBy, setSortBy] = useState('');
+  const [showSort, setShowSort] = useState(false);
 
   const fetchAll = async () => {
     dispatch(setLoading(true));
     try {
       const [s, a, m, ac, l] = await Promise.all([
-        apiClient.get('/api/v1/teacher/dashboard/class-status'),
-        apiClient.get('/api/v1/teacher/dashboard/safety-alerts'),
-        apiClient.get('/api/v1/teacher/dashboard/parent-messages'),
-        apiClient.get('/api/v1/teacher/dashboard/upcoming-activities'),
-        apiClient.get('/api/v1/teacher/dashboard/activity-logs', { params: { sortBy: sortBy || undefined } }),
+        apiClient.get('/teacher/dashboard/class-status'),
+        apiClient.get('/teacher/dashboard/safety-alerts'),
+        apiClient.get('//teacher/dashboard/parent-messages'),
+        apiClient.get('/teacher/dashboard/upcoming-activities'),
+        apiClient.get('/teacher/dashboard/activity-logs', {
+          params: { sortBy: sortBy || undefined },
+        }),
       ]);
-      if (s.data.success)  dispatch(setClassStatus(s.data.data));
-      if (a.data.success)  dispatch(setSafetyAlerts(a.data.data || []));
-      if (m.data.success)  dispatch(setParentMessages(m.data.data || []));
+      if (s.data.success) dispatch(setClassStatus(s.data.data));
+      if (a.data.success) dispatch(setSafetyAlerts(a.data.data || []));
+      if (m.data.success) dispatch(setParentMessages(m.data.data || []));
       if (ac.data.success) dispatch(setUpcomingActivities(ac.data.data || []));
-      if (l.data.success)  dispatch(setActivityLogs(l.data.data || []));
+      if (l.data.success) dispatch(setActivityLogs(l.data.data || []));
     } catch {
       dispatch(setError('Failed to load dashboard'));
     } finally {
@@ -130,8 +164,9 @@ const TeacherDashboardPage: React.FC = () => {
 
   const fetchLogs = async (sort: string) => {
     try {
-      const res = await apiClient.get('/api/v1/teacher/dashboard/activity-logs',
-        { params: { sortBy: sort || undefined } });
+      const res = await apiClient.get('/teacher/dashboard/activity-logs', {
+        params: { sortBy: sort || undefined },
+      });
       if (res.data.success) dispatch(setActivityLogs(res.data.data || []));
     } catch {}
   };
@@ -141,7 +176,7 @@ const TeacherDashboardPage: React.FC = () => {
     fetchAll();
     const interval = setInterval(async () => {
       try {
-        const r = await apiClient.get('/api/v1/teacher/dashboard/class-status');
+        const r = await apiClient.get('/teacher/dashboard/class-status');
         if (r.data.success) dispatch(setClassStatus(r.data.data));
       } catch {}
     }, 60_000);
@@ -154,9 +189,10 @@ const TeacherDashboardPage: React.FC = () => {
     fetchLogs(value);
   };
 
-  const filteredLogs = logs.filter(l =>
-    l.childName?.toLowerCase().includes(logSearch.toLowerCase()) ||
-    l.detail?.toLowerCase().includes(logSearch.toLowerCase())
+  const filteredLogs = logs.filter(
+    (l) =>
+      l.childName?.toLowerCase().includes(logSearch.toLowerCase()) ||
+      l.detail?.toLowerCase().includes(logSearch.toLowerCase()),
   );
   const visibleLogs = showAllLogs ? filteredLogs : filteredLogs.slice(0, 4);
 
@@ -170,7 +206,6 @@ const TeacherDashboardPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] pb-10 overflow-x-hidden">
-
       {/* ── Header ── */}
       <div className="w-full px-4 sm:px-6 pt-6 pb-3 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
@@ -178,7 +213,12 @@ const TeacherDashboardPage: React.FC = () => {
             Welcome back, {user?.displayName || 'Teacher'}!
           </h1>
           <p className="text-slate-400 text-xs font-bold mt-0.5">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            {new Date().toLocaleDateString('en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -204,10 +244,8 @@ const TeacherDashboardPage: React.FC = () => {
       </div>
 
       <main className="w-full px-4 sm:px-6 space-y-4">
-
         {/* ── Row 1: 3 interactive cards ── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
           {/* Class Status */}
           <InteractiveCard
             title="Class Status"
@@ -221,17 +259,36 @@ const TeacherDashboardPage: React.FC = () => {
           >
             <div className="flex items-center gap-3 pt-1">
               <div className="relative shrink-0">
-                <DonutChart checkedIn={classStatus?.checkedIn ?? 0} expected={classStatus?.expected ?? 1} />
+                <DonutChart
+                  checkedIn={classStatus?.checkedIn ?? 0}
+                  expected={classStatus?.expected ?? 1}
+                />
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-xl font-black text-slate-800">{classStatus?.checkedIn ?? 0}</span>
-                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wide">Present</span>
+                  <span className="text-xl font-black text-slate-800">
+                    {classStatus?.checkedIn ?? 0}
+                  </span>
+                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wide">
+                    Present
+                  </span>
                 </div>
               </div>
               <div className="flex-1 space-y-2.5 min-w-0">
                 {[
-                  { label: 'Checked-in', pct: classStatus?.checkedInPercent ?? 0, color: 'bg-[#06B6D4]', tc: 'text-[#06B6D4]', count: classStatus?.checkedIn ?? 0 },
-                  { label: 'Expected',   pct: classStatus?.expectedPercent  ?? 0, color: 'bg-slate-300', tc: 'text-slate-400',  count: classStatus?.expected  ?? 0 },
-                ].map(row => (
+                  {
+                    label: 'Checked-in',
+                    pct: classStatus?.checkedInPercent ?? 0,
+                    color: 'bg-[#06B6D4]',
+                    tc: 'text-[#06B6D4]',
+                    count: classStatus?.checkedIn ?? 0,
+                  },
+                  {
+                    label: 'Expected',
+                    pct: classStatus?.expectedPercent ?? 0,
+                    color: 'bg-slate-300',
+                    tc: 'text-slate-400',
+                    count: classStatus?.expected ?? 0,
+                  },
+                ].map((row) => (
                   <div key={row.label}>
                     <div className="flex justify-between text-xs font-bold text-slate-500 mb-1">
                       <span>{row.label}</span>
@@ -241,7 +298,10 @@ const TeacherDashboardPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div className={`h-full ${row.color} rounded-full transition-all duration-500`} style={{ width: `${row.pct}%` }} />
+                      <div
+                        className={`h-full ${row.color} rounded-full transition-all duration-500`}
+                        style={{ width: `${row.pct}%` }}
+                      />
                     </div>
                   </div>
                 ))}
@@ -257,16 +317,23 @@ const TeacherDashboardPage: React.FC = () => {
           >
             <div className="teacher-alert-scroll space-y-2 pt-1 max-h-[130px] overflow-y-auto pr-1">
               {alerts.length === 0 ? (
-                <p className="text-xs text-slate-400 font-bold text-center py-4">No active alerts</p>
-              ) : alerts.map((a, i) => (
-                <div key={i} className="flex items-center gap-2.5 p-2.5 bg-orange-50 border border-orange-100 rounded-xl">
-                  <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />
-                  <p className="text-xs font-black text-slate-700 truncate">
-                    <span className="text-orange-600">{a.childName}: </span>
-                    {a.condition}
-                  </p>
-                </div>
-              ))}
+                <p className="text-xs text-slate-400 font-bold text-center py-4">
+                  No active alerts
+                </p>
+              ) : (
+                alerts.map((a, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-2.5 p-2.5 bg-orange-50 border border-orange-100 rounded-xl"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />
+                    <p className="text-xs font-black text-slate-700 truncate">
+                      <span className="text-orange-600">{a.childName}: </span>
+                      {a.condition}
+                    </p>
+                  </div>
+                ))
+              )}
             </div>
           </InteractiveCard>
 
@@ -287,29 +354,35 @@ const TeacherDashboardPage: React.FC = () => {
             <div className="space-y-1.5 pt-1">
               {messages.length === 0 ? (
                 <p className="text-xs text-slate-400 font-bold text-center py-4">No messages</p>
-              ) : messages.map((msg, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors"
-                >
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center text-white font-black text-sm shrink-0">
-                    {msg.parentName?.charAt(0)?.toUpperCase() || 'P'}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-1">
-                      <p className="text-xs font-black text-slate-800 truncate">{msg.parentName}</p>
-                      <span className="text-[10px] text-slate-300 font-bold shrink-0">{msg.time}</span>
+              ) : (
+                messages.map((msg, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center text-white font-black text-sm shrink-0">
+                      {msg.parentName?.charAt(0)?.toUpperCase() || 'P'}
                     </div>
-                    <p className="text-[11px] text-slate-500 truncate">{msg.preview}</p>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-1">
+                        <p className="text-xs font-black text-slate-800 truncate">
+                          {msg.parentName}
+                        </p>
+                        <span className="text-[10px] text-slate-300 font-bold shrink-0">
+                          {msg.time}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 truncate">{msg.preview}</p>
+                    </div>
+                    {msg.unread && (
+                      <span className="w-2 h-2 rounded-full bg-[#06B6D4] shrink-0 mt-1.5" />
+                    )}
                   </div>
-                  {msg.unread && <span className="w-2 h-2 rounded-full bg-[#06B6D4] shrink-0 mt-1.5" />}
-                </div>
-              ))}
+                ))
+              )}
             </div>
             {messages.length > 0 && (
-              <button
-                className="mt-3 w-full text-[11px] font-black text-[#06B6D4] hover:underline"
-              >
+              <button className="mt-3 w-full text-[11px] font-black text-[#06B6D4] hover:underline">
                 View All Messages →
               </button>
             )}
@@ -318,7 +391,6 @@ const TeacherDashboardPage: React.FC = () => {
 
         {/* ── Row 2: Upcoming + Logs ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
           {/* Upcoming Activities */}
           <div
             onClick={() => navigate('/teacher/activities')}
@@ -337,7 +409,9 @@ const TeacherDashboardPage: React.FC = () => {
               </button>
             </div>
             {activities.length === 0 ? (
-              <p className="text-xs text-slate-400 font-bold text-center py-8">No activities assigned for today</p>
+              <p className="text-xs text-slate-400 font-bold text-center py-8">
+                No activities assigned for today
+              </p>
             ) : (
               <div className="space-y-4 overflow-y-auto max-h-72">
                 {activities.map((act, i) => (
@@ -374,19 +448,21 @@ const TeacherDashboardPage: React.FC = () => {
                 {/* Sort */}
                 <div className="relative">
                   <button
-                    onClick={() => setShowSort(v => !v)}
+                    onClick={() => setShowSort((v) => !v)}
                     className="flex items-center gap-1 text-[11px] font-black text-slate-500 border border-slate-200 px-2.5 py-1.5 rounded-xl hover:border-[#06B6D4] hover:text-[#06B6D4] transition-colors bg-white"
                   >
                     Sort <ChevronDown size={11} />
                   </button>
                   {showSort && (
                     <div className="absolute right-0 top-8 z-20 bg-white border border-slate-100 rounded-xl shadow-lg w-40 overflow-hidden">
-                      {SORT_OPTIONS.map(opt => (
+                      {SORT_OPTIONS.map((opt) => (
                         <button
                           key={opt.value}
                           onClick={() => handleSortChange(opt.value)}
                           className={`w-full text-left px-3 py-2 text-xs font-bold hover:bg-[#06B6D4]/5 transition-colors ${
-                            sortBy === opt.value ? 'text-[#06B6D4] bg-[#06B6D4]/5' : 'text-slate-600'
+                            sortBy === opt.value
+                              ? 'text-[#06B6D4] bg-[#06B6D4]/5'
+                              : 'text-slate-600'
                           }`}
                         >
                           {opt.label}
@@ -397,12 +473,15 @@ const TeacherDashboardPage: React.FC = () => {
                 </div>
                 {/* Search */}
                 <div className="relative">
-                  <Search size={12} className="absolute left-2 top-2 text-slate-300 pointer-events-none" />
+                  <Search
+                    size={12}
+                    className="absolute left-2 top-2 text-slate-300 pointer-events-none"
+                  />
                   <input
                     type="text"
                     placeholder="Search…"
                     value={logSearch}
-                    onChange={e => setLogSearch(e.target.value)}
+                    onChange={(e) => setLogSearch(e.target.value)}
                     className="pl-6 pr-2 py-1.5 text-xs font-bold border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#06B6D4]/20 w-24"
                   />
                 </div>
@@ -416,12 +495,21 @@ const TeacherDashboardPage: React.FC = () => {
             ) : (
               <div className="space-y-2 overflow-y-auto max-h-72">
                 {visibleLogs.map((log, i) => (
-                  <div key={log.logId || i} className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 transition-colors">
+                  <div
+                    key={log.logId || i}
+                    className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 transition-colors"
+                  >
                     <div className="relative shrink-0">
                       <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center text-white font-black text-sm overflow-hidden">
-                        {log.childImage
-                          ? <img src={log.childImage} alt={log.childName} className="w-full h-full object-cover" />
-                          : log.childName?.charAt(0)?.toUpperCase() || 'C'}
+                        {log.childImage ? (
+                          <img
+                            src={log.childImage}
+                            alt={log.childName}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          log.childName?.charAt(0)?.toUpperCase() || 'C'
+                        )}
                       </div>
                       <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-white border border-slate-100 shadow-sm flex items-center justify-center">
                         <LogIcon type={log.logType} />
@@ -429,9 +517,13 @@ const TeacherDashboardPage: React.FC = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-black text-slate-800 truncate">{log.childName}</p>
-                      <p className="text-[11px] text-slate-400 font-bold uppercase truncate">{log.detail}</p>
+                      <p className="text-[11px] text-slate-400 font-bold uppercase truncate">
+                        {log.detail}
+                      </p>
                     </div>
-                    <span className="text-[10px] text-slate-300 font-bold shrink-0">{log.time}</span>
+                    <span className="text-[10px] text-slate-300 font-bold shrink-0">
+                      {log.time}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -439,15 +531,17 @@ const TeacherDashboardPage: React.FC = () => {
 
             {filteredLogs.length > 4 && (
               <button
-                onClick={() => setShowAllLogs(v => !v)}
+                onClick={() => setShowAllLogs((v) => !v)}
                 className="mt-3 w-full text-[11px] font-black text-slate-400 hover:text-[#06B6D4] transition-colors flex items-center justify-center gap-1"
               >
                 {showAllLogs ? 'Show less' : `View All Today Logs (${filteredLogs.length})`}
-                <ArrowDown size={11} className={`transition-transform ${showAllLogs ? 'rotate-180' : ''}`} />
+                <ArrowDown
+                  size={11}
+                  className={`transition-transform ${showAllLogs ? 'rotate-180' : ''}`}
+                />
               </button>
             )}
           </div>
-
         </div>
       </main>
 
