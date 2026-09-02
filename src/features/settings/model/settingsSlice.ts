@@ -21,7 +21,7 @@ const initialState: SettingsState = {
 
 export const fetchSettings = createAsyncThunk('settings/fetchSettings', async (_, { rejectWithValue }) => {
   try {
-    const response = await api.get('/settings');
+    const response = await api.get('/api/v1/settings');
     // Save to local storage for quick initial load on refresh
     const data = response.data.data;
     localStorage.setItem('app_theme', data.theme);
@@ -38,7 +38,7 @@ export const updateSettings = createAsyncThunk(
   'settings/updateSettings',
   async (settings: Partial<SettingsState>, { rejectWithValue }) => {
     try {
-      const response = await api.put('/settings', settings);
+      const response = await api.put('/api/v1/settings', settings);
       const data = response.data.data;
       
       // Update local storage

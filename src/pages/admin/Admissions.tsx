@@ -28,7 +28,6 @@ const AdmissionsPage = () => {
   const [age, setAge] = useState<string>('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [totalStudents, setTotalStudents] = useState(0);
-  const [capacity, setCapacity] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -36,19 +35,12 @@ const AdmissionsPage = () => {
       try {
         const statsRes = await apiClient.get('/api/v1/auth/admin/stats');
         setTotalStudents(statsRes.data.data.totalStudents || 0);
-
-        const profileRes = await apiClient.get('/api/v1/auth/admin/profile');
-        setCapacity(parseInt(profileRes.data.data.capacity) || 0);
       } catch (err) {
-        console.error('Failed to fetch capacity stats:', err);
+        console.error('Failed to fetch stats:', err);
       }
     };
     fetchStats();
   }, []);
-
-  const capacityPercentage =
-    capacity > 0 ? Math.min(Math.round((totalStudents / capacity) * 100), 100) : 0;
-
   const [formData, setFormData] = useState({
     fullName: '',
     nameWithInitials: '',
@@ -215,37 +207,6 @@ const AdmissionsPage = () => {
             </button>
           </div>
 
-          <div className="hidden sm:flex items-center gap-4">
-            <div className="bg-white dark:bg-[#0f172a] px-6 py-2.5 rounded-2xl border border-slate-100 dark:border-slate-800/60 shadow-sm flex flex-col items-center min-w-[120px] relative overflow-hidden group">
-              {/* Animated Water Background */}
-              <div
-                className="absolute left-1/2 -translate-x-1/2 bg-primary-500/30 dark:bg-primary-500/40 rounded-[40%] animate-wave transition-all duration-1000 ease-in-out"
-                style={{
-                  width: '320px',
-                  height: '320px',
-                  top: `${100 - capacityPercentage}%`,
-                  zIndex: 0,
-                }}
-              />
-              <div
-                className="absolute left-1/2 -translate-x-1/2 bg-primary-500/20 dark:bg-primary-500/30 rounded-[43%] animate-wave transition-all duration-1000 ease-in-out"
-                style={{
-                  width: '300px',
-                  height: '300px',
-                  top: `${100 - capacityPercentage + 2}%`,
-                  animationDuration: '10s',
-                  animationDirection: 'reverse',
-                  zIndex: 0,
-                }}
-              />
-              <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-tighter relative z-10">
-                Capacity
-              </span>
-              <span className="text-sm font-black text-midnight dark:text-white leading-none mt-1 relative z-10 group-hover:scale-110 transition-transform">
-                {capacityPercentage}% Full
-              </span>
-            </div>
-          </div>
         </div>
       </header>
 

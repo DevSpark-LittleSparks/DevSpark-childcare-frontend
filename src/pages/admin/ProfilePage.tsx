@@ -1,6 +1,6 @@
 import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
 import {
-  User, Mail, MapPin, Save, Edit2, ArrowLeft,
+  User, Mail, MapPin, Save, Edit2, ArrowLeft, Briefcase,
   Key, CheckCircle2, AlertCircle, Loader2, Camera, School, Users, ShieldCheck, Lock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -21,8 +21,8 @@ interface AdminProfileData {
   phone2: string;
   address: string;
   profilePic?: string;
-  centerName: string;
-  capacity: string;
+  designation: string;
+  branchName: string;
 }
 
 const AdminProfilePage: React.FC = () => {
@@ -37,8 +37,8 @@ const AdminProfilePage: React.FC = () => {
     phone1: '',
     phone2: '',
     address: '',
-    centerName: '',
-    capacity: ''
+    designation: '',
+    branchName: ''
   });
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -52,7 +52,21 @@ const AdminProfilePage: React.FC = () => {
     try {
       const res = await apiClient.get('/api/v1/auth/admin/profile');
       if (res.data.success) {
-        setUser(res.data.data);
+        const data = res.data.data;
+        if (data.phone1) {
+          data.phone1 = data.phone1.replace(/\s+/g, '');
+          data.phone1 = data.phone1.startsWith('+94') ? data.phone1 : "+94" + data.phone1.replace(/^0+/, '');
+        }
+        if (data.phone2) {
+          data.phone2 = data.phone2.replace(/\s+/g, '');
+          data.phone2 = data.phone2.startsWith('+94') ? data.phone2 : "+94" + data.phone2.replace(/^0+/, '');
+        }
+        setUser(prev => ({
+          ...prev,
+          ...data,
+          phone1: data.phone1 || '',
+          phone2: data.phone2 || ''
+        }));
       }
     } catch (err) {
       console.error("Failed to fetch admin profile:", err);
@@ -71,10 +85,10 @@ const AdminProfilePage: React.FC = () => {
     }
   }, [statusMessage]);
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     let { name, value } = e.target;
     if (name === 'phone1' || name === 'phone2') {
-      value = "+94" + value.replace(/^\+94\s?/, '');
+      value = "+94" + value.replace(/^\+94\s?/, '').replace(/\s+/g, '');
     }
     setUser(prev => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
@@ -266,8 +280,8 @@ const AdminProfilePage: React.FC = () => {
               <div className="space-y-8 bg-white dark:bg-[#0f172a] rounded-[3rem] shadow-[0_20px_60px_rgba(10,6,55,0.03)] border border-slate-100 dark:border-slate-800/60 p-8 md:p-12">
                 <h3 className="text-xl font-black text-midnight dark:text-white uppercase tracking-tight flex items-center gap-4"><div className="w-10 h-10 bg-secondary-50 rounded-xl flex items-center justify-center text-secondary-500"><School size={20} /></div> Preschool Data</h3>
                 <div className="space-y-6">
-                  <AdminInput label="Institution Name" name="centerName" icon={School} value={user.centerName} onChange={handleInputChange} disabled={!isEditing} />
-                  <AdminInput label="Max Enrollment" name="capacity" icon={Users} value={user.capacity} onChange={handleInputChange} disabled={!isEditing} />
+                  <AdminInput label="Branch Name" name="branchName" icon={School} value={user.branchName} onChange={handleInputChange} disabled={!isEditing} />
+                  <AdminInput label="Designation" name="designation" icon={Briefcase} value={user.designation} onChange={handleInputChange} disabled={!isEditing} />
                   <div className="space-y-2 text-left">
                     <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Physical Address</label>
                     <div className="relative">

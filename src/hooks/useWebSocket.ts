@@ -11,7 +11,8 @@ export const useWebSocket = (role: string) => {
   const { user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    if (!user) return;
+    // Only connect if the user is fully logged in and has a role (meaning they have completed signup)
+    if (!user || !user.role) return;
 
     const socket = new SockJS(`${WEBSOCKET_URL}/ws`);
     const client = new Client({

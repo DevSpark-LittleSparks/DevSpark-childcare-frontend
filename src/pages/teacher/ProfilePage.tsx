@@ -21,7 +21,6 @@ interface TeacherProfileData {
   role: string;
   designation: string;
   phone: string;
-  phone1?: string;
   address: string;
   maxDailyActivities: number;
   qualifications?: string;
@@ -40,7 +39,6 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
     role: '',
     designation: '',
     phone: '',
-    phone1: '',
     address: '',
     maxDailyActivities: 0,
     qualifications: ''
@@ -62,7 +60,12 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
     try {
       const res = await apiClient.get('/api/v1/teacher/profile');
       if (res.data.success) {
-        setUser(res.data.data);
+        const data = res.data.data;
+        if (data.phone) {
+          data.phone = data.phone.replace(/\s+/g, '');
+          data.phone = data.phone.startsWith('+94') ? data.phone : "+94" + data.phone.replace(/^0+/, '');
+        }
+        setUser(data);
       }
     } catch (err) {
       console.error("Failed to fetch teacher profile:", err);
@@ -84,7 +87,7 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     let { name, value } = e.target;
     if (name === 'phone') {
-      value = "+94" + value.replace(/^\+94\s?/, '');
+      value = "+94" + value.replace(/^\+94\s?/, '').replace(/\s+/g, '');
     }
     setUser(prev => ({ ...prev, [name]: value }));
     if (errors[name]) {
@@ -105,9 +108,8 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
     const newErrors: Record<string, string> = {};
     if (!user.fullName?.trim()) newErrors.fullName = 'Full Name is required';
     if (!user.address?.trim()) newErrors.address = 'Address is required';
-    if (!user.qualifications?.trim()) newErrors.qualifications = 'Qualifications are required';
     const slPhoneRegex = /^\+94\d{9}$/;
-    if (user.phone1 && !slPhoneRegex.test(user.phone1)) newErrors.phone1 = 'Invalid phone number';
+    if (user.phone && !slPhoneRegex.test(user.phone)) newErrors.phone = 'Invalid phone number';
 
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
@@ -116,7 +118,7 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
     try {
       const payload = {
         fullName: user.fullName,
-        phone: user.phone1,
+        phone: user.phone,
         address: user.address,
         profilePicture: user.profilePicture
       };
@@ -306,12 +308,12 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
                   <div className="space-y-2 group">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Contact Number</label>
                     <PhoneInput 
-                      name="phone1" 
+                      name="phone" 
                       variant="profile"
-                      value={user.phone1} 
+                      value={user.phone} 
                       onChange={handleInputChange} 
                       disabled={!isEditing}
-                      error={errors.phone1}
+                      error={errors.phone}
                     />
                   </div>
                 </div>

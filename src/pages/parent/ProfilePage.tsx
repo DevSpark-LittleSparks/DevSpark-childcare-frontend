@@ -67,7 +67,17 @@ const ParentProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
     try {
       const res = await apiClient.get('/api/v1/parent/profile');
       if (res.data.success) {
-        setUser(res.data.data);
+        const data = res.data.data;
+        if (data.phone) {
+          data.phone = data.phone.replace(/\s+/g, '');
+          data.phone = data.phone.startsWith('+94') ? data.phone : "+94" + data.phone.replace(/^0+/, '');
+        }
+        setUser(prev => ({
+          ...prev,
+          ...data,
+          phone1: data.phone || '',
+          phone2: data.phone2 || ''
+        }));
       }
     } catch (err) {
       console.error("Failed to fetch parent profile:", err);
@@ -89,7 +99,7 @@ const ParentProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     let { name, value } = e.target;
     if (name === 'phone1' || name === 'phone2' || name === 'phone') {
-      value = "+94" + value.replace(/^\+94\s?/, '');
+      value = "+94" + value.replace(/^\+94\s?/, '').replace(/\s+/g, '');
     }
     setUser(prev => ({ ...prev, [name]: value }));
     if (errors[name]) {

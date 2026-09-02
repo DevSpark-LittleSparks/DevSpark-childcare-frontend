@@ -9,8 +9,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const user = useSelector((state: RootState) => state.auth?.user);
 
   useEffect(() => {
-    // If user is logged in, fetch settings from the backend
-    if (user) {
+    // If user is logged in and has a role (completed signup), fetch settings from the backend
+    if (user && user.role) {
       dispatch(fetchSettings() as any);
     }
   }, [user, dispatch]);
