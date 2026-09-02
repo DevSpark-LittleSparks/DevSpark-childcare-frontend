@@ -5,12 +5,12 @@ import type { ApiResponse } from '../types/shared.types';
 export const attendanceService = {
   // Matches @GetMapping("/date/{date}")
   getByDate: async (date: string): Promise<ChildAttendanceDTO[]> => {
-    const res = await apiClient.get<ApiResponse<ChildAttendanceDTO[]>>(`/attendance/date/${date}`);
+    const res = await apiClient.get<ApiResponse<ChildAttendanceDTO[]>>(`/api/v1/attendance/date/${date}`);
     return res.data.data;
   },
 
   // Matches @PostMapping("/bulk")
   saveBulk: async (payload: BulkAttendanceRequestDTO): Promise<void> => {
-    await apiClient.post('/attendance/bulk', payload);
+    await apiClient.post('/api/v1/attendance/bulk', payload);
   },
 };

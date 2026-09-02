@@ -153,6 +153,13 @@ const UniversalSmartAssistant: React.FC<UniversalSmartAssistantProps> = ({ guest
     }
   };
 
+  // Landing page uses the site's dark-navy brand color; inside the three
+  // portals it stays the original teal — matches each page's own background
+  // so "Sparks" never blends into it.
+  const brandBgClass    = guestOnly ? 'bg-midnight' : 'bg-[#06B6D4]';
+  const brandHoverClass = guestOnly ? 'hover:bg-[#140f52]' : 'hover:bg-[#0891B2]';
+  const sparksTextColor = guestOnly ? '#06C5D4' : '#FFFFFF';
+
   return (
     <>
       {/* ── Chat panel ── */}
@@ -162,7 +169,7 @@ const UniversalSmartAssistant: React.FC<UniversalSmartAssistantProps> = ({ guest
           style={{ animation: 'slideUp 0.2s ease' }}
         >
           {/* Header */}
-          <div className="flex items-center gap-3 px-5 py-4 bg-midnight">
+          <div className={`flex items-center gap-3 px-5 py-4 ${brandBgClass}`}>
             <div className="relative">
               <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden p-1.5">
                 <LogoIcon color="#FFFFFF" className="w-full h-full" />
@@ -174,7 +181,7 @@ const UniversalSmartAssistant: React.FC<UniversalSmartAssistantProps> = ({ guest
                 className="text-sm font-bold tracking-tight text-white"
                 style={{ fontFamily: "'Nunito', sans-serif" }}
               >
-                Little<span style={{ color: '#06C5D4' }}>Sparks</span> Assistant
+                Little<span style={{ color: sparksTextColor }}>Sparks</span> Assistant
               </p>
               <p className="text-[10px] text-white/70 font-bold uppercase tracking-wider">
                 Online | Ready to Help
@@ -205,7 +212,7 @@ const UniversalSmartAssistant: React.FC<UniversalSmartAssistantProps> = ({ guest
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {msg.role === 'assistant' && (
-                  <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 mr-2 mt-1 shadow-sm bg-midnight flex items-center justify-center p-1">
+                  <div className={`w-7 h-7 rounded-full overflow-hidden shrink-0 mr-2 mt-1 shadow-sm ${brandBgClass} flex items-center justify-center p-1`}>
                     <LogoIcon color="#FFFFFF" className="w-full h-full" />
                   </div>
                 )}
@@ -267,7 +274,7 @@ const UniversalSmartAssistant: React.FC<UniversalSmartAssistantProps> = ({ guest
         className={`fixed bottom-6 right-6 z-[9999] w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl transition-all active:scale-95 ${
           isOpen
             ? 'bg-slate-800 hover:bg-slate-700'
-            : 'bg-midnight hover:bg-[#140f52]'
+            : `${brandBgClass} ${brandHoverClass}`
         }`}
         title="Chat with Assistant"
       >

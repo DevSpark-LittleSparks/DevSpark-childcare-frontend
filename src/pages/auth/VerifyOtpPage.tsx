@@ -38,7 +38,7 @@ const VerifyOtpPage: React.FC = () => {
 
     try {
       // Send email and OTP to the backend to activate the account
-      await apiClient.post("/auth/signup/verify-otp", {
+      await apiClient.post("/api/v1/auth/signup/verify-otp", {
         email: email,
         otp: otp
       });

@@ -17,12 +17,12 @@ export const mealService = {
   // ==========================================
 
   publishWeeklyMenu: async (data: WeeklyMenuRequest): Promise<MealMenuResponse[]> => {
-    const res = await apiClient.post<ApiResponse<MealMenuResponse[]>>('/meals/menu', data);
+    const res = await apiClient.post<ApiResponse<MealMenuResponse[]>>('/api/v1/meals/menu', data);
     return res.data.data;
   },
 
   getWeeklyMenu: async (startDate: string, endDate: string): Promise<MealMenuResponse[]> => {
-    const res = await apiClient.get<ApiResponse<MealMenuResponse[]>>('/meals/menu', {
+    const res = await apiClient.get<ApiResponse<MealMenuResponse[]>>('/api/v1/meals/menu', {
       params: { startDate, endDate },
     });
     return res.data.data;
@@ -34,12 +34,12 @@ export const mealService = {
 
   // Submits the bulk tracking data to the backend
   saveConsumptionLogs: async (data: unknown): Promise<void> => {
-    await apiClient.post('/meals/consumption/bulk', data);
+    await apiClient.post('/api/v1/meals/consumption/bulk', data);
   },
 
   // Fetches today's menu for the top display cards on the Teacher UI
   getMenuByDate: async (date: string): Promise<MealMenuResponse[]> => {
-    const res = await apiClient.get<ApiResponse<MealMenuResponse[]>>('/meals/menu', {
+    const res = await apiClient.get<ApiResponse<MealMenuResponse[]>>('/api/v1/meals/menu', {
       params: { startDate: date, endDate: date },
     });
     return res.data.data;
@@ -47,7 +47,7 @@ export const mealService = {
   // අලුත් ළමයි ගන්න Endpoint එක
   getStudentsForMeals: async (date: string) => {
     // Axios instance එක හරහා අර අපි Backend එකේ හදපු අලුත් API එකට කතා කරනවා
-    const res = await apiClient.get(`/meals/consumption/students`, {
+    const res = await apiClient.get(`/api/v1/meals/consumption/students`, {
       params: { date },
     });
     return res.data.data;
@@ -55,7 +55,7 @@ export const mealService = {
 
   // 💡 THIS WAS MISSING! Fetches existing logs for the selected date to enable editing
   getConsumptionLogs: async (date: string): Promise<ConsumptionLogResponse[]> => {
-    const res = await apiClient.get<ApiResponse<ConsumptionLogResponse[]>>('/meals/consumption', {
+    const res = await apiClient.get<ApiResponse<ConsumptionLogResponse[]>>('/api/v1/meals/consumption', {
       params: { date },
     });
     return res.data.data;

@@ -2,10 +2,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { apiClient } from '../../services/axiosInstance';
 
-// 💡 Calling /api/v1/teacher in the TeacherController in the backend
 export const fetchStaff = createAsyncThunk('staff/fetchStaff', async (_, { rejectWithValue }) => {
   try {
-    const response = await apiClient.get('/teacher');
+    const response = await apiClient.get('/api/v1/teacher');
     // Since the TeacherController returns a Page, it gets it from .content or data
     const data = response.data?.data;
     return data?.content || data || [];

@@ -27,6 +27,7 @@ import {
 } from '../store/slices/teacherSlice';
 import AlertBanner from '../components/shared/AlertBanner';
 import { selectUser } from '../features/auth/model/authSlice';
+import { Button } from '../components/common/Button';
 import { apiClient } from '../services/axiosInstance';
 import { useWebSocket } from '../hooks/useWebSocket';
 import {
@@ -135,6 +136,12 @@ const TeacherDashboardPage: React.FC = () => {
   const logs = useAppSelector(selectActivityLogs);
   const unread = useAppSelector(selectUnreadMessageCount);
   const loading = useAppSelector(selectTeacherLoading);
+
+  const [currentTime, setCurrentTime] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const [logSearch, setLogSearch] = useState('');
   const [showAllLogs, setShowAllLogs] = useState(false);
@@ -281,11 +288,21 @@ const TeacherDashboardPage: React.FC = () => {
             })}
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-4 shrink-0">
+          {/* Real-time date and time */}
+          <div className="hidden md:flex flex-col items-end mr-1">
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              {currentTime.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
+            </span>
+            <span className="text-sm font-bold text-slate-900 font-mono opacity-80">
+              {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            </span>
+          </div>
+
           <div className="relative">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className={`relative w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center shadow-sm transition-colors ${showNotifications ? 'bg-slate-100 dark:bg-slate-800' : 'bg-white'}`}
+              className={`relative w-11 h-11 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-center shadow-sm transition-colors ${showNotifications ? 'bg-slate-100 dark:bg-slate-800' : 'bg-white dark:bg-[#0f172a]'}`}
             >
               <Bell size={17} className={showNotifications ? 'text-primary-500' : 'text-slate-500'} />
               {unreadCount > 0 && (
@@ -341,11 +358,19 @@ const TeacherDashboardPage: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Profile avatar → navigates to profile */}
           <button
-            onClick={() => navigate('/teacher/activities')}
-            className="bg-[#06B6D4] hover:bg-[#0891B2] text-white px-4 py-2.5 rounded-xl text-sm font-black shadow-md shadow-cyan-100 transition-all"
+            onClick={() => navigate('/teacher/profile')}
+            className="h-11 w-11 p-0 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20 active:scale-95 transition-all overflow-hidden border-2 border-white"
           >
-            Quick Log
+            {user?.photoURL && user.photoURL !== 'null' && user.photoURL.trim() !== '' ? (
+              <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-[#06B6D4] to-[#0891B2] flex items-center justify-center text-white font-black text-lg">
+                {user?.displayName ? user.displayName.charAt(0).toUpperCase() : 'T'}
+              </div>
+            )}
           </button>
         </div>
       </div>
