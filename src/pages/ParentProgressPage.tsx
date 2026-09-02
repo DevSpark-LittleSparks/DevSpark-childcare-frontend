@@ -197,7 +197,7 @@ const ParentProgressPage: React.FC = () => {
             label="Average Performance"
             value={stats?.avgMood ?? '—'}
             sub={
-              stats ? (
+              stats?.avgMood ? (
                 <p className="text-[10px] font-bold text-slate-400 mt-1">
                   L1 {stats.level1Percent}% · L2 {stats.level2Percent}% · L3 {stats.level3Percent}% · L4 {stats.level4Percent}%
                 </p>
@@ -208,7 +208,7 @@ const ParentProgressPage: React.FC = () => {
             label="Meals Eaten"
             value={stats?.mealsProvided ?? '—'}
             sub={
-              stats ? (
+              stats?.mealsProvided ? (
                 <p className="text-[10px] font-bold text-slate-400 mt-1">
                   Full {stats.fullMealPercent}% · Partial {stats.partialMealPercent}% · None {stats.noMealPercent}%
                 </p>

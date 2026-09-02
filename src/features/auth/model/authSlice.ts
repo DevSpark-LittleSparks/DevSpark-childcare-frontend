@@ -24,7 +24,11 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  isLoading: false,
+  // Starts true: the app doesn't actually know the auth state until Firebase's
+  // first onAuthStateChanged callback fires, which is async even on a fresh
+  // page load. Pages must not fetch data before this flips to false, or their
+  // request goes out with no token yet and silently comes back empty.
+  isLoading: true,
   error: null,
 };
 
@@ -76,3 +80,4 @@ export default authSlice.reducer;
  * Used in Sidebar.tsx -> useSelector(selectUser)
  */
 export const selectUser = (state: any) => state.auth.user;
+export const selectAuthLoading = (state: any) => state.auth.isLoading;

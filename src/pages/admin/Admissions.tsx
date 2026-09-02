@@ -178,7 +178,7 @@ const AdmissionsPage = () => {
           ...formData,
           profilePic: previewImage,
         };
-        await apiClient.post('/child/register', payload);
+        await apiClient.post('/api/v1/child/register', payload);
         alert('Registration Successful! Child has been registered in the system.');
         navigate('/admin/dashboard');
       } catch (err: any) {
