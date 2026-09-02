@@ -14,19 +14,23 @@ interface Props {
 
 const COLORS = {
   present: '#06B6D4',
+  halfDay: '#FBBF24',
   absent:  '#F87171',
 };
 
 const ProgressPieChart: React.FC<Props> = ({ attendance }) => {
-  const { presentDays, absentDays, attendanceRate } = attendance;
+  const { presentDays, absentDays, halfDays, attendanceRate } = attendance;
+  const totalDays = presentDays + (halfDays || 0) + absentDays;
+  const pct = (n: number) => (totalDays === 0 ? '0.0' : ((n * 100) / totalDays).toFixed(1));
 
   const data = [
-    { name: 'Present', value: presentDays || 0,  color: COLORS.present },
-    { name: 'Absent',  value: absentDays  || 0,  color: COLORS.absent  },
+    { name: 'Present',  value: presentDays || 0, color: COLORS.present },
+    { name: 'Half Day', value: halfDays    || 0, color: COLORS.halfDay },
+    { name: 'Absent',   value: absentDays  || 0, color: COLORS.absent  },
   ];
 
-  // If both are 0 show a neutral ring
-  const isEmpty = presentDays === 0 && absentDays === 0;
+  // If all three are 0 show a neutral ring
+  const isEmpty = presentDays === 0 && absentDays === 0 && (halfDays || 0) === 0;
   const chartData = isEmpty
     ? [{ name: 'No Data', value: 1, color: '#e2e8f0' }]
     : data;
@@ -73,15 +77,17 @@ const ProgressPieChart: React.FC<Props> = ({ attendance }) => {
             {attendanceRate.toFixed(0)}%
           </span>
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-            Present
+            Attendance
           </span>
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="flex gap-6">
-        <LegendItem color={COLORS.absent}  label={`Absent (${(100 - attendanceRate).toFixed(1)}%)`} />
-        <LegendItem color={COLORS.present} label={`Present (${attendanceRate.toFixed(1)}%)`} />
+      {/* Legend — half-days count as half credit toward the score above, but
+          are shown here as their own true share of logged days */}
+      <div className="flex gap-6 flex-wrap justify-center">
+        <LegendItem color={COLORS.present} label={`Present (${pct(presentDays)}%)`} />
+        <LegendItem color={COLORS.halfDay} label={`Half Day (${pct(halfDays || 0)}%)`} />
+        <LegendItem color={COLORS.absent}  label={`Absent (${pct(absentDays)}%)`} />
       </div>
     </div>
   );
