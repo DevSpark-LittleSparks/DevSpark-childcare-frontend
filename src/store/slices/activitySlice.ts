@@ -11,11 +11,15 @@ import type {
 
 // 🚀 FIXED: Line 14 error removed
 const getErrorMessage = (error: unknown): string => {
-  const err = error as { response?: { data?: unknown }; message?: string };
-  if (err.response?.data) {
-    return JSON.stringify(err.response.data);
+  const err = error as { response?: { data?: { message?: string } }; message?: string };
+
+  // Backend එකෙන් පැහැදිලි මැසේජ් එකක් එවලා තියෙනවා නම් ඒක පෙන්නනවා
+  if (err.response?.data?.message) {
+    return err.response.data.message;
   }
-  return err.message ?? 'An unknown error occurred';
+
+  // එහෙම නැත්නම් මේ ලස්සන, User-friendly මැසේජ් එක පෙන්නනවා
+  return 'Failed to load activities. Please check your connection or log in again.';
 };
 
 export const fetchMasterActivities = createAsyncThunk(
