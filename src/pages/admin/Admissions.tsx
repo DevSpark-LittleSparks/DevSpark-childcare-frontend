@@ -77,6 +77,9 @@ const AdmissionsPage = () => {
   ) => {
     const { name, value } = e.target;
     let finalValue = value;
+    if (name === 'fullName' || name === 'nameWithInitials' || name === 'parentFullName') {
+      finalValue = value.replace(/\b\w/g, char => char.toUpperCase());
+    }
     if (name === 'parentContact') {
       finalValue = '+94' + value.replace(/^\+94\s?/, '');
     }
@@ -116,6 +119,20 @@ const AdmissionsPage = () => {
         newErrors[field] = 'This field is required';
       }
     });
+
+    if (formData.fullName && formData.fullName.trim() !== '') {
+      const fullNameRegex = /^[a-zA-Z]{2,}(?:\s+[a-zA-Z]{2,})+$/;
+      if (!fullNameRegex.test(formData.fullName.trim())) {
+        newErrors['fullName'] = 'Must contain at least two names (e.g., John Doe)';
+      }
+    }
+
+    if (formData.nameWithInitials && formData.nameWithInitials.trim() !== '') {
+      const initialsRegex = /^([A-Za-z][\s.]+)+[A-Za-z]+$/;
+      if (!initialsRegex.test(formData.nameWithInitials.trim())) {
+        newErrors['nameWithInitials'] = 'Must contain initials and a surname (e.g., A B C Perera)';
+      }
+    }
 
     if (!previewImage) {
       newErrors['photo'] = "Child's Profile Picture is mandatory.";
@@ -178,7 +195,7 @@ const AdmissionsPage = () => {
           ...formData,
           profilePic: previewImage,
         };
-        await apiClient.post('/child/register', payload);
+        await apiClient.post('/api/v1/child/register', payload);
         alert('Registration Successful! Child has been registered in the system.');
         navigate('/admin/dashboard');
       } catch (err: any) {
@@ -254,6 +271,7 @@ const AdmissionsPage = () => {
                   <LittleInput
                     label="Full Legal Name"
                     name="fullName"
+                    value={formData.fullName}
                     placeholder="As per birth certificate"
                     onChange={handleInputChange}
                     error={errors.fullName}
@@ -261,7 +279,8 @@ const AdmissionsPage = () => {
                   <LittleInput
                     label="Name with Initials"
                     name="nameWithInitials"
-                    placeholder="A.B.C. Perera"
+                    value={formData.nameWithInitials}
+                    placeholder="A B C Perera"
                     onChange={handleInputChange}
                     error={errors.nameWithInitials}
                   />
@@ -453,7 +472,8 @@ const AdmissionsPage = () => {
                     </span>
                   }
                   name="parentFullName"
-                  placeholder="Primary parent name"
+                  value={formData.parentFullName}
+                  placeholder="E.g. A.B.C. Perera"
                   onChange={handleInputChange}
                   error={errors.parentFullName}
                 />
@@ -466,7 +486,8 @@ const AdmissionsPage = () => {
                     </span>
                   }
                   name="parentEmail"
-                  placeholder="auth@littlesparks.com"
+                  value={formData.parentEmail}
+                  placeholder="E.g. parent@example.com"
                   onChange={handleInputChange}
                   error={errors.parentEmail}
                 />
@@ -494,7 +515,8 @@ const AdmissionsPage = () => {
                     </span>
                   }
                   name="parentID"
-                  placeholder="NIC or Passport"
+                  value={formData.parentID}
+                  placeholder="NIC / Passport Number"
                   onChange={handleInputChange}
                   error={errors.parentID}
                 />

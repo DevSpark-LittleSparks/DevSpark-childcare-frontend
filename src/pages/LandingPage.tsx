@@ -16,6 +16,7 @@ import land2Img from '../assets/images/hero-navy2.png';
 import land3Img from '../assets/images/land3.jfif';
 import land4Img from '../assets/images/land4.png';
 import c1Img from '../assets/images/c1.jpg';
+import discoverKidsImg from '../assets/images/discover-kids.jpg';
 import { apiClient } from '../services/axiosInstance';
 
 // ==========================================
@@ -161,7 +162,7 @@ const heroSlides = [
     sub: 'Keep safety - incident reports, and parent communication organized in one secure place , always ready when you need them.',
     cta: 'Request Form',
   },
-  
+
 ];
 
 const HeroCarousel: React.FC<{ onCta: (idx: number) => void }> = ({ onCta }) => {
@@ -340,8 +341,8 @@ const AnimatedNumber: React.FC<{ value: number; suffix?: string; label: string; 
 
   useEffect(() => {
     if (inView && value > 0) {
-      const controls = animate(0, value, { 
-        duration: 2, 
+      const controls = animate(0, value, {
+        duration: 2,
         delay: delay,
         onUpdate: (v) => setDisplayValue(Math.round(v))
       });
@@ -431,7 +432,7 @@ const ParallaxSection: React.FC<{ id: string; navigate: (path: string) => void }
           <Button
             variant="primary"
             className="px-8 py-4 rounded-full shadow-lg"
-            onClick={() => navigate('/learn-more')}
+            onClick={() => navigate('/signup-request')}
           >
             Learn More
           </Button>
@@ -760,30 +761,22 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* ===== 5) DISCOVER ===== */}
-      <section id="discover" className="relative py-32 px-6 lg:px-8 overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #0d0b18 0%, #180e0a 40%, #100818 70%, #090f0d 100%)' }}>
-        {/* Soft pastel color washes */}
-        <div className="absolute top-0 left-0 w-[700px] h-[700px] rounded-full blur-[160px] pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(255,183,120,0.22) 0%, transparent 65%)' }} />
-        <div className="absolute bottom-0 right-0 w-[700px] h-[700px] rounded-full blur-[160px] pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(255,130,160,0.20) 0%, transparent 65%)' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[180px] pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(255,220,100,0.13) 0%, transparent 65%)' }} />
-        <div className="absolute top-1/4 right-0 w-[500px] h-[500px] rounded-full blur-[150px] pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(230,120,255,0.18) 0%, transparent 65%)' }} />
-        <div className="absolute bottom-1/4 left-0 w-[500px] h-[500px] rounded-full blur-[150px] pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(100,240,180,0.15) 0%, transparent 65%)' }} />
+      <section id="discover" className="relative min-h-[500px] md:min-h-[600px] lg:min-h-[700px] pt-10 lg:pt-16 px-6 lg:px-8 overflow-hidden bg-bottom bg-no-repeat bg-[length:140%_auto] md:bg-[length:100%_auto] lg:bg-[length:70%_auto] xl:bg-[length:60%_auto]"
+        style={{ backgroundImage: `url(${discoverKidsImg})`, backgroundColor: '#ddebeb' }}>
 
-        <div className="relative z-10 max-w-4xl mx-auto text-center">
+        <div className="relative z-10 max-w-4xl mx-auto text-center mt-2 md:mt-4">
           <RevealSection>
-            <span className="text-xs font-black text-primary-500 uppercase tracking-[0.4em] block mb-6">
+            <span className="text-xs font-black text-primary-600 uppercase tracking-[0.4em] block mb-6">
               Educators Change Lives, We're Just Cheerleaders
             </span>
-            <h2 className="text-5xl md:text-7xl font-black text-white mb-6 leading-tight">
+            <h2 className="text-5xl md:text-7xl font-black text-[#0a0620] mb-6 leading-tight">
               Discover{' '}
               <span className="inline-flex items-center">
-                <LittleSparksLogo variant="light" iconClassName="w-16 h-16 md:w-24 md:h-24" textClassName="text-5xl md:text-7xl" />
+                <LittleSparksLogo variant="dark" iconClassName="w-16 h-16 md:w-24 md:h-24" textClassName="text-5xl md:text-7xl" />
               </span>
               !
             </h2>
-            <p className="text-lg text-slate-400 dark:text-slate-500 dark:text-slate-400 mb-10 max-w-lg mx-auto">
-              Join hundreds of childcare centers already transforming their daily operations with LittleSparks.
-            </p>
+
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.97 }}

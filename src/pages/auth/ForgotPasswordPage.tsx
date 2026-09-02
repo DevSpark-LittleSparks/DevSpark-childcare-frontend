@@ -5,7 +5,7 @@ import { Button } from "../../components/common/Button";
 import { Input } from "../../components/common/Input";
 import { Card } from "../../components/common/Card";
 import { AuthHeader } from "../../shared/ui/AuthHeader/AuthHeader";
-
+import discoverKidsImg from "../../assets/images/discover-kids.jpg";
 
 import { firebaseAuth } from "../../lib/firebase";
 import { sendPasswordResetEmail } from "firebase/auth";
@@ -53,11 +53,16 @@ const ForgotPasswordPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-800/40 flex flex-col font-sans">
-      { <AuthHeader backLink="/login" /> }
+    <div className="min-h-screen flex flex-col font-sans relative bg-cover bg-center" style={{ backgroundImage: `url(${discoverKidsImg})` }}>
+      {/* Blur overlay for the background image */}
+      <div className="absolute inset-0 bg-white/40 backdrop-blur-md z-0" />
 
-      <main className="flex-1 flex flex-col max-w-[1440px] mx-auto w-full items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 shadow-2xl border-t-4 border-t-cyan-500 bg-white dark:bg-[#0f172a]/80 backdrop-blur-sm">
+      <div className="relative z-10">
+        <AuthHeader backLink="/login" />
+      </div>
+
+      <main className="relative z-10 flex-1 flex flex-col max-w-[1440px] mx-auto w-full items-center justify-center p-4">
+        <Card className="w-full max-w-md p-8 shadow-2xl border-t-4 border-t-cyan-500 bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-sm">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">Reset Password</h2>
             <p className="mt-2 text-sm text-slate-500">

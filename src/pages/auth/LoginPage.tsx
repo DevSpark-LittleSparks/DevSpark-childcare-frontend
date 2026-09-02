@@ -1,5 +1,5 @@
 import { LoginForm } from "../../features/auth/ui/LoginForm";
-import loginImg from "../../assets/images/login-dark.png";
+import discoverKidsImg from "../../assets/images/discover-kids.jpg";
 
 export default function LoginPage() {
   return (
@@ -17,13 +17,11 @@ export default function LoginPage() {
         <div
           className="absolute inset-0 bg-cover bg-center animate-zoomOutSlow opacity-90"
           style={{
-            backgroundImage: `url(${loginImg})`,
+            backgroundImage: `url(${discoverKidsImg})`,
           }}
         />
 
-        {/* A subtle dark gradient overlay to make it look premium and blend with the black theme */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+        {/* Removed dark gradient overlays because the new image is bright */}
 
         {/* Content area for extra text if needed */}
 

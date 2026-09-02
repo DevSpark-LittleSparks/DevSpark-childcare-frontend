@@ -7,6 +7,7 @@ import { apiClient } from "../../services/axiosInstance";
 import heroImg from "../../assets/images/hero.png";
 import requestSideImg from "../../assets/images/request-side.png";
 import directorDashboardImg from "../../assets/images/image_5.jpg";
+import discoverKidsImg from "../../assets/images/discover-kids.jpg";
 import { Eye, EyeOff } from "lucide-react";
 
 type UserRole = "director" | "teacher" | "parent";
@@ -462,9 +463,8 @@ const SignupRequestForm: React.FC = () => {
           </div>
         </section>
 
-        <section className="hidden lg:flex flex-1 bg-gradient-to-br from-cyan-600 to-blue-700 p-12 items-center justify-center relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-white/10 dark:bg-[#0f172a]/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-white/10 dark:bg-cyan-400/20 rounded-full blur-3xl translate-x-1/4 translate-y-1/4" />
+        <section className="hidden lg:flex flex-1 p-12 items-center justify-center relative overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${discoverKidsImg})` }}>
+          <div className="absolute inset-0 bg-cyan-900/40 backdrop-blur-md" />
 
           <div className="relative z-10 w-full flex flex-col items-center">
             <div className="w-full max-w-[540px] mb-12 relative group transition-all duration-700 transform hover:scale-[1.02]">
