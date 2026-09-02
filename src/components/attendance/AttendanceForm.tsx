@@ -73,6 +73,8 @@ export function AttendanceForm() {
         const liveData = response.data?.data || response.data;
 
         if (Array.isArray(liveData) && isMounted) {
+          let hasExistingRecords = false;
+
           const mergedAttendances = liveData.map((c: RawStudent) => {
             const cId = c.childId || c.id || c.studentId || '';
             const cName =
@@ -81,6 +83,10 @@ export function AttendanceForm() {
             const existingRecord = records?.find(
               (r: ChildAttendanceDTO) => String(r.childId) === String(cId),
             );
+
+            if (existingRecord) {
+              hasExistingRecords = true;
+            }
 
             return {
               childId: String(cId),
@@ -93,6 +99,7 @@ export function AttendanceForm() {
           });
 
           reset({ attendances: mergedAttendances });
+          setIsSaved(hasExistingRecords);
         }
       } catch (error) {
         console.error('Failed to fetch children for attendance:', error);
@@ -137,18 +144,27 @@ export function AttendanceForm() {
     if (isSaved) setIsSaved(false);
   };
 
+  // 💡 අලුතින් වෙනස් කළ කොටස: Backend එකට ඕනේ විදිහට තත්පරත් එක්ක Time එක යවනවා (HH:mm:ss)
   const markTime = (index: number, type: 'in' | 'out') => {
     handleEdit();
-    const currentTime = format(new Date(), 'HH:mm');
+    // Spring Boot LocalTime expects HH:mm:ss format!
+    const currentTimeForBackend = format(new Date(), 'HH:mm:ss');
+
     if (type === 'in') {
       const currentStatus = getValues(`attendances.${index}.status`);
       if (currentStatus === 'UNMARKED' || currentStatus === 'ABSENT') {
         setValue(`attendances.${index}.status`, 'PRESENT', { shouldValidate: true });
       }
-      setValue(`attendances.${index}.checkIn`, currentTime);
+      setValue(`attendances.${index}.checkIn`, currentTimeForBackend);
     } else {
-      setValue(`attendances.${index}.checkOut`, currentTime);
+      setValue(`attendances.${index}.checkOut`, currentTimeForBackend);
     }
+  };
+
+  // 💡 අලුතින් එකතු කළ කොටස: UI එකේ පෙන්නද්දී තත්පර කෑල්ල කපලා (HH:mm) විතරක් පෙන්නන්න හදපු Helper එක
+  const formatTimeForDisplay = (timeString?: string | null) => {
+    if (!timeString) return null;
+    return timeString.length >= 5 ? timeString.substring(0, 5) : timeString;
   };
 
   const unmarkedNames = fields
@@ -193,8 +209,10 @@ export function AttendanceForm() {
           <tbody className="divide-y divide-slate-100">
             {fields.map((field, index) => {
               const currentStatus = watchedAttendances?.[index]?.status;
-              const checkIn = watchedAttendances?.[index]?.checkIn;
-              const checkOut = watchedAttendances?.[index]?.checkOut;
+
+              // අලුත් Helper එක හරහා Display Time එක හදාගන්නවා
+              const checkInDisplay = formatTimeForDisplay(watchedAttendances?.[index]?.checkIn);
+              const checkOutDisplay = formatTimeForDisplay(watchedAttendances?.[index]?.checkOut);
 
               return (
                 <tr key={field.id} className="hover:bg-primary-50 transition-colors">
@@ -275,19 +293,26 @@ export function AttendanceForm() {
                         className="px-3 py-1.5 text-xs font-medium border border-slate-200 rounded bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 text-slate-700"
                       >
                         <Clock className="w-3 h-3 text-slate-400" /> In{' '}
-                        {checkIn && <span className="text-primary-600 font-bold">({checkIn})</span>}
+                        {/* මෙතන Display Time එක පෙන්වනවා */}
+                        {checkInDisplay && (
+                          <span className="text-primary-600 font-bold">({checkInDisplay})</span>
+                        )}
                       </button>
                       <button
                         type="button"
                         disabled={
-                          !isEditMode || !checkIn || currentStatus === 'ABSENT' || isSubmittingForm
+                          !isEditMode ||
+                          !watchedAttendances?.[index]?.checkIn ||
+                          currentStatus === 'ABSENT' ||
+                          isSubmittingForm
                         }
                         onClick={() => markTime(index, 'out')}
                         className="px-3 py-1.5 text-xs font-medium border border-slate-200 rounded bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 text-slate-700"
                       >
                         <Clock className="w-3 h-3 text-slate-400" /> Out{' '}
-                        {checkOut && (
-                          <span className="text-primary-600 font-bold">({checkOut})</span>
+                        {/* මෙතන Display Time එක පෙන්වනවා */}
+                        {checkOutDisplay && (
+                          <span className="text-primary-600 font-bold">({checkOutDisplay})</span>
                         )}
                       </button>
                     </div>
@@ -300,14 +325,13 @@ export function AttendanceForm() {
 
         {isEditMode && (
           <div className="bg-slate-50 p-4 flex justify-end border-t border-slate-200">
-            {/* 🎨 THE FIX: Using your exact primary-800 for a solid, dark, distinct "Saved" state */}
             <button
               type="submit"
               disabled={isSaving || isSaved || isSubmittingForm}
               className={cn(
                 'px-6 py-2 rounded-lg font-semibold transition-all shadow-sm',
                 isSaved
-                  ? 'bg-primary-800 text-white border-primary-800 cursor-default'
+                  ? 'bg-primary-900 text-white border-primary-900 cursor-default'
                   : 'bg-primary-500 hover:bg-primary-600 text-white disabled:opacity-50',
               )}
             >
