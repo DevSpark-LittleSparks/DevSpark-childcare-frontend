@@ -34,6 +34,7 @@ interface LogoProps {
   className?: string;
   iconClassName?: string;
   textClassName?: string;
+  onlyIcon?: boolean;
 }
 
 /**
@@ -44,6 +45,7 @@ export const Logo = ({
   className = '',
   iconClassName = 'w-10 h-10',
   textClassName = 'text-2xl',
+  onlyIcon = false,
 }: LogoProps) => {
   const isLight = variant === 'light';
   const iconColor = isLight ? '#FFFFFF' : '#1F2937';
@@ -55,12 +57,14 @@ export const Logo = ({
       <LogoIcon color={iconColor} className={iconClassName} />
 
       {/* Text */}
-      <span
-        className={`font-bold tracking-tighter -ml-2 ${mainTextColor} ${textClassName}`}
-        style={{ fontFamily: "'Nunito', sans-serif" }}
-      >
-        Little<span style={{ color: sparksColor }}>Sparks</span>
-      </span>
+      {!onlyIcon && (
+        <span
+          className={`font-bold tracking-tighter -ml-2 ${mainTextColor} ${textClassName}`}
+          style={{ fontFamily: "'Nunito', sans-serif" }}
+        >
+          Little<span style={{ color: sparksColor }}>Sparks</span>
+        </span>
+      )}
     </div>
   );
 };

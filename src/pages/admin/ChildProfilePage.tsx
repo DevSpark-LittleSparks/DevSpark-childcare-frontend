@@ -104,8 +104,8 @@ const ChildViewPage = () => {
         if (res.data.success) {
           const data = res.data.data;
           setFormData({
-            fullName: `${data.firstName} ${data.lastName}`,
-            nameWithInitials: `${data.firstName.charAt(0)}.${data.lastName}`, // Fallback
+            fullName: `${data.firstName} ${data.lastName}`.trim(),
+            nameWithInitials: data.nameWithInitials || `${data.firstName.charAt(0)}.${data.lastName}`, // Read from DB or Fallback
             dob: data.dob || '',
             gender: data.gender ? data.gender.toLowerCase() : 'male',
             bloodGroup: data.bloodGroup || '',
@@ -209,6 +209,7 @@ const ChildViewPage = () => {
       const payload = {
         firstName,
         lastName,
+        nameWithInitials: formData.nameWithInitials,
         dob: formData.dob,
         gender: formData.gender.toUpperCase(),
         bloodGroup: formData.bloodGroup,
