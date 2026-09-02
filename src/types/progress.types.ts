@@ -36,7 +36,8 @@ export interface DailyEngagement {
 export interface AttendanceStats {
   presentDays: number;
   absentDays: number;
-  attendanceRate: number; // 0-100
+  halfDays: number;
+  attendanceRate: number; // 0-100, half-days count as half credit
 }
 
 // ── Child reference (used in selectors) ──────────────────────────────────────

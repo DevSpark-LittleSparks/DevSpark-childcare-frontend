@@ -5,6 +5,7 @@ import {
   MapPin, ShieldCheck, CheckSquare, Square, ChevronLeft, ChevronRight, MoreHorizontal
 } from 'lucide-react';
 import { Button } from '../../components/common/Button';
+import { TableControls } from '../../components/common/TableControls';
 import { apiClient } from '../../services/axiosInstance';
 
 interface TeacherData {
@@ -149,14 +150,28 @@ const Teachers = () => {
     }
   };
 
-  const filteredTeachers = teachers.filter(t => {
+  const [orderBy, setOrderBy] = useState("firstNameAsc");
+  const [pageSize, setPageSize] = useState(25);
+
+  const orderOptions = [
+    { label: "First Name A - Z", value: "firstNameAsc" },
+    { label: "First Name Z - A", value: "firstNameDesc" },
+    { label: "Role", value: "role" },
+  ];
+
+  const filteredTeachers = [...teachers].filter(t => {
     const matchesSearch = `${t.firstName} ${t.lastName} ${t.email}`.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filter === 'all' || t.role.toLowerCase() === filter.toLowerCase();
     return matchesSearch && matchesFilter;
+  }).sort((a, b) => {
+    if (orderBy === "firstNameAsc") return a.firstName.localeCompare(b.firstName);
+    if (orderBy === "firstNameDesc") return b.firstName.localeCompare(a.firstName);
+    if (orderBy === "role") return a.role.localeCompare(b.role);
+    return 0;
   });
 
-  const totalPages = Math.max(1, Math.ceil(filteredTeachers.length / 10));
-  const paginatedTeachers = filteredTeachers.slice(currentPage * 10, (currentPage + 1) * 10);
+  const totalPages = Math.max(1, Math.ceil(filteredTeachers.length / pageSize));
+  const paginatedTeachers = filteredTeachers.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
 
   return (
     <div className="min-h-screen w-full bg-surface-secondary dark:bg-slate-950 transition-colors duration-300 font-sans text-slate-900 dark:text-slate-100 pb-16">
@@ -191,6 +206,20 @@ const Teachers = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 space-y-4">
+
+        {/* Toolbar: Controls */}
+        <TableControls 
+          orderOptions={orderOptions}
+          selectedOrder={orderBy}
+          onOrderChange={setOrderBy}
+          pageSize={pageSize}
+          onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(0); }}
+          currentPage={currentPage}
+          totalElements={filteredTeachers.length}
+          onPrevPage={handlePrevPage}
+          onNextPage={handleNextPage}
+          totalPages={totalPages}
+        />
 
         {/* Toolbar: Search + Filters */}
         <div className="flex items-center gap-3 flex-wrap">
@@ -249,8 +278,9 @@ const Teachers = () => {
         ) : (
         <>
         <div className="bg-white dark:bg-[#0f172a]/70 backdrop-blur-md border border-white/80 rounded-3xl overflow-hidden shadow-sm">
-          <table className="w-full text-left">
-            <thead>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left min-w-[800px]">
+              <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/60">
                 <th className="px-8 py-5 w-20">
                   <button onClick={toggleSelectAll} className="text-slate-400 dark:text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-colors">
@@ -339,6 +369,7 @@ const Teachers = () => {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
         
         {/* Pagination Controls */}

@@ -12,6 +12,7 @@ import progressReducer from './slices/progressSlice';
 import teacherReducer from './slices/teacherSlice';
 import activityReducer from './slices/activitySlice';
 import attendanceReducer from './slices/attendanceSlice';
+import mealReducer from './slices/mealSlice';
 
 export const store = configureStore({
   reducer: {
@@ -27,6 +28,7 @@ export const store = configureStore({
     teacher: teacherReducer,
     activity: activityReducer,
     attendance: attendanceReducer,
+    meal: mealReducer,
   },
   devTools: true,
 });

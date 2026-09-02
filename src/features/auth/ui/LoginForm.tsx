@@ -7,12 +7,12 @@ import { Button } from "../../../components/common/Button";
 import { Input } from "../../../components/common/Input";
 import { Card } from "../../../components/common/Card";
 import { Spinner } from "../../../components/common/Spinner";
+import { apiClient } from "../../../services/axiosInstance";
 
 // App store and Firebase
 import { useAppDispatch, useAppSelector, RootState } from "../../../store";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { firebaseAuth } from "../../../lib/firebase";
-import { apiClient } from "../../../services/axiosInstance";
 
 // Local model and Routing
 import { setUser, setError, setLoading } from "../model/authSlice";
@@ -102,8 +102,21 @@ export function LoginForm() {
       const tokenResult = await userCredential.user.getIdTokenResult();
       const role = (tokenResult.claims.role as string | undefined) ?? null;
 
+      // Fetch profile from backend to get the actual profilePic (Base64)
+      let backendPhotoURL = photoURL;
+      let backendName = displayName;
+      try {
+        const profileRes = await apiClient.get('/api/v1/auth/me');
+        if (profileRes.data.success) {
+          backendPhotoURL = profileRes.data.data.profilePic;
+          backendName = profileRes.data.data.fullName;
+        }
+      } catch (e) {
+        console.error("Failed to fetch backend profile during login", e);
+      }
+
       // Save the user info (including role) in our Redux store so the whole app knows who is logged in
-      dispatch(setUser({ uid, email, displayName, photoURL, role }));
+      dispatch(setUser({ uid, email, displayName: backendName, photoURL: backendPhotoURL, role }));
 
       // STEP 4: Send the user to the correct dashboard based on their role
       if (role?.toLowerCase() === "admin") {

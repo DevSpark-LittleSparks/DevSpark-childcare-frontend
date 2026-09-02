@@ -69,7 +69,7 @@ export function LogProgressForm({ assignmentId, initialData, onClose }: Props) {
 
     const fetchChildren = async () => {
       try {
-        const response = await apiClient.get('/child/all');
+        const response = await apiClient.get('/api/v1/child/all');
         const liveData = response.data?.data || response.data;
 
         if (Array.isArray(liveData) && liveData.length > 0) {

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Phone, MapPin, ShieldCheck, ChevronRight, Search, Square, CheckSquare, Trash2, Eye, ChevronLeft, MoreHorizontal, X, Users, User } from 'lucide-react';
+import { Mail, Phone, MapPin, ShieldCheck, ChevronRight, Search, Square, CheckSquare, Trash2, Eye, ChevronLeft, MoreHorizontal, X, Users, User, Check } from 'lucide-react';
 import { Button } from '../../components/common/Button';
+import { TableControls } from '../../components/common/TableControls';
 import { apiClient } from '../../services/axiosInstance';
 
 const formatPhoneNumber = (phone: string | undefined) => {
@@ -62,6 +63,7 @@ const ParentManagement = () => {
           relationship: p.relationship || "Guardian",
           status: status,
           profilePic: p.profilePic || null,
+          billingPaid: p.billingPaid || false,
           children: []
         });
       });
@@ -108,13 +110,6 @@ const ParentManagement = () => {
     if (currentPage > 0) setCurrentPage(prev => prev - 1);
   };
 
-  const filteredParents = parents.filter((p) => {
-    const searchLower = searchTerm.toLowerCase();
-    return p.fullName.toLowerCase().includes(searchLower) || p.email.toLowerCase().includes(searchLower);
-  });
-
-  const totalPages = Math.max(1, Math.ceil(filteredParents.length / 10));
-  const paginatedParents = filteredParents.slice(currentPage * 10, (currentPage + 1) * 10);
 
   const handleDelete = async (email: string) => {
     if (window.confirm("Are you sure you want to remove this parent and their linked records?")) {
@@ -135,6 +130,39 @@ const ParentManagement = () => {
 
   const toggleSelect = (email: string) => {
     setSelectedParents(prev => prev.includes(email) ? prev.filter(e => e !== email) : [...prev, email]);
+  };
+
+  const [orderBy, setOrderBy] = useState("firstNameAsc");
+  const [pageSize, setPageSize] = useState(25);
+
+  const orderOptions = [
+    { label: "First Name A - Z", value: "firstNameAsc" },
+    { label: "First Name Z - A", value: "firstNameDesc" },
+    { label: "Status Active", value: "statusActive" }
+  ];
+
+  const processedParents = [...parents].filter((p) => {
+    const searchLower = searchTerm.toLowerCase();
+    return p.fullName.toLowerCase().includes(searchLower) || p.email.toLowerCase().includes(searchLower);
+  }).sort((a, b) => {
+    if (orderBy === "firstNameAsc") return a.fullName.localeCompare(b.fullName);
+    if (orderBy === "firstNameDesc") return b.fullName.localeCompare(a.fullName);
+    if (orderBy === "statusActive") return a.status === "active" ? -1 : 1;
+    return 0;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(processedParents.length / pageSize));
+  const paginatedParents = processedParents.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+
+  const toggleBilling = async (e: React.MouseEvent, parentId: string) => {
+    e.stopPropagation();
+    try {
+      await apiClient.put(`/api/v1/auth/admin/parent/${parentId}/billing`);
+      setParents(prev => prev.map(p => p.parentId === parentId ? { ...p, billingPaid: !p.billingPaid } : p));
+    } catch (err) {
+      console.error("Failed to toggle billing:", err);
+      alert("Failed to update billing info. Please try again.");
+    }
   };
 
   return (
@@ -167,7 +195,21 @@ const ParentManagement = () => {
 
       <main className="max-w-7xl mx-auto px-6 space-y-4">
 
-        {/* Toolbar: Search */}
+        {/* Toolbar: Controls */}
+        <TableControls 
+          orderOptions={orderOptions}
+          selectedOrder={orderBy}
+          onOrderChange={setOrderBy}
+          pageSize={pageSize}
+          onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(0); }}
+          currentPage={currentPage}
+          totalElements={processedParents.length}
+          onPrevPage={handlePrevPage}
+          onNextPage={handleNextPage}
+          totalPages={totalPages}
+        />
+
+        {/* Search */}
         <div className="flex items-center gap-3">
           <div className="relative w-72">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" size={15} />
@@ -189,22 +231,23 @@ const ParentManagement = () => {
         ) : (
         <>
         <div className="bg-white dark:bg-[#0f172a]/70 backdrop-blur-md border border-white/80 rounded-3xl overflow-hidden shadow-sm">
-          <table className="w-full text-left">
-            <thead>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left min-w-[800px]">
+              <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/60">
                 <th className="px-8 py-5 w-20 text-center">
                    <button onClick={() => {
-                      if(selectedParents.length === filteredParents.length) setSelectedParents([]);
-                      else setSelectedParents(filteredParents.map(p => p.email));
-                   }} className="text-slate-400 dark:text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-colors">
-                      {selectedParents.length === filteredParents.length && filteredParents.length > 0 ? <CheckSquare size={20} className="text-primary-500 mx-auto" /> : <Square size={20} className="mx-auto" />}
+                      if(selectedParents.length === processedParents.length) setSelectedParents([]);
+                      else setSelectedParents(processedParents.map(p => p.email));
+                   }} className="text-slate-400 dark:text-slate-500 hover:text-primary-500 transition-colors">
+                      {selectedParents.length === processedParents.length && processedParents.length > 0 ? <CheckSquare size={20} className="text-primary-500 mx-auto" /> : <Square size={20} className="mx-auto" />}
                    </button>
                 </th>
                 <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">Parent Name</th>
                 <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">Contact Info</th>
                 <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest text-center">Status</th>
                 <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">Linked Children</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest text-center">Billing Info</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50/80 dark:divide-slate-800/60">
@@ -229,7 +272,7 @@ const ParentManagement = () => {
                         </div>
                       )}
                       <div>
-                        <p className="font-bold text-slate-900 dark:text-white text-sm tracking-tight group-hover:text-primary-600 transition-colors">{parent.fullName}</p>
+                        <p className="font-bold text-slate-900 dark:text-white text-sm tracking-tight group-hover:text-primary-600 transition-colors whitespace-nowrap">{parent.fullName}</p>
                         <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">{parent.relationship || 'Guardian'}</p>
                       </div>
                     </div>
@@ -247,7 +290,7 @@ const ParentManagement = () => {
                     </div>
                   </td>
                   <td className="px-8 py-6 text-center">
-                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                    <span className={`whitespace-nowrap px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
                       parent.status === 'active' 
                         ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20' 
                         : 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-500/20'
@@ -256,36 +299,37 @@ const ParentManagement = () => {
                     </span>
                   </td>
                   <td className="px-8 py-6">
-                    <div className="flex -space-x-2">
+                    <div className="flex flex-col gap-2">
                       {parent.children.map((c: any) => (
-                        <div key={c.id} className="h-8 w-8 rounded-full border-2 border-white overflow-hidden bg-slate-100 shadow-sm" title={c.name}>
-                          <img src={c.image} alt="child" className="w-full h-full object-cover" />
+                        <div key={c.id} className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/40 px-2 py-1.5 rounded-xl w-max border border-slate-100 dark:border-slate-700/50" title={c.name}>
+                          <div className="h-7 w-7 rounded-full border-2 border-white dark:border-slate-700 overflow-hidden bg-slate-100 shrink-0">
+                            {c.image ? (
+                              <img src={c.image} alt={c.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 flex items-center justify-center font-black text-xs">
+                                {c.name?.charAt(0) || 'C'}
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">{c.name}</span>
                         </div>
                       ))}
                     </div>
                   </td>
-                  <td className="px-8 py-6 text-right" onClick={e => e.stopPropagation()}>
-                    <div className="flex items-center justify-end gap-2">
-                      <button 
-                        onClick={() => setViewingParent(parent)}
-                        className="p-3 bg-slate-50 dark:bg-slate-800/40 text-slate-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-500/10 rounded-xl transition-all"
-                        title="View Details"
-                      >
-                        <Eye size={18} />
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(parent.email)}
-                        className="p-3 bg-slate-50 dark:bg-slate-800/40 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all"
-                        title="Delete Parent"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
+                  <td className="px-8 py-6 text-center" onClick={(e) => e.stopPropagation()}>
+                    <button 
+                      onClick={(e) => toggleBilling(e, parent.parentId)}
+                      className={`h-8 w-8 rounded-full flex items-center justify-center transition-all shadow-sm ${parent.billingPaid ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 hover:bg-emerald-200' : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                      title={parent.billingPaid ? "Mark as unpaid" : "Mark as paid"}
+                    >
+                      {parent.billingPaid ? <Check size={16} strokeWidth={3} /> : <div className="h-2 w-2 rounded-full bg-slate-300 dark:bg-slate-600" />}
+                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
         </div>
         
         {/* Pagination Controls */}

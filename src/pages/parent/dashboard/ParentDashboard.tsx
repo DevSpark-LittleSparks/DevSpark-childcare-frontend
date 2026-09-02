@@ -14,11 +14,13 @@ import {
   Clock,
   ChevronRight,
   TrendingUp,
-  User
+  User,
+  Gift
 } from 'lucide-react';
 import { useWebSocket } from '../../../hooks/useWebSocket';
 import { Button } from '../../../components/common/Button';
 import { Logo } from '../../../components/common/Logo';
+import { BirthdayCardModal } from '../../../components/common/BirthdayCardModal';
 import { apiClient } from '../../../services/axiosInstance';
 import AlertBanner from '../../../components/shared/AlertBanner';
 
@@ -39,8 +41,23 @@ const ParentDashboard = () => {
       return [];
     }
   });
+  
+  const [birthdayChild, setBirthdayChild] = useState<any>(null);
+  const [isBirthdayModalOpen, setIsBirthdayModalOpen] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
+  const calculateAge = (dob: string) => {
+    if (!dob) return '';
+    const diffMs = Date.now() - new Date(dob).getTime();
+    const ageDate = new Date(diffMs);
+    const years = Math.abs(ageDate.getUTCFullYear() - 1970);
+    return years === 0 ? 'Less than a year' : `${years} ${years === 1 ? 'year' : 'years'} old`;
+  };
 
   const formatTimeAgo = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -97,11 +114,40 @@ const ParentDashboard = () => {
         if (response.data.success) {
           const profile = response.data.data;
           setChildrenCount(profile.children.length);
-          setChildren(profile.children.map((c: any) => ({
+          const mappedChildren = profile.children.map((c: any) => ({
             id: c.childId,
             firstName: c.name ? c.name.split(' ')[0] : 'Child',
-            profileImage: c.profilePic || ''
-          })));
+            lastName: c.name ? c.name.split(' ').slice(1).join(' ') : '',
+            profileImage: c.profilePic || '',
+            dob: c.dob || '',
+            gender: c.gender || 'male'
+          }));
+          setChildren(mappedChildren);
+          
+          // Check for birthdays EXACTLY today
+          const bdayRes = await apiClient.get('/api/v1/child/upcoming-birthdays');
+          if (bdayRes.data.success) {
+            const birthdays = bdayRes.data.data || [];
+            const myChildrenIds = mappedChildren.map((c: any) => c.id);
+            
+            const today = new Date();
+            const todayMonth = today.getMonth();
+
+            const myBirthdayChildren = birthdays.filter((b: any) => {
+              if (!myChildrenIds.includes(b.childId)) return false;
+              const bDate = new Date(b.dob);
+              const todayDate = today.getDate();
+              
+              // Only show if the birthday is EXACTLY today
+              return bDate.getMonth() === todayMonth && bDate.getDate() === todayDate;
+            });
+
+            if (myBirthdayChildren.length > 0) {
+              setBirthdayChild(myBirthdayChildren[0]);
+              // Optionally we can open it automatically once on login, but user said "click krma open wenna"
+              // setIsBirthdayModalOpen(true); 
+            }
+          }
         }
       } catch (err) {
         console.error("Failed to fetch children info:", err);
@@ -147,23 +193,60 @@ const ParentDashboard = () => {
     <div className="min-h-screen w-full bg-surface-secondary dark:bg-slate-950 transition-colors duration-300 font-sans text-slate-900 dark:text-slate-100 pb-10">
 
       {/* --- TOP HEADER --- */}
-      <header className="max-w-7xl mx-auto px-6 pt-8 pb-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-1 bg-primary-500 rounded-full hidden sm:block"></div>
-          <div>
-            <div className="flex items-center gap-2 mb-0.5 text-primary-500">
-              <Sparkles size={14} className="fill-primary-500" />
-              <p className="text-[10px] font-black uppercase tracking-[0.3em]">LittleSparks</p>
-            </div>
-
-            <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight font-sans leading-none">
-              Hello, {reduxUser?.displayName?.split(' ')[0] || 'Parent'} 👋
-            </h1>
-            <p className="text-slate-500 dark:text-slate-400 text-xs font-bold mt-1 uppercase tracking-wider opacity-60">Overview & Activity</p>
-          </div>
+      <header className="max-w-7xl mx-auto px-6 pt-10 pb-8 flex items-start justify-between">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight truncate">
+            Welcome back, {reduxUser?.displayName?.split(' ')[0] || 'Parent'}!
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 text-xs font-bold mt-1 uppercase tracking-wider opacity-60">
+            Parent Portal
+          </p>
         </div>
 
         <div className="flex items-center gap-4 relative">
+          
+          {/* Birthday Circular Widget (Left side of Notification Button) */}
+          {birthdayChild && (
+            <div 
+              onClick={() => setIsBirthdayModalOpen(true)}
+              className="mr-2 animate-fadeUp"
+            >
+              <div className="relative group cursor-pointer flex items-center">
+                {/* Hover text that expands from the circle */}
+                <div className="absolute right-12 opacity-0 group-hover:opacity-100 group-hover:-translate-x-4 transition-all duration-300 pointer-events-none whitespace-nowrap bg-white dark:bg-slate-800 shadow-xl rounded-full py-2 px-4 border border-pink-100 dark:border-slate-700 z-0">
+                   <p className="text-sm font-bold bg-gradient-to-r from-pink-500 to-blue-500 bg-clip-text text-transparent">
+                     Happy Birthday, {birthdayChild.firstName}! 🎈
+                   </p>
+                </div>
+                
+                {/* The Circular Rotating Badge */}
+                <div className="relative w-12 h-12 flex items-center justify-center z-10">
+                  {/* Rotating Dashed Border */}
+                  <div className="absolute inset-0 rounded-full border-2 border-dashed border-pink-400 dark:border-pink-500 animate-[spin_8s_linear_infinite]" />
+                  {/* Inner glowing ring */}
+                  <div className="absolute inset-1 rounded-full bg-gradient-to-tr from-pink-400 to-blue-400 animate-pulse opacity-50 blur-sm" />
+                  {/* Profile Picture */}
+                  <img 
+                    src={birthdayChild.profilePic || 'https://via.placeholder.com/150'} 
+                    className="w-9 h-9 rounded-full object-cover relative z-10 border-2 border-white dark:border-slate-800 shadow-sm"
+                  />
+                  {/* Notification Dot */}
+                  <div className="absolute top-0 right-0 w-3 h-3 bg-red-500 border-2 border-white dark:border-slate-900 rounded-full animate-bounce z-20" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Real-time date and time */}
+          <div className="hidden md:flex flex-col items-end mr-4">
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              {currentTime.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
+            </span>
+            <span className="text-sm font-bold text-slate-900 dark:text-white font-mono opacity-80">
+              {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            </span>
+          </div>
+
           <Button
             variant="secondary"
             onClick={() => setShowNotifications(!showNotifications)}
@@ -356,9 +439,10 @@ const ParentDashboard = () => {
             </div>
           </div>
 
-          {/* --- RIGHT COL: RECENT ACTIVITIES --- */}
+          {/* --- RIGHT COL: RECENT ACTIVITY & WIDGETS --- */}
           <div className="space-y-6">
-            <div className="bg-white dark:bg-[#0f172a] rounded-[2.5rem] p-8 border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 shadow-sm relative overflow-hidden">
+            
+            <div className="bg-white dark:bg-[#0f172a] rounded-[2.5rem] p-8 border border-slate-100 dark:border-slate-800/60 shadow-sm relative overflow-hidden">
               {/* Optional subtle glow for the activity card */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/5 dark:bg-primary-500/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
               <div className="relative z-10 flex items-center justify-between mb-8">
@@ -387,11 +471,11 @@ const ParentDashboard = () => {
                 />
               </div>
 
-              <div className="relative z-10 mt-10 pt-8 border-t border-slate-50 dark:border-slate-800/60 dark:border-slate-800/50">
-                <div className="p-6 bg-slate-50 dark:bg-slate-800/40 dark:bg-slate-800/40 rounded-3xl border border-slate-100 dark:border-slate-800/60 dark:border-slate-700/50">
+              <div className="relative z-10 mt-10 pt-8 border-t border-slate-50 dark:border-slate-800/60">
+                <div className="p-6 bg-slate-50 dark:bg-slate-800/40 rounded-3xl border border-slate-100 dark:border-slate-700/50">
                   <div className="flex items-center gap-3 mb-3">
                     <TrendingUp size={18} className="text-primary-500" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 dark:text-slate-400">Security Note</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Security Note</span>
                   </div>
                   <p className="text-[11px] font-bold text-midnight dark:text-slate-300 leading-relaxed">
                     Always use your unique security key for administrative requests.
@@ -474,6 +558,16 @@ const ParentDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Birthday Modal */}
+      <BirthdayCardModal 
+        isOpen={isBirthdayModalOpen}
+        onClose={() => setIsBirthdayModalOpen(false)}
+        childName={birthdayChild ? `${birthdayChild.firstName} ${birthdayChild.lastName}` : ''}
+        age={birthdayChild ? calculateAge(birthdayChild.dob) : ''}
+        profilePic={birthdayChild?.profilePic}
+        gender={birthdayChild?.gender || 'male'}
+      />
     </div>
   );
 };
@@ -481,42 +575,48 @@ const ParentDashboard = () => {
 const DashboardStat = ({ icon, label, value, iconBg, onClick }: any) => (
   <div
     onClick={onClick}
-    className="bg-white dark:bg-[#0f172a] p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 shadow-sm hover:shadow-xl hover:border-primary-200 dark:hover:border-primary-500/50 transition-all cursor-pointer group relative overflow-hidden"
+    className="bg-white dark:bg-[#0f172a] p-5 rounded-[1.5rem] border border-slate-100 dark:border-slate-800/60 shadow-[0_4px_20px_rgba(0,0,0,0.02)] group hover:shadow-[0_10px_30px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden flex items-center gap-5 cursor-pointer active:scale-[0.98]"
   >
-    <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 dark:bg-primary-500/10 rounded-full blur-2xl -mr-16 -mt-16 transition-transform duration-700 group-hover:scale-150"></div>
-    <div className={`relative z-10 h-14 w-14 ${iconBg} dark:bg-slate-800/80 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-      {icon}
+    <div className={`absolute right-0 top-0 bottom-0 w-24 ${iconBg.split(' ')[0].replace('/10','/20')} opacity-30 rounded-full blur-3xl translate-x-1/2 group-hover:opacity-50 transition-opacity duration-500`}></div>
+    <div className={`h-14 w-14 shrink-0 ${iconBg} dark:bg-slate-800/80 rounded-2xl flex items-center justify-center group-hover:scale-105 group-hover:rotate-3 transition-transform duration-300 shadow-sm relative z-10`}>
+      {React.cloneElement(icon as React.ReactElement, { size: 22 })}
     </div>
-    <p className="relative z-10 text-[9px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-1">{label}</p>
-    <p className="relative z-10 text-3xl font-black text-midnight dark:text-white tracking-tight">{value}</p>
+    <div className="relative z-10 flex-1">
+      <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{label}</p>
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">{value}</h3>
+      </div>
+    </div>
   </div>
 );
 
 const QuickLink = ({ title, desc, icon, bg }: any) => (
-  <div className="bg-white dark:bg-[#0f172a] p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 shadow-sm hover:shadow-lg transition-all cursor-pointer flex items-center gap-6 group relative overflow-hidden">
-    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/0 dark:group-hover:bg-slate-800/30 transition-colors"></div>
-    <div className={`relative z-10 h-16 w-16 ${bg} dark:bg-slate-800/80 rounded-3xl flex items-center justify-center shrink-0 group-hover:rotate-6 transition-transform`}>
-      {React.cloneElement(icon, { size: 24 })}
+  <div className="bg-white dark:bg-[#0f172a] p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800/60 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-all duration-300 cursor-pointer flex items-center gap-5 group relative overflow-hidden">
+    <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-slate-50 dark:from-slate-800/50 to-transparent opacity-50 group-hover:opacity-100 transition-opacity"></div>
+    <div className={`relative z-10 h-14 w-14 shrink-0 ${bg} dark:bg-slate-800/80 rounded-[1.2rem] flex items-center justify-center group-hover:scale-105 group-hover:-rotate-3 transition-transform duration-300 shadow-sm`}>
+      {React.cloneElement(icon as React.ReactElement, { size: 24 })}
     </div>
-    <div className="relative z-10">
-      <h4 className="font-black text-midnight dark:text-white text-lg tracking-tight mb-1">{title}</h4>
-      <p className="text-[11px] text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 font-medium leading-tight">{desc}</p>
+    <div className="relative z-10 flex-1">
+      <h4 className="font-black text-slate-900 dark:text-white text-lg tracking-tight leading-tight mb-1">{title}</h4>
+      <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">{desc}</p>
     </div>
-    <ChevronRight size={16} className="relative z-10 ml-auto text-slate-300 dark:text-slate-600 dark:text-slate-300 group-hover:text-primary-500 transition-colors" />
+    <div className="relative z-10 h-8 w-8 bg-slate-50 dark:bg-slate-800/50 rounded-full flex items-center justify-center group-hover:bg-primary-50 dark:group-hover:bg-primary-500/10 transition-colors shrink-0">
+      <ChevronRight size={16} className="text-slate-400 group-hover:text-primary-500 transition-colors" />
+    </div>
   </div>
 );
 
 const ActivityItem = ({ icon, title, time, desc }: any) => (
-  <div className="flex gap-4 group p-2 hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50 dark:hover:bg-slate-800/30 rounded-2xl transition-colors cursor-default">
-    <div className="h-10 w-10 bg-slate-50 dark:bg-slate-800/40 dark:bg-slate-800/80 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-800/60 dark:border-slate-700/50 group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors shadow-sm">
+  <div className="flex gap-4 group p-3 hover:bg-white dark:bg-transparent dark:hover:bg-slate-800/50 rounded-2xl transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 cursor-default border border-transparent hover:border-slate-100 dark:hover:border-slate-700/50">
+    <div className="h-12 w-12 bg-slate-50 dark:bg-slate-800/80 rounded-[1.2rem] flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-700/50 group-hover:scale-105 group-hover:-rotate-3 transition-transform duration-300 shadow-sm relative z-10">
       {icon}
     </div>
-    <div className="space-y-0.5 flex-1 mt-1">
+    <div className="space-y-0.5 flex-1 mt-0.5">
       <div className="flex items-center justify-between">
-        <h4 className="text-[11px] font-black text-midnight dark:text-white uppercase tracking-tight">{title}</h4>
-        <span className="text-[9px] text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 font-bold">{time}</span>
+        <h4 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-tight group-hover:text-primary-500 transition-colors">{title}</h4>
+        <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold">{time}</span>
       </div>
-      <p className="text-[11px] text-slate-500 dark:text-slate-400 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 font-medium leading-tight">{desc}</p>
+      <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-tight">{desc}</p>
     </div>
   </div>
 );

@@ -844,7 +844,7 @@ const LandingPage: React.FC = () => {
         </div>
       </footer>
 
-      <UniversalSmartAssistant />
+      <UniversalSmartAssistant guestOnly />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trash2, Eye, Search, Plus, Users, ChevronLeft, ChevronRight, MoreHorizontal, Square, CheckSquare } from 'lucide-react';
 import { Button } from '../../components/common/Button';
+import { TableControls } from '../../components/common/TableControls';
 import { apiClient } from '../../services/axiosInstance';
 
 interface StudentData {
@@ -161,6 +162,16 @@ const Students = () => {
     }
   };
 
+  const [orderBy, setOrderBy] = useState("firstNameAsc");
+  const [pageSize, setPageSize] = useState(10);
+
+  const orderOptions = [
+    { label: "First Name A - Z", value: "firstNameAsc" },
+    { label: "First Name Z - A", value: "firstNameDesc" },
+    { label: "Age Ascending", value: "ageAsc" },
+    { label: "Age Descending", value: "ageDesc" },
+  ];
+
   const filtered = students.filter((s) => {
     const matchesSearch = `${s.firstName} ${s.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
     
@@ -169,6 +180,12 @@ const Students = () => {
     if (ageGroup === 'school-age') matchesAge = s.status === 'BIG_SCHOOL_READY';
     
     return matchesSearch && matchesAge;
+  }).sort((a, b) => {
+    if (orderBy === "firstNameAsc") return a.firstName.localeCompare(b.firstName);
+    if (orderBy === "firstNameDesc") return b.firstName.localeCompare(a.firstName);
+    if (orderBy === "ageAsc") return a.age - b.age;
+    if (orderBy === "ageDesc") return b.age - a.age;
+    return 0;
   });
 
   const allMales = filtered.filter(s => s.gender === 'Male');
@@ -179,18 +196,19 @@ const Students = () => {
   let totalPages = 1;
 
   if (filter === 'all') {
-    const malePages = Math.ceil(allMales.length / 5);
-    const femalePages = Math.ceil(allFemales.length / 5);
+    const halfSize = Math.max(1, Math.floor(pageSize / 2));
+    const malePages = Math.ceil(allMales.length / halfSize);
+    const femalePages = Math.ceil(allFemales.length / halfSize);
     totalPages = Math.max(1, malePages, femalePages);
     
-    maleStudents = allMales.slice(currentPage * 5, (currentPage + 1) * 5);
-    femaleStudents = allFemales.slice(currentPage * 5, (currentPage + 1) * 5);
+    maleStudents = allMales.slice(currentPage * halfSize, (currentPage + 1) * halfSize);
+    femaleStudents = allFemales.slice(currentPage * halfSize, (currentPage + 1) * halfSize);
   } else if (filter === 'male') {
-    totalPages = Math.max(1, Math.ceil(allMales.length / 10));
-    maleStudents = allMales.slice(currentPage * 10, (currentPage + 1) * 10);
+    totalPages = Math.max(1, Math.ceil(allMales.length / pageSize));
+    maleStudents = allMales.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
   } else if (filter === 'female') {
-    totalPages = Math.max(1, Math.ceil(allFemales.length / 10));
-    femaleStudents = allFemales.slice(currentPage * 10, (currentPage + 1) * 10);
+    totalPages = Math.max(1, Math.ceil(allFemales.length / pageSize));
+    femaleStudents = allFemales.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
   }
 
   return (
@@ -258,6 +276,20 @@ const Students = () => {
             );
           })}
         </div>
+
+        {/* Toolbar: Controls */}
+        <TableControls 
+          orderOptions={orderOptions}
+          selectedOrder={orderBy}
+          onOrderChange={setOrderBy}
+          pageSize={pageSize}
+          onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(0); }}
+          currentPage={currentPage}
+          totalElements={filter === 'all' ? filtered.length : (filter === 'male' ? allMales.length : allFemales.length)}
+          onPrevPage={handlePrevPage}
+          onNextPage={handleNextPage}
+          totalPages={totalPages}
+        />
 
         {/* Toolbar: Search + Secondary Filters */}
         <div className="flex items-center gap-3 flex-wrap">
@@ -459,6 +491,8 @@ const StudentTable = ({
 
   return (
     <div className="bg-white dark:bg-[#0f172a]/70 backdrop-blur-md border border-white/80 rounded-3xl overflow-hidden shadow-sm">
+      <div className="overflow-x-auto">
+        <div className="min-w-[800px]">
 
       {/* Section header */}
       <div className="px-7 py-4 border-b border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 flex items-center justify-between bg-white dark:bg-[#0f172a]/40">
@@ -566,7 +600,10 @@ const StudentTable = ({
               </button>
             </div>
           </div>
-        )})}
+          );
+        })}
+      </div>
+      </div>
       </div>
     </div>
   );

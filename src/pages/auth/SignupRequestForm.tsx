@@ -30,9 +30,9 @@ interface FormData {
   nic?: string;
 
   // Fields specifically for Directors (Center Owners)
-  centerName?: string;
+  designation?: string;
   centerAddress?: string;
-  capacity?: string;
+  branchName?: string;
 
   // Fields specifically for Teachers
   experience?: string;
@@ -58,9 +58,9 @@ const SignupRequestForm: React.FC = () => {
     nic: "",
     relationship: "MOTHER",
     experience: "1-5",
-    centerName: "",
+    designation: "Owner",
     centerAddress: "",
-    capacity: "",
+    branchName: "Colombo",
     childName: "",
     dob: "",
     gender: "male",
@@ -163,12 +163,8 @@ const SignupRequestForm: React.FC = () => {
     }
 
     if (role === "director") {
-      if (!form.centerName?.trim()) newErrors.centerName = "Center Name is required.";
-      if (!form.centerAddress?.trim()) newErrors.centerAddress = "Center Address is required.";
-
-      const cap = parseInt(form.capacity || "0");
-      if (!form.capacity) newErrors.capacity = "Capacity is required.";
-      else if (cap < 1 || cap > 500) newErrors.capacity = "Capacity must be between 1 and 500.";
+      if (!form.designation?.trim()) newErrors.designation = "Designation is required.";
+      if (!form.branchName?.trim()) newErrors.branchName = "Branch Name is required.";
     }
 
     if (role === "teacher") {
@@ -410,23 +406,26 @@ const SignupRequestForm: React.FC = () => {
                   </>
                 )}
                 {role === "director" && (
-                  <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Center Name <RequiredAsterisk /></label>
-                      <input className={getInputStyle(errors.centerName)} type="text" name="centerName" value={form.centerName || ""} onChange={handleChange} />
-                      <ErrorMessage message={errors.centerName} />
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Designation <RequiredAsterisk /></label>
+                      <select className={getInputStyle(errors.designation)} name="designation" value={form.designation || "Owner"} onChange={handleChange}>
+                        <option value="Owner">Owner</option>
+                        <option value="Center Head">Center Head</option>
+                      </select>
+                      <ErrorMessage message={errors.designation} />
                     </div>
+
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Center Address <RequiredAsterisk /></label>
-                      <input className={getInputStyle(errors.centerAddress)} type="text" name="centerAddress" value={form.centerAddress || ""} onChange={handleChange} />
-                      <ErrorMessage message={errors.centerAddress} />
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Branch Name <RequiredAsterisk /></label>
+                      <select className={getInputStyle(errors.branchName)} name="branchName" value={form.branchName || "Colombo"} onChange={handleChange}>
+                        <option value="Colombo">Colombo</option>
+                        <option value="Kandy">Kandy</option>
+                        <option value="Matale">Matale</option>
+                      </select>
+                      <ErrorMessage message={errors.branchName} />
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Capacity <RequiredAsterisk /></label>
-                      <input className={getInputStyle(errors.capacity)} type="number" name="capacity" min="1" max="500" value={form.capacity || ""} onChange={handleChange} />
-                      <ErrorMessage message={errors.capacity} />
-                    </div>
-                  </>
+                  </div>
                 )}
                 {role === "teacher" && (
                   <>
@@ -473,7 +472,9 @@ const SignupRequestForm: React.FC = () => {
               <div className="absolute inset-0 bg-black/40 rounded-[3rem] blur-3xl translate-y-12 scale-90 opacity-60" />
               <div className="relative bg-slate-900 p-4 rounded-[3.2rem] shadow-2xl border-[10px] border-slate-800/90 overflow-hidden aspect-[4/3] flex items-center justify-center">
                 <div className="relative w-full h-full bg-white dark:bg-[#0f172a] rounded-[2.5rem] overflow-hidden shadow-inner">
-                  <img src={content[role].image} alt="Preview" className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110" />
+            {content[role].image && (
+              <img src={content[role].image} alt="Preview" className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110" />
+            )}
                 </div>
               </div>
             </div>

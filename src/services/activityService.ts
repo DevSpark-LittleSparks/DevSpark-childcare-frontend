@@ -11,7 +11,9 @@ import type {
 
 export const activityService = {
   getAllMasterActivities: async (page = 0, size = 20): Promise<PagedData<MasterActivity>> => {
-    const res = await apiClient.get<ApiResponse<any>>('/activities', { params: { page, size } });
+    const res = await apiClient.get<ApiResponse<any>>('/api/v1/academic/activities', {
+      params: { page, size },
+    });
     if (Array.isArray(res.data.data)) {
       return {
         content: res.data.data,
@@ -24,25 +26,28 @@ export const activityService = {
     return res.data.data;
   },
   createMasterActivity: async (data: MasterActivityCreateRequest): Promise<MasterActivity> => {
-    const res = await apiClient.post<ApiResponse<MasterActivity>>('/activities', data);
+    const res = await apiClient.post<ApiResponse<MasterActivity>>('/api/v1/academic/activities', data);
     return res.data.data;
   },
   updateMasterActivity: async (
     id: string,
     data: Partial<MasterActivityCreateRequest>,
   ): Promise<MasterActivity> => {
-    const res = await apiClient.put<ApiResponse<MasterActivity>>(`/activities/${id}`, data);
+    const res = await apiClient.put<ApiResponse<MasterActivity>>(
+      `/api/v1/academic/activities/${id}`,
+      data,
+    );
     return res.data.data;
   },
   deleteMasterActivity: async (id: string): Promise<void> => {
-    await apiClient.delete(`/activities/${id}`);
+    await apiClient.delete(`/api/v1/academic/activities/${id}`);
   },
 
   getAssignments: async (date?: string, teacherId?: string): Promise<Assignment[]> => {
     const params: any = {};
     if (date) params.date = date;
     if (teacherId && teacherId.trim() !== '') params.teacherId = teacherId;
-    const res = await apiClient.get<ApiResponse<any[]>>('/assignments', { params });
+    const res = await apiClient.get<ApiResponse<any[]>>('/api/v1/academic/assignments', { params });
     const rawData = res.data.data || [];
     return rawData.map((item: any) => ({
       ...item,
@@ -72,7 +77,7 @@ export const activityService = {
       endTime: data.endTime,
       status: data.status || 'DRAFT',
     };
-    const res = await apiClient.post<ApiResponse<any>>('/assignments', payload);
+    const res = await apiClient.post<ApiResponse<any>>('/api/v1/academic/assignments', payload);
     const item = res.data.data;
     return {
       ...item,
@@ -103,7 +108,7 @@ export const activityService = {
       endTime: data.endTime,
       status: data.status || 'DRAFT',
     };
-    const res = await apiClient.put<ApiResponse<any>>(`/assignments/${id}`, payload);
+    const res = await apiClient.put<ApiResponse<any>>(`/api/v1/academic/assignments/${id}`, payload);
     const item = res.data.data;
     return {
       ...item,
@@ -121,7 +126,7 @@ export const activityService = {
   },
 
   publishAssignment: async (id: string): Promise<Assignment> => {
-    const res = await apiClient.put<ApiResponse<Assignment>>(`/assignments/${id}/publish`);
+    const res = await apiClient.put<ApiResponse<Assignment>>(`/api/v1/academic/assignments/${id}/publish`);
     const item = res.data.data as any;
     return {
       ...item,
@@ -139,10 +144,10 @@ export const activityService = {
   },
 
   deleteAssignment: async (id: string): Promise<void> => {
-    await apiClient.delete(`/assignments/${id}`);
+    await apiClient.delete(`/api/v1/academic/assignments/${id}`);
   },
 
   logStudentProgress: async (data: StudentProgressDTO): Promise<void> => {
-    await apiClient.post<ApiResponse<void>>('/assignments/log-progress', data);
+    await apiClient.post<ApiResponse<void>>('/api/v1/academic/assignments/log-progress', data);
   },
 };
