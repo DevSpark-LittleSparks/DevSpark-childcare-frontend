@@ -29,4 +29,4 @@ const academicSlice = createSlice({
 });
 
 export const { setClasses, setLoading, setError } = academicSlice.actions;
-export default academicSlice.reducer; // මෙන්න මේ පේළිය තමයි අර Error එක විසඳන්නේ!
+export default academicSlice.reducer; 
