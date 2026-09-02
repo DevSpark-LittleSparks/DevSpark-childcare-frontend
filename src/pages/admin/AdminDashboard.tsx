@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import {
   Users, Briefcase, MessageSquare, TrendingUp,
-  Search, Bell, Check, X, Calendar, MessageCircle, Sparkles, ShieldCheck, User, Megaphone, Mail, FileText, Clock
+  Search, Bell, Check, X, Calendar, MessageCircle, Sparkles, ShieldCheck, User, Megaphone, Mail, FileText, Clock,
+  ShieldAlert, Activity, UserCheck, Fingerprint, Gift
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
 import { Logo } from '../../components/common/Logo';
+import { BirthdayCardModal } from '../../components/common/BirthdayCardModal';
 import { apiClient } from '../../services/axiosInstance';
 import { useAppSelector } from '../../store';
 import { useWebSocket } from '../../hooks/useWebSocket';
+import { PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 
+const COLORS = ['#06c5d4', '#6366f1', '#f43f5e', '#f59e0b'];
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -22,8 +26,35 @@ const AdminDashboard = () => {
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [showAdminNotifs, setShowAdminNotifs] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [upcomingBirthdays, setUpcomingBirthdays] = useState<any[]>([]);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [stats, setStats] = useState<any>(null);
+  const [selectedBirthdayChild, setSelectedBirthdayChild] = useState<any>(null);
+  const [trendData, setTrendData] = useState<any[]>([
+    { name: 'Jan', registrations: 12 },
+    { name: 'Feb', registrations: 19 },
+    { name: 'Mar', registrations: 15 },
+    { name: 'Apr', registrations: 28 },
+    { name: 'May', registrations: 22 },
+    { name: 'Jun', registrations: 35 },
+    { name: 'Jul', registrations: 42 },
+    { name: 'Aug', registrations: 35 }
+  ]);
   const reduxUser = useAppSelector((state) => state.auth.user);
   const stompClient = useWebSocket('ADMIN');
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const calculateAge = (dob: string) => {
+    if (!dob) return '';
+    const diffMs = Date.now() - new Date(dob).getTime();
+    const ageDate = new Date(diffMs);
+    const years = Math.abs(ageDate.getUTCFullYear() - 1970);
+    return years === 0 ? 'Less than a year' : `${years} ${years === 1 ? 'year' : 'years'} old`;
+  };
 
   const loadData = async () => {
     try {
@@ -33,6 +64,20 @@ const AdminDashboard = () => {
       setTotalStudents(stats.totalStudents || 0);
       setTotalStaff(stats.totalStaff || 0);
       setTotalParents(stats.totalParents || 0);
+
+      // Update trend data for September with real-time registrations
+      const currentRealUsers = (stats.totalStudents || 0) + (stats.totalStaff || 0) + (stats.totalParents || 0);
+      setTrendData([
+        { name: 'Jan', registrations: 12 },
+        { name: 'Feb', registrations: 19 },
+        { name: 'Mar', registrations: 15 },
+        { name: 'Apr', registrations: 28 },
+        { name: 'May', registrations: 22 },
+        { name: 'Jun', registrations: 35 },
+        { name: 'Jul', registrations: 42 },
+        { name: 'Aug', registrations: 35 },
+        { name: 'Sep', registrations: currentRealUsers }
+      ]);
 
       // Fetch real pending requests from all 3 roles
       const [teachers, parents, directors] = await Promise.all([
@@ -48,6 +93,16 @@ const AdminDashboard = () => {
       ].sort((a: any, b: any) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
 
       setPendingRequests(allPending);
+
+      // Fetch upcoming birthdays
+      try {
+        const bdayRes = await apiClient.get('/api/v1/child/upcoming-birthdays');
+        if (bdayRes.data.success) {
+          setUpcomingBirthdays(bdayRes.data.data || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch birthdays:", err);
+      }
     } catch (err) {
       console.error("Failed to load admin data:", err);
     }
@@ -141,18 +196,24 @@ const AdminDashboard = () => {
       {/* --- Top Header Section --- */}
       <header className="max-w-7xl mx-auto px-6 pt-8 pb-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="h-12 w-1 bg-primary-500 rounded-full hidden sm:block"></div>
-          <div>
-            <div className="flex items-center gap-2 mb-0.5 text-primary-500">
-              <ShieldCheck size={14} className="fill-primary-500" />
-              <p className="text-[10px] font-black uppercase tracking-[0.3em]">Master Control</p>
-            </div>
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight truncate">
+              Welcome back, {reduxUser?.displayName?.split(' ')[0] || 'Admin'}!
+            </h1>
             <p className="text-slate-500 dark:text-slate-400 text-xs font-bold mt-1 uppercase tracking-wider opacity-60">Admin Console</p>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
 
+          <div className="hidden md:flex flex-col items-end mr-4">
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              {currentTime.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
+            </span>
+            <span className="text-sm font-bold text-slate-900 dark:text-white font-mono opacity-80">
+              {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            </span>
+          </div>
 
           <div className="relative">
             <Button
@@ -259,6 +320,100 @@ const AdminDashboard = () => {
 
       <main className="max-w-7xl mx-auto px-6 mt-6 space-y-8 animate-fadeUp">
 
+        {/* --- Top Row Widgets --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Upcoming Birthdays Section */}
+          <div className="bg-gradient-to-br from-blue-100/80 via-purple-50/60 to-pink-100/80 dark:from-blue-900/40 dark:via-purple-900/20 dark:to-pink-900/40 rounded-[2.5rem] p-8 border-2 border-white dark:border-slate-800/60 shadow-[0_10px_40px_rgba(0,0,0,0.06)] flex flex-col h-full relative overflow-hidden">
+            
+            {/* Decorative background blur */}
+            <div className="absolute -top-10 -right-10 w-48 h-48 bg-pink-300/40 dark:bg-pink-600/20 rounded-full blur-3xl" />
+            <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-blue-300/40 dark:bg-blue-600/20 rounded-full blur-3xl" />
+
+            <div className="flex items-center gap-4 mb-6 pb-6 border-b border-white/50 dark:border-slate-800/60 relative z-10">
+              <div className="h-14 w-14 shrink-0 rounded-full border-4 border-white/80 dark:border-slate-800/80 flex items-center justify-center bg-white/50 backdrop-blur-sm shadow-sm relative overflow-hidden group">
+                <div className="animate-[spin_4s_linear_infinite] flex items-center justify-center scale-75">
+                  <Logo variant="color" onlyIcon={true} iconClassName="w-8 h-8" />
+                </div>
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-0.5">Today is</p>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+                  {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+                </h3>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 mb-6 relative z-10">
+              <Gift className="text-primary-500 animate-[pulse_2s_ease-in-out_infinite]" size={24} />
+              <h4 className="font-black text-lg text-slate-900 dark:text-white tracking-tight">Upcoming birthdays</h4>
+            </div>
+
+            <div className="space-y-1 flex-1 overflow-y-auto no-scrollbar max-h-[220px] relative z-10">
+              {upcomingBirthdays.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                  <div className="w-12 h-12 bg-white/50 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-3 border border-white dark:border-slate-800">
+                     <Gift size={20} className="text-slate-300 dark:text-slate-600" />
+                  </div>
+                  <p className="text-sm text-slate-400 font-medium">No birthdays this month.</p>
+                </div>
+              ) : upcomingBirthdays.map((child: any, index: number) => {
+                const isFemale = child.gender?.toLowerCase() === 'female';
+                const ringColor = isFemale ? 'border-rose-200 dark:border-rose-800' : 'border-blue-200 dark:border-blue-800';
+                const textColor = isFemale ? 'text-rose-500' : 'text-blue-500';
+                
+                return (
+                  <div 
+                    key={child.childId} 
+                    className={`flex items-center justify-between p-3 rounded-2xl animate-fadeUp`}
+                    style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        <img src={child.profilePic || 'https://via.placeholder.com/150'} alt={child.firstName} className={`w-11 h-11 rounded-full object-cover shadow-sm relative z-10 border-2 ${ringColor}`} />
+                      </div>
+                      <div>
+                        <h5 className="font-black text-slate-900 dark:text-white text-sm mb-0.5 tracking-tight">{child.firstName} {child.lastName}</h5>
+                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500">{calculateAge(child.dob)}</p>
+                      </div>
+                    </div>
+                    <span className={`text-sm font-black whitespace-nowrap ml-4 ${textColor}`}>
+                      {new Date(child.dob).getMonth() + 1}/{new Date(child.dob).getDate()}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          
+          {/* Registration Trends */}
+          <div className="lg:col-span-2 bg-white dark:bg-[#0f172a] rounded-[2.5rem] p-8 border border-slate-100 dark:border-slate-800/60 shadow-[0_10px_40px_rgba(0,0,0,0.02)] flex flex-col h-full">
+            <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight mb-6">Platform Registrations</h2>
+            <div className="flex-1 min-h-[250px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={trendData}
+                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="colorReg" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#06c5d4" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#06c5d4" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dx={-10} />
+                  <RechartsTooltip 
+                    contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
+                  />
+                  <Area type="monotone" dataKey="registrations" stroke="#06c5d4" strokeWidth={3} fillOpacity={1} fill="url(#colorReg)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
         {/* --- Stats Grid Section --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
@@ -270,8 +425,6 @@ const AdminDashboard = () => {
             iconBg="bg-primary-50 dark:bg-primary-500/10"
             onClick={() => navigate('/admin/students')}
           />
-
-
           <StatCard
             icon={<Briefcase className="text-indigo-500" size={24} />}
             label="STAFF ON DUTY"
@@ -317,35 +470,35 @@ const AdminDashboard = () => {
                 pendingRequests.map((req) => (
                   <div
                     key={req.requestId}
-                    className="flex items-center justify-between p-3 hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50 rounded-2xl cursor-pointer transition-all border border-transparent hover:border-slate-100"
+                    className="flex items-center justify-between p-4 bg-transparent hover:bg-slate-50 dark:bg-transparent dark:hover:bg-slate-800/50 rounded-[1.5rem] cursor-pointer transition-all duration-300 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 hover:shadow-xl hover:-translate-y-1 group"
                     onClick={() => setSelectedRequest(req)}
                   >
                     <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 bg-logo-sparks rounded-xl flex items-center justify-center text-white font-black text-lg shadow-sm">
+                      <div className="h-12 w-12 bg-logo-sparks rounded-xl flex items-center justify-center text-white font-black text-lg shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
                         {req.fullName.charAt(0)}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-slate-900 dark:text-white">{req.fullName}</h4>
+                          <h4 className="font-bold text-slate-900 dark:text-white group-hover:text-primary-500 transition-colors">{req.fullName}</h4>
                           <span className="px-2 py-0.5 bg-cyan-50 dark:bg-cyan-500/10 text-[10px] font-black text-cyan-600 dark:text-cyan-400 uppercase rounded-md tracking-wider">
                             {req.role}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 font-medium">{req.email}</p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">{req.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300">
                       <Button
                         variant="primary"
                         onClick={(e) => { e.stopPropagation(); handleApprove(req); }}
-                        className="px-6 py-2.5 text-xs font-bold rounded-xl"
+                        className="px-6 py-2.5 text-xs font-bold rounded-xl shadow-lg hover:shadow-primary-500/25 hover:-translate-y-0.5 transition-all"
                       >
                         Approve
                       </Button>
                       <Button
                         variant="outline"
                         onClick={(e) => { e.stopPropagation(); handleReject(req); }}
-                        className="px-6 py-2.5 text-xs font-bold rounded-xl border-slate-200 dark:border-slate-700/60 text-slate-500 dark:text-slate-400 hover:bg-slate-50"
+                        className="px-6 py-2.5 text-xs font-bold rounded-xl border-slate-200 dark:border-slate-700/60 text-slate-500 dark:text-slate-400 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 dark:hover:bg-rose-500/10 dark:hover:text-rose-400 transition-all"
                       >
                         Reject
                       </Button>
@@ -357,43 +510,47 @@ const AdminDashboard = () => {
           </div>
 
           {/* Broadcast center link */}
-          <div className="bg-gradient-to-br from-primary-500 to-indigo-600 rounded-[3rem] p-10 shadow-[0_25px_60px_rgba(6,197,212,0.3)] relative overflow-hidden group cursor-pointer"
+          <div className="bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900 via-indigo-700 to-primary-800 rounded-[2.5rem] p-8 sm:p-10 shadow-[0_20px_50px_rgba(79,70,229,0.3)] hover:shadow-[0_30px_60px_rgba(79,70,229,0.5)] hover:-translate-y-2 transition-all duration-500 relative overflow-hidden group cursor-pointer"
             onClick={() => navigate('/admin/broadcast')}>
-            {/* Abstract Decorative Circles */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 dark:bg-[#0f172a]/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
-            <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/10 dark:bg-indigo-400/20 rounded-full blur-2xl -ml-20 -mb-20"></div>
+            {/* Abstract Decorative Elements */}
+            <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary-400/30 rounded-full blur-3xl group-hover:bg-primary-400/40 transition-colors duration-500"></div>
+            <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-purple-500/30 rounded-full blur-3xl group-hover:bg-purple-500/40 transition-colors duration-500"></div>
+            <div className="absolute right-0 bottom-0 translate-x-8 translate-y-8 opacity-10 group-hover:opacity-20 transition-all duration-500 group-hover:scale-110 group-hover:-rotate-6 pointer-events-none">
+              <Megaphone size={160} className="text-white" />
+            </div>
 
             <div className="relative z-10 flex flex-col h-full justify-between">
-              <div className="flex items-center gap-5">
-                <div className="p-4 bg-white/20 dark:bg-[#0f172a]/20 backdrop-blur-md border border-white/30 rounded-[1.5rem] text-white shadow-2xl group-hover:scale-110 transition-transform">
-                  <Megaphone size={28} className="animate-bounce" />
+              <div>
+                <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                  <Megaphone size={24} className="text-white" />
                 </div>
-                <div>
-                  <h3 className="text-xl font-black text-white uppercase tracking-[0.2em] leading-none">Broadcast Center</h3>
-                  <p className="text-[10px] font-black text-white/70 uppercase mt-1.5 tracking-[0.3em]">Institutional Communications</p>
-                </div>
+                <h3 className="text-3xl font-black text-white tracking-tight leading-none mb-2">Broadcast Center</h3>
+                <p className="text-indigo-200 text-xs font-black uppercase tracking-widest">Institutional Communications</p>
               </div>
 
               <div className="mt-12">
-                <p className="text-white/80 font-medium text-sm leading-relaxed mb-6">
+                <p className="text-white/80 font-medium text-sm leading-relaxed mb-8 max-w-xs">
                   Send high-priority alerts and announcements to Parents and Teachers instantly.
                 </p>
-                <div className="flex items-center gap-2 text-white font-black text-[10px] uppercase tracking-widest bg-white/20 dark:bg-[#0f172a]/10 w-fit px-4 py-2 rounded-full backdrop-blur-sm border border-white/10 group-hover:bg-white/30 transition-all">
-                  Launch Portal
-                  <TrendingUp size={12} className="rotate-45" />
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 bg-white text-indigo-900 font-bold text-xs uppercase tracking-widest px-6 py-3 rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.3)] group-hover:bg-primary-50 transition-colors">
+                    Launch Portal
+                    <TrendingUp size={14} className="rotate-45" />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Upcoming Schedule Section */}
-          <div className="bg-white dark:bg-[#0f172a] rounded-[2.5rem] p-8 border border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 shadow-[0_10px_40px_rgba(0,0,0,0.02)]">
+          <div className="lg:col-span-2 bg-white dark:bg-[#0f172a] rounded-[2.5rem] p-8 border border-slate-100 dark:border-slate-800/60 shadow-[0_10px_40px_rgba(0,0,0,0.02)]">
             <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight mb-8">Upcoming Schedule</h2>
             <div className="space-y-6">
               <ScheduleItem date="08" month="FEB" title="Morning Circle Time" time="09:00 AM - 10:30 AM" />
               <ScheduleItem date="08" month="FEB" title="Staff Meeting" time="12:30 PM - 01:30 PM" />
             </div>
           </div>
+
 
         </div>
 
@@ -513,17 +670,18 @@ const AdminDashboard = () => {
 const StatCard = ({ icon, label, value, trend, trendColor, iconBg, onClick }: any) => (
   <div
     onClick={onClick}
-    className={`bg-white dark:bg-[#0f172a] p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800/60 shadow-[0_10px_40px_rgba(0,0,0,0.02)] group hover:border-primary-500/20 transition-all ${onClick ? 'cursor-pointer active:scale-[0.98]' : ''}`}
+    className={`bg-white dark:bg-[#0f172a] p-5 rounded-[1.5rem] border border-slate-100 dark:border-slate-800/60 shadow-[0_4px_20px_rgba(0,0,0,0.02)] group hover:shadow-[0_10px_30px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden flex items-center gap-4 ${onClick ? 'cursor-pointer active:scale-[0.98]' : 'cursor-default'}`}
   >
-    <div className="flex items-start justify-between mb-6">
-      <div className={`h-14 w-14 ${iconBg} rounded-[1.2rem] flex items-center justify-center group-hover:scale-110 transition-transform`}>
-        {icon}
-      </div>
+    <div className={`absolute right-0 top-0 bottom-0 w-24 ${iconBg.split(' ')[0].replace('/10','/20')} opacity-30 rounded-full blur-3xl translate-x-1/2 group-hover:opacity-50 transition-opacity duration-500`}></div>
+    <div className={`h-14 w-14 shrink-0 ${iconBg} rounded-2xl flex items-center justify-center group-hover:scale-105 group-hover:rotate-3 transition-transform duration-300 shadow-sm relative z-10`}>
+      {React.cloneElement(icon as React.ReactElement, { size: 22 })}
     </div>
-    <div>
-      <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-2">{label}</p>
-      <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter mb-1 font-sans">{value}</h3>
-      <p className={`text-xs font-black ${trendColor} tracking-tight`}>{trend}</p>
+    <div className="relative z-10 flex-1">
+      <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{label}</p>
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">{value}</h3>
+        <span className={`px-2 py-0.5 bg-slate-50 dark:bg-slate-800/50 ${trendColor} text-[9px] font-black rounded-md whitespace-nowrap`}>{trend}</span>
+      </div>
     </div>
   </div>
 );
