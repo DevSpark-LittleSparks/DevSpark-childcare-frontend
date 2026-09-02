@@ -10,7 +10,7 @@ import type { ChatbotState, ChatMessage } from '../../types/chatbot.types';
 const initialGreeting: ChatMessage = {
   id: 'init-0',
   role: 'assistant',
-  content: "Hello! I'm Sprouty, your virtual assistant. How can I help you today?",
+  content: "Hello! I'm your Assistant. How can I help you today?",
   timestamp: new Date().toISOString(),
 };
 
@@ -20,6 +20,7 @@ const initialState: ChatbotState = {
   messages: [initialGreeting],
   isTyping: false,
   error: null,
+  contextKey: null,
 };
 
 // ── Slice ─────────────────────────────────────────────────────────────────────
@@ -65,6 +66,21 @@ const chatbotSlice = createSlice({
       state.messages = [initialGreeting];
       state.error    = null;
     },
+
+    // Called on every mount of the chatbot widget with whoever it's currently
+    // representing (a uid, or 'GUEST'). If that differs from who the existing
+    // conversation belonged to, the widget switched identity — e.g. a logged-in
+    // admin navigated from the guest-only landing page into their own portal,
+    // or a different user logged in — so the old conversation is reset instead
+    // of leaking into the new context.
+    syncContext(state, action: PayloadAction<string>) {
+      if (state.contextKey !== null && state.contextKey !== action.payload) {
+        state.messages = [initialGreeting];
+        state.error    = null;
+        state.isOpen   = false;
+      }
+      state.contextKey = action.payload;
+    },
   },
 });
 
@@ -77,6 +93,7 @@ export const {
   setTyping,
   setChatError,
   clearMessages,
+  syncContext,
 } = chatbotSlice.actions;
 
 export default chatbotSlice.reducer;

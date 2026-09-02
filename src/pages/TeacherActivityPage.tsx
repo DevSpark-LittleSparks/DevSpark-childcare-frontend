@@ -3,6 +3,7 @@ import { cn } from '../utils/cn';
 import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 
+// 💡 100% Architecture එකට අනුව Redux Thunks සහ Selectors පාවිච්චි කරමු[cite: 4]
 import {
   selectAssignments,
   selectStudentsLogData,
@@ -17,29 +18,36 @@ const todayString = new Date().toISOString().split('T')[0];
 
 export default function TeacherActivityPage() {
   const dispatch = useAppDispatch();
-
   const [selectedDate, setSelectedDate] = useState<string>(todayString);
 
+  // 💡 Redux Store එකෙන් ඩේටා ගන්නවා (Architecture Rule: Pages read from Redux)[cite: 4]
   const assignments = useAppSelector(selectAssignments);
   const studentsLogData = useAppSelector(selectStudentsLogData);
-
-  // 💡 Retrieve the master activities list to cross-reference categories
   const masterActivities = useAppSelector(selectMasterActivities);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch assignments for the selected date
+    // 💡 පිටුව ලෝඩ් වෙද්දී Redux Thunks හරහා API Calls යවනවා
     dispatch(fetchAssignments({ date: selectedDate }));
-    // 💡 Fetch master activities to get the full details (like categories)
     dispatch(fetchMasterActivities(0));
   }, [dispatch, selectedDate]);
 
+  // 💡 ඩේටා ෆිල්ටර් කිරීම
   const teacherAssignments = assignments.filter((a: any) => {
     const status = String(a.status || '').toUpperCase();
-    const matchesStatus = status === 'PUBLISHED' || status === 'ASSIGNED' || status === 'COMPLETED';
-    const dateStr = String(a.date || '');
+
+    // 💡 සුපිරිම වෙනස: Admin 'Assign' කරපු ගමන් Teacher ට පෙන්නන්න 'DRAFT' කියන ස්ටේටස් එකත් ඇතුළත් කළා!
+    // (මේක නැති නිසා තමයි කලින් Admin අප්ඩේට් කරද්දී Teacher ට පෙනුණේ නැත්තේ)
+    const matchesStatus =
+      status === 'PUBLISHED' ||
+      status === 'ASSIGNED' ||
+      status === 'COMPLETED' ||
+      status === 'DRAFT';
+
+    const dateStr = String(a.date || a.assignedDate || '');
     const matchesDate = !a.date || dateStr.startsWith(selectedDate);
+
     return matchesStatus && matchesDate;
   });
 
@@ -48,7 +56,6 @@ export default function TeacherActivityPage() {
     (a: any) => String(a.status || '').toUpperCase() !== 'COMPLETED',
   ).length;
 
-  // Helper function to format the category beautifully (e.g., PHYSICAL_PLAY -> PHYSICAL PLAY)
   const formatCategory = (cat: string) => {
     if (!cat || cat === 'N/A') return 'UNCATEGORIZED';
     return cat.replace(/_/g, ' ');
@@ -106,7 +113,7 @@ export default function TeacherActivityPage() {
             const assignId = assignment.id || assignment.assignmentId;
             const isExpanded = expandedId === assignId;
 
-            // 💡 THE FIX: Cross-reference the activity ID with masterActivities to find the exact category
+            // 💡 Activity Category එක Master Activities වලින් හොයාගැනීම
             const activityId = assignment.activity?.id || assignment.activityId;
             const matchedMasterActivity = masterActivities.find((ma: any) => ma.id === activityId);
             const finalCategory =
@@ -122,7 +129,6 @@ export default function TeacherActivityPage() {
               >
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                   <div>
-                    {/* 💡 The properly matched Category will appear here */}
                     <span className="text-[10px] font-bold uppercase text-primary-700 bg-primary-50 border border-primary-100 px-2.5 py-0.5 rounded-full tracking-wider">
                       {formatCategory(finalCategory)}
                     </span>
@@ -155,7 +161,6 @@ export default function TeacherActivityPage() {
                   </div>
                 </div>
 
-                {/* Grading Form Rendered Here */}
                 {isExpanded && !isCompleted && (
                   <div className="mt-5 pt-5 border-t border-slate-100 animate-fadeUp">
                     <LogProgressForm

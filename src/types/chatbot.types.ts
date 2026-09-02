@@ -41,4 +41,8 @@ export interface ChatbotState {
   messages: ChatMessage[];
   isTyping: boolean;
   error: string | null;
+  // Identifies whose conversation this is (a user's uid, or 'GUEST' on the public
+  // landing page). Persists across page navigation/remounts so we can tell when
+  // the widget is now representing a different person and reset accordingly.
+  contextKey: string | null;
 }
