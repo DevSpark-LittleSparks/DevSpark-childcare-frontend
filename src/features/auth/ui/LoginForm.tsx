@@ -100,8 +100,21 @@ export function LoginForm() {
       const idTokenResult = await userCredential.user.getIdTokenResult();
       const role = idTokenResult.claims.role as string;
 
+      // Fetch profile from backend to get the actual profilePic (Base64)
+      let backendPhotoURL = photoURL;
+      let backendName = displayName;
+      try {
+        const profileRes = await apiClient.get('/api/v1/auth/me');
+        if (profileRes.data.success) {
+          backendPhotoURL = profileRes.data.data.profilePic;
+          backendName = profileRes.data.data.fullName;
+        }
+      } catch (e) {
+        console.error("Failed to fetch backend profile during login", e);
+      }
+
       // Save the user info (including role) in our Redux store so the whole app knows who is logged in
-      dispatch(setUser({ uid, email, displayName, photoURL, role }));
+      dispatch(setUser({ uid, email, displayName: backendName, photoURL: backendPhotoURL, role }));
 
       // STEP 4: Send the user to the correct dashboard based on their role
       if (role === 'PARENT') navigate("/parent/dashboard");
