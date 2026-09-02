@@ -21,7 +21,7 @@ const BroadcastPortal: React.FC = () => {
 
     try {
       // Send global alerts
-      await apiClient.post('/api/v1/notifications/broadcast', {
+      await apiClient.post('/api/v1/auth/admin/broadcast', {
         title,
         body,
         priority,

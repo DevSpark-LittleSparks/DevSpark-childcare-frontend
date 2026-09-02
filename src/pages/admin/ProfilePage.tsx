@@ -1,7 +1,9 @@
 import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
 import {
   User, Mail, MapPin, Save, Edit2, ArrowLeft, Briefcase,
-  Key, CheckCircle2, AlertCircle, Loader2, Camera, School, Users, ShieldCheck, Lock
+  Key, CheckCircle2, AlertCircle, Loader2, Camera, School, Users, ShieldCheck, Lock,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
@@ -45,6 +47,7 @@ const AdminProfilePage: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState({ current: false, new: false, confirm: false });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -173,7 +176,8 @@ const AdminProfilePage: React.FC = () => {
       // Format Firebase error messages nicely
       let errorMsg = 'Failed to update password.';
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
-        errorMsg = 'Current password is incorrect.';
+        setErrors({ ...errors, current: 'Current password is incorrect.' });
+        return;
       } else if (err.code === 'auth/requires-recent-login') {
         errorMsg = 'Please log out and log back in to change your password.';
       } else if (err.message) {
@@ -318,14 +322,21 @@ const AdminProfilePage: React.FC = () => {
                       <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Current Password</label>
                       <div className="relative">
                         <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                        <input type="password" value={passwords.current} onChange={(e) => setPasswords({ ...passwords, current: e.target.value })} className="w-full pl-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 border-transparent rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all" />
+                        <input type={showPassword.current ? "text" : "password"} value={passwords.current} onChange={(e) => setPasswords({ ...passwords, current: e.target.value })} className={`w-full pl-12 pr-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 ${errors.current ? 'border-red-500' : 'border-transparent'} rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all`} />
+                        <button type="button" onClick={() => setShowPassword({ ...showPassword, current: !showPassword.current })} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary-500">
+                          {showPassword.current ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
                       </div>
+                      <ErrorMessage message={errors.current} />
                     </div>
                     <div className="space-y-2 text-left">
                       <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">New Password</label>
                       <div className="relative">
                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                        <input type="password" value={passwords.new} onChange={(e) => setPasswords({ ...passwords, new: e.target.value })} className={`w-full pl-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 ${errors.new ? 'border-red-500' : 'border-transparent'} rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all`} />
+                        <input type={showPassword.new ? "text" : "password"} value={passwords.new} onChange={(e) => setPasswords({ ...passwords, new: e.target.value })} className={`w-full pl-12 pr-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 ${errors.new ? 'border-red-500' : 'border-transparent'} rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all`} />
+                        <button type="button" onClick={() => setShowPassword({ ...showPassword, new: !showPassword.new })} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary-500">
+                          {showPassword.new ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
                       </div>
                       <ErrorMessage message={errors.new} />
                     </div>
@@ -335,12 +346,15 @@ const AdminProfilePage: React.FC = () => {
                         <div className="relative flex-1">
                           <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                           <input
-                            type="password"
+                            type={showPassword.confirm ? "text" : "password"}
                             placeholder="Confirm password"
                             value={passwords.confirm}
                             onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
-                            className={`w-full pl-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 ${errors.confirm ? 'border-red-500' : 'border-transparent'} rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all`}
+                            className={`w-full pl-12 pr-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 ${errors.confirm ? 'border-red-500' : 'border-transparent'} rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all`}
                           />
+                          <button type="button" onClick={() => setShowPassword({ ...showPassword, confirm: !showPassword.confirm })} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary-500">
+                            {showPassword.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
                         </div>
                         <button
                           onClick={handlePasswordUpdate}

@@ -7,6 +7,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAppDispatch, useAppSelector } from '../store';
 import {
   setClassStatus,
@@ -24,8 +25,10 @@ import {
   selectUnreadMessageCount,
   selectTeacherLoading,
 } from '../store/slices/teacherSlice';
+import AlertBanner from '../components/shared/AlertBanner';
 import { selectUser } from '../features/auth/model/authSlice';
 import { apiClient } from '../services/axiosInstance';
+import { useWebSocket } from '../hooks/useWebSocket';
 import {
   Bell,
   ShieldAlert,
@@ -137,6 +140,41 @@ const TeacherDashboardPage: React.FC = () => {
   const [showAllLogs, setShowAllLogs] = useState(false);
   const [sortBy, setSortBy] = useState('');
   const [showSort, setShowSort] = useState(false);
+  const stompClient = useWebSocket('TEACHER');
+
+  // Notifications State
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [dismissedIds, setDismissedIds] = useState<string[]>([]);
+  const [selectedNotif, setSelectedNotif] = useState<any>(null);
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  const fetchNotifications = async () => {
+    if (!user?.uid) return;
+    try {
+      const res = await apiClient.get(`/api/v1/notifications/my-alerts/${user.uid}?role=TEACHER&size=20`);
+      if (res.data.success) {
+        setNotifications(res.data.data.content || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    }
+  };
+
+  const markAsRead = async (notificationId: string) => {
+    try {
+      await apiClient.put(`/api/v1/notifications/${notificationId}/read?userId=${user?.uid}`);
+      setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n));
+      setDismissedIds(prev => [...prev, notificationId]);
+    } catch (err) {
+      console.error("Failed to mark notification as read:", err);
+    }
+  };
+
+  const openNotif = (notif: any) => {
+    setSelectedNotif(notif);
+    if (!notif.isRead) markAsRead(notif.id);
+  };
 
   const fetchAll = async () => {
     dispatch(setLoading(true));
@@ -150,6 +188,7 @@ const TeacherDashboardPage: React.FC = () => {
           params: { sortBy: sortBy || undefined },
         }),
       ]);
+      fetchNotifications();
       if (s.data.success) dispatch(setClassStatus(s.data.data));
       if (a.data.success) dispatch(setSafetyAlerts(a.data.data || []));
       if (m.data.success) dispatch(setParentMessages(m.data.data || []));
@@ -170,6 +209,27 @@ const TeacherDashboardPage: React.FC = () => {
       if (res.data.success) dispatch(setActivityLogs(res.data.data || []));
     } catch {}
   };
+
+  useEffect(() => {
+    fetchAll();
+  }, [dispatch, sortBy]);
+
+  useEffect(() => {
+    if (stompClient && stompClient.connected) {
+      const sub1 = stompClient.subscribe('/topic/broadcasts', (message) => {
+        const notif = JSON.parse(message.body);
+        setNotifications((prev) => [notif, ...prev]);
+      });
+      const sub2 = stompClient.subscribe('/topic/teachers', (message) => {
+        const notif = JSON.parse(message.body);
+        setNotifications((prev) => [notif, ...prev]);
+      });
+      return () => {
+        sub1.unsubscribe();
+        sub2.unsubscribe();
+      };
+    }
+  }, [stompClient]);
 
   useEffect(() => {
     if (!user?.email) return;
@@ -222,18 +282,65 @@ const TeacherDashboardPage: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {/* Bell → navigates to messages */}
-          <button
-            onClick={() => navigate('/teacher/messages')}
-            className="relative w-10 h-10 rounded-xl border border-slate-200 bg-white flex items-center justify-center shadow-sm hover:border-[#06B6D4] transition-colors"
-          >
-            <Bell size={17} className="text-amber-500" />
-            {unread > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#06B6D4] text-white text-[9px] font-black flex items-center justify-center">
-                {unread}
-              </span>
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className={`relative w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center shadow-sm transition-colors ${showNotifications ? 'bg-slate-100 dark:bg-slate-800' : 'bg-white'}`}
+            >
+              <Bell size={17} className={showNotifications ? 'text-primary-500' : 'text-slate-500'} />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#06B6D4] text-white text-[9px] font-black flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+            {/* NOTIFICATION DROPDOWN */}
+            {showNotifications && (
+              <div className="absolute top-full right-0 mt-4 w-96 bg-white dark:bg-[#0f172a] rounded-[2rem] shadow-[0_20px_60px_rgba(10,6,55,0.08)] border border-slate-100 dark:border-slate-800/60 z-50 overflow-hidden animate-fadeUp origin-top-right">
+                <div className="p-6 border-b border-slate-50 dark:border-slate-800/60 flex items-center justify-between bg-white dark:bg-[#0f172a]">
+                  <h3 className="text-[11px] font-black text-midnight dark:text-white uppercase tracking-[0.15em]">Master Alerts</h3>
+                  <span className="text-[10px] font-black text-rose-500 bg-rose-50 dark:bg-rose-500/10 px-3 py-1.5 rounded-full uppercase tracking-widest">
+                    {unreadCount} New
+                  </span>
+                </div>
+                <div className="max-h-[400px] overflow-y-auto no-scrollbar bg-white dark:bg-[#0f172a]">
+                  {notifications.length > 0 ? (
+                    notifications.map((notif: any, idx: number) => (
+                      <div
+                        key={notif.id || idx}
+                        onClick={() => openNotif(notif)}
+                        className="p-6 border-b border-dashed border-slate-100 dark:border-slate-800/60 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer group flex gap-4 items-start"
+                      >
+                        <div className="mt-1.5 shrink-0">
+                          <div className={`w-2.5 h-2.5 rounded-full ${!notif.isRead ? 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.4)]' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-[11px] font-black text-midnight dark:text-white uppercase tracking-wider mb-1.5">
+                            {notif.title || 'System Alert'}
+                          </h4>
+                          <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                            {notif.body}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-12 text-center text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-widest">
+                      No Notifications
+                    </div>
+                  )}
+                </div>
+                <div className="p-5 bg-slate-50/50 dark:bg-slate-800/20 text-center border-t border-slate-50 dark:border-slate-800/60">
+                  <button
+                    onClick={() => {}}
+                    className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] hover:text-midnight dark:hover:text-white transition-colors"
+                  >
+                    Security Logs System
+                  </button>
+                </div>
+              </div>
             )}
-          </button>
+          </div>
           <button
             onClick={() => navigate('/teacher/activities')}
             className="bg-[#06B6D4] hover:bg-[#0891B2] text-white px-4 py-2.5 rounded-xl text-sm font-black shadow-md shadow-cyan-100 transition-all"
@@ -242,6 +349,11 @@ const TeacherDashboardPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      <AlertBanner
+        notifications={notifications.filter(n => (n.type === 'BROADCAST' || n.priority === 'HIGH') && !n.isRead && !dismissedIds.includes(n.id))}
+        onRead={markAsRead}
+      />
 
       <main className="w-full px-4 sm:px-6 space-y-4">
         {/* ── Row 1: 3 interactive cards ── */}
@@ -565,6 +677,62 @@ const TeacherDashboardPage: React.FC = () => {
           background: #0891B2;
         }
       `}</style>
+      {/* NOTIFICATION MODAL */}
+      <AnimatePresence>
+        {selectedNotif && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="w-full max-w-lg bg-white dark:bg-[#0f172a] rounded-[2rem] shadow-2xl overflow-hidden"
+            >
+              <div className="p-6 border-b border-slate-50 dark:border-slate-800/60 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/20">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 flex items-center justify-center text-[#06B6D4]">
+                    <Bell size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-black text-midnight dark:text-white uppercase tracking-widest">
+                      {selectedNotif.title || 'System Alert'}
+                    </h3>
+                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                      {new Date(selectedNotif.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedNotif(null)}
+                  className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-midnight dark:hover:text-white transition-colors"
+                >
+                  <span className="sr-only">Close</span>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="p-8">
+                <div className="p-6 rounded-[2rem] border bg-slate-50 dark:bg-slate-800/40 border-slate-100 dark:border-slate-800/60 text-sm font-medium text-slate-600 dark:text-slate-300 leading-relaxed">
+                  "{selectedNotif.body}"
+                </div>
+                <div className="mt-8 flex justify-end">
+                  <button
+                    onClick={() => setSelectedNotif(null)}
+                    className="px-6 py-3 rounded-xl bg-midnight text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-midnight/20 hover:scale-105 active:scale-95 transition-all"
+                  >
+                    Got it, thanks!
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -46,84 +46,66 @@ const AlertBanner: React.FC<AlertBannerProps> = ({ notifications, onRead }) => {
         exit={{ opacity: 0, height: 0, marginBottom: 0 }}
         className="px-6 max-w-7xl mx-auto"
       >
-        <div className="w-full pointer-events-auto">
+        <div className="w-full pointer-events-auto flex justify-center">
           <motion.div
             layout
-            className={`relative overflow-hidden rounded-[2rem] shadow-2xl border backdrop-blur-xl ${isHighPriority
-              ? 'bg-slate-900 dark:bg-black border-amber-500/30 shadow-[0_20px_50px_rgba(245,158,11,0.15)]'
-              : 'bg-gradient-to-br from-indigo-600/90 via-blue-600/90 to-cyan-600/90 border-white/20'
-              } text-white`}
+            className={`relative overflow-hidden rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border backdrop-blur-xl w-full max-w-3xl ${
+              isHighPriority
+                ? 'bg-white/95 dark:bg-slate-900/95 border-amber-200 dark:border-amber-900/50'
+                : 'bg-white/95 dark:bg-slate-900/95 border-slate-200 dark:border-slate-800/80'
+              }`}
           >
-            {/* Ambient Background Glow */}
-            <div className="absolute -top-24 -left-24 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
-            <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-black/10 rounded-full blur-3xl" />
+            {/* Subtle Accent Line */}
+            <div className={`absolute top-0 left-0 w-full h-1 ${isHighPriority ? 'bg-amber-400' : 'bg-cyan-500'}`} />
 
             <div className="px-6 py-4 flex items-center justify-between relative z-10">
-              <div className="flex items-center gap-5 flex-1">
-                <div className="relative">
-                  <div className={`p-3 rounded-2xl ${isHighPriority ? 'bg-amber-500/20 border-amber-500/30' : 'bg-white/20 border-white/30'} backdrop-blur-md shadow-xl border`}>
+              <div className="flex items-center gap-4 flex-1">
+                <div className="relative shrink-0">
+                  <div className={`p-3 rounded-2xl ${isHighPriority ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-cyan-100 dark:bg-cyan-900/30'}`}>
                     {isHighPriority ? (
-                      <Bell className={`w-6 h-6 ${isHighPriority ? 'text-amber-400' : 'text-white'} animate-bounce`} />
+                      <AlertTriangle className={`w-6 h-6 ${isHighPriority ? 'text-amber-500 dark:text-amber-400' : 'text-slate-600'} animate-pulse`} />
                     ) : (
-                      <Megaphone className="w-6 h-6 text-white" />
+                      <Megaphone className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
                     )}
                   </div>
-                  {isHighPriority && (
-                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${isHighPriority ? 'bg-amber-400' : 'bg-white'} opacity-75`}></span>
-                      <span className={`relative inline-flex rounded-full h-3 w-3 ${isHighPriority ? 'bg-amber-500' : 'bg-white'}`}></span>
-                    </span>
-                  )}
                 </div>
 
                 <div className="flex flex-col">
-                  <div className="flex items-center gap-3 mb-0.5">
-                    <span className={`font-extrabold text-[10px] tracking-widest uppercase ${isHighPriority ? 'text-amber-400/90' : 'text-white/80'}`}>
+                  <div className="flex items-center gap-3 mb-1">
+                    <span className={`font-bold text-[11px] tracking-wider uppercase ${isHighPriority ? 'text-amber-600 dark:text-amber-500' : 'text-cyan-600 dark:text-cyan-500'}`}>
                       {current.title || (isHighPriority ? 'Important Notice' : 'Announcement')}
                     </span>
                     {notifications.length > 1 && (
-                      <span className="px-2 py-0.5 rounded-full bg-black/20 text-[10px] font-bold border border-white/10">
+                      <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300">
                         {currentIndex + 1} of {notifications.length}
                       </span>
                     )}
                   </div>
-                  <p className="text-[15px] font-medium leading-relaxed tracking-wide text-slate-200">
+                  <p className="text-[14px] font-medium leading-relaxed text-slate-700 dark:text-slate-200">
                     {current.body}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 ml-6">
+              <div className="flex items-center gap-2 ml-6 shrink-0">
                 {notifications.length > 1 && (
                   <button
                     onClick={nextAlert}
-                    className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-all border border-white/10 active:scale-95"
+                    className="group flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300 active:scale-95"
                   >
-                    <span className="text-sm font-bold">Next</span>
-                    <Bell className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                    <span className="text-xs font-bold">Next</span>
+                    <Bell className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" />
                   </button>
                 )}
                 <button
                   onClick={handleClose}
-                  className="p-2.5 rounded-xl bg-black/10 hover:bg-black/20 transition-all border border-white/5 active:scale-90"
+                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 active:scale-90"
                   title="Dismiss"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
-
-            {/* Progress Bar for High Priority */}
-            {isHighPriority && (
-              <div className="h-1 w-full bg-white/5">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: '100%' }}
-                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                  className="h-full bg-amber-500/50"
-                />
-              </div>
-            )}
           </motion.div>
         </div>
       </motion.div>

@@ -151,7 +151,7 @@ const Teachers = () => {
   };
 
   const [orderBy, setOrderBy] = useState("firstNameAsc");
-  const [pageSize, setPageSize] = useState(25);
+  const [pageSize, setPageSize] = useState(10);
 
   const orderOptions = [
     { label: "First Name A - Z", value: "firstNameAsc" },

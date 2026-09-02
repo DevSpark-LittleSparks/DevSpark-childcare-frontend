@@ -56,6 +56,7 @@ const ParentProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState({ current: false, new: false, confirm: false });
 
   const [requestType, setRequestType] = useState<string>("");
   const [requestDescription, setRequestDescription] = useState<string>("");
@@ -169,7 +170,16 @@ const ParentProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
         setPasswords({ current: '', new: '', confirm: '' });
       }
     } catch (err: any) {
-      setStatusMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update password.' });
+      let errorMsg = 'Failed to update password.';
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+        setErrors({ ...errors, current: 'Current password is incorrect.' });
+        return;
+      } else if (err.code === 'auth/requires-recent-login') {
+        errorMsg = 'Please log out and log back in to change your password.';
+      } else if (err.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      }
+      setStatusMessage({ type: 'error', text: errorMsg });
     } finally {
       setIsChangingPassword(false);
     }
@@ -349,14 +359,21 @@ const ParentProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
                       <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Current Password</label>
                       <div className="relative">
                         <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                        <input type="password" placeholder="••••••••" value={passwords.current} onChange={(e) => setPasswords({ ...passwords, current: e.target.value })} className="w-full pl-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 border-transparent rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all" />
+                        <input type={showPassword.current ? "text" : "password"} placeholder="••••••••" value={passwords.current} onChange={(e) => setPasswords({ ...passwords, current: e.target.value })} className={`w-full pl-12 pr-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 ${errors.current ? 'border-red-500' : 'border-transparent'} rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all`} />
+                        <button type="button" onClick={() => setShowPassword({ ...showPassword, current: !showPassword.current })} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary-500">
+                          {showPassword.current ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
                       </div>
+                      <ErrorMessage message={errors.current} />
                     </div>
                     <div className="space-y-2 text-left">
                       <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">New Password</label>
                       <div className="relative">
                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                        <input type="password" placeholder="Enter new password" value={passwords.new} onChange={(e) => setPasswords({ ...passwords, new: e.target.value })} className={`w-full pl-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 ${errors.new ? 'border-red-500' : 'border-transparent'} rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all`} />
+                        <input type={showPassword.new ? "text" : "password"} placeholder="Enter new password" value={passwords.new} onChange={(e) => setPasswords({ ...passwords, new: e.target.value })} className={`w-full pl-12 pr-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 ${errors.new ? 'border-red-500' : 'border-transparent'} rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all`} />
+                        <button type="button" onClick={() => setShowPassword({ ...showPassword, new: !showPassword.new })} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary-500">
+                          {showPassword.new ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
                       </div>
                       <ErrorMessage message={errors.new} />
                     </div>
@@ -365,7 +382,10 @@ const ParentProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
                       <div className="relative flex gap-3">
                         <div className="relative flex-1">
                           <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                          <input type="password" placeholder="Confirm password" value={passwords.confirm} onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })} className={`w-full pl-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 ${errors.confirm ? 'border-red-500' : 'border-transparent'} rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all`} />
+                          <input type={showPassword.confirm ? "text" : "password"} placeholder="Confirm password" value={passwords.confirm} onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })} className={`w-full pl-12 pr-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 ${errors.confirm ? 'border-red-500' : 'border-transparent'} rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all`} />
+                          <button type="button" onClick={() => setShowPassword({ ...showPassword, confirm: !showPassword.confirm })} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary-500">
+                            {showPassword.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
                         </div>
                         <button onClick={handlePasswordUpdate} disabled={isChangingPassword || !passwords.current || !passwords.new} className="bg-primary-500 hover:bg-primary-600 disabled:bg-slate-300 p-4 rounded-2xl text-white transition-all shadow-lg active:scale-95 flex items-center justify-center">
                           {isChangingPassword ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}

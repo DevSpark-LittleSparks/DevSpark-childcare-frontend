@@ -2,7 +2,7 @@ import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
 import {
   User, Mail, Phone, MapPin, Save, Edit2, ArrowLeft,
   Key, CheckCircle2, AlertCircle, Loader2, Camera, GraduationCap,
-  ShieldCheck, Briefcase, Send, Lock, FileText
+  ShieldCheck, Briefcase, Send, Lock, FileText, Eye, EyeOff
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../store';
@@ -48,6 +48,7 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState({ current: false, new: false, confirm: false });
 
   // Request form state
   const [requestType, setRequestType] = useState<string>("");
@@ -151,17 +152,23 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
 
     setIsChangingPassword(true);
     try {
-      const res = await apiClient.post('/api/v1/teacher/change-password', {
+      await apiClient.post('/api/v1/teacher/change-password', {
         currentPassword: passwords.current,
         newPassword: passwords.new
       });
-      if (res.data.success) {
-        setStatusMessage({ type: 'success', text: 'Security key updated successfully.' });
-        setPasswords({ current: '', new: '', confirm: '' });
-      }
+      setStatusMessage({ type: 'success', text: 'Security key updated successfully.' });
+      setPasswords({ current: '', new: '', confirm: '' });
     } catch (err: any) {
-      console.error("Failed to update password:", err);
-      setStatusMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update password.' });
+      let errorMsg = 'Failed to update password.';
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+        setErrors({ ...errors, current: 'Current password is incorrect.' });
+        return;
+      } else if (err.code === 'auth/requires-recent-login') {
+        errorMsg = 'Please log out and log back in to change your password.';
+      } else if (err.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      }
+      setStatusMessage({ type: 'error', text: errorMsg });
     } finally {
       setIsChangingPassword(false);
     }
@@ -414,13 +421,17 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
                       <div className="relative">
                         <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                         <input
-                          type="password"
+                          type={showPassword.current ? "text" : "password"}
                           placeholder="••••••••"
                           value={passwords.current}
                           onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
-                          className="w-full pl-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 border-transparent rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all"
+                          className={`w-full pl-12 pr-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 ${errors.current ? 'border-red-500' : 'border-transparent'} rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all`}
                         />
+                        <button type="button" onClick={() => setShowPassword({ ...showPassword, current: !showPassword.current })} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary-500">
+                          {showPassword.current ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
                       </div>
+                      <ErrorMessage message={errors.current} />
                     </div>
 
                     <div className="space-y-2 text-left">
@@ -428,12 +439,15 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
                       <div className="relative">
                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                         <input
-                          type="password"
+                          type={showPassword.new ? "text" : "password"}
                           placeholder="Enter new password"
                           value={passwords.new}
                           onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
-                          className={`w-full pl-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 ${errors.new ? 'border-red-500' : 'border-transparent'} rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all`}
+                          className={`w-full pl-12 pr-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 ${errors.new ? 'border-red-500' : 'border-transparent'} rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all`}
                         />
+                        <button type="button" onClick={() => setShowPassword({ ...showPassword, new: !showPassword.new })} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary-500">
+                          {showPassword.new ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
                       </div>
                       <ErrorMessage message={errors.new} />
                     </div>
@@ -444,12 +458,15 @@ const TeacherProfilePage: React.FC<{ initialUser?: UserProfile }> = () => {
                         <div className="relative flex-1">
                           <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                           <input
-                            type="password"
+                            type={showPassword.confirm ? "text" : "password"}
                             placeholder="Confirm password"
                             value={passwords.confirm}
                             onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
-                            className={`w-full pl-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 ${errors.confirm ? 'border-red-500' : 'border-transparent'} rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all`}
+                            className={`w-full pl-12 pr-12 p-4 bg-slate-100 dark:bg-slate-800/40 border-2 ${errors.confirm ? 'border-red-500' : 'border-transparent'} rounded-2xl text-midnight dark:text-white text-sm font-bold outline-none focus:border-primary-500 focus:bg-white dark:focus:bg-[#0f172a] shadow-sm transition-all`}
                           />
+                          <button type="button" onClick={() => setShowPassword({ ...showPassword, confirm: !showPassword.confirm })} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary-500">
+                            {showPassword.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
                         </div>
                         <button
                           onClick={handlePasswordUpdate}

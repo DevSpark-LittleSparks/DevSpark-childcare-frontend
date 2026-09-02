@@ -116,8 +116,8 @@ const ParentManagement = () => {
       try {
         // Find the parent's ID from backend data
         const parent = parents.find(p => p.email === email);
-        if (parent?.parentId) {
-          await apiClient.delete(`/api/v1/auth/admin/parent/${parent.parentId}`);
+        if (parent?.id) {
+          await apiClient.delete(`/api/v1/auth/admin/parent/${parent.id}`);
         }
         setParents(parents.filter(p => p.email !== email));
         setSelectedParents(selectedParents.filter(e => e !== email));
@@ -133,7 +133,7 @@ const ParentManagement = () => {
   };
 
   const [orderBy, setOrderBy] = useState("firstNameAsc");
-  const [pageSize, setPageSize] = useState(25);
+  const [pageSize, setPageSize] = useState(10);
 
   const orderOptions = [
     { label: "First Name A - Z", value: "firstNameAsc" },

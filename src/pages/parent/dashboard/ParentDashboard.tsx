@@ -262,49 +262,46 @@ const ParentDashboard = () => {
 
           {/* NOTIFICATION DROPDOWN */}
           {showNotifications && (
-            <div className="absolute top-full right-0 mt-4 w-85 bg-white dark:bg-slate-900 rounded-[2rem] shadow-[0_20px_50px_rgba(10,6,55,0.15)] border border-slate-100 dark:border-slate-800/60 dark:border-slate-800 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-              <div className="p-6 border-b border-slate-50 dark:border-slate-800/60 dark:border-slate-800/50 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40/50 dark:bg-slate-800/50">
-                <h3 className="text-[10px] font-black text-midnight dark:text-white uppercase tracking-widest">Special Announcements</h3>
-                <span className="text-[9px] font-black text-primary-500 bg-primary-50 px-3 py-1 rounded-full uppercase tracking-tighter">
-                  {notifications.filter(n => !n.isRead).length} New Updates
+            <div className="absolute top-full right-0 mt-4 w-96 bg-white dark:bg-[#0f172a] rounded-[2rem] shadow-[0_20px_60px_rgba(10,6,55,0.08)] border border-slate-100 dark:border-slate-800/60 z-50 overflow-hidden animate-fadeUp origin-top-right">
+              <div className="p-6 border-b border-slate-50 dark:border-slate-800/60 flex items-center justify-between bg-white dark:bg-[#0f172a]">
+                <h3 className="text-[11px] font-black text-midnight dark:text-white uppercase tracking-[0.15em]">Master Alerts</h3>
+                <span className="text-[10px] font-black text-rose-500 bg-rose-50 dark:bg-rose-500/10 px-3 py-1.5 rounded-full uppercase tracking-widest">
+                  {notifications.filter(n => !n.isRead).length} New
                 </span>
               </div>
-              <div className="max-h-[400px] overflow-y-auto no-scrollbar">
+              <div className="max-h-[400px] overflow-y-auto no-scrollbar bg-white dark:bg-[#0f172a]">
                 {notifications.length > 0 ? (
-                  notifications.map((notif, idx) => (
+                  notifications.map((notif: any, idx: number) => (
                     <div
-                      key={idx}
+                      key={notif.id || idx}
                       onClick={() => openNotif(notif)}
-                      className={`p-6 border-b border-slate-50 dark:border-slate-800/60 dark:border-slate-800 hover:bg-slate-50 dark:bg-slate-800/40 dark:hover:bg-slate-800/50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer relative group`}
+                      className="p-6 border-b border-dashed border-slate-100 dark:border-slate-800/60 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer group flex gap-4 items-start"
                     >
-                      <div className="flex justify-between items-start mb-1.5">
-                        <div className="flex items-center gap-2">
-                          {!notif.isRead && <div className="w-1.5 h-1.5 rounded-full bg-primary-500"></div>}
-                          <h4 className="text-[11px] font-black text-midnight dark:text-white uppercase tracking-tight">
-                            {notif.title || 'System Notification'}
-                          </h4>
-                        </div>
-                        <span className="text-[9px] text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 font-bold">
-                          {new Date(notif.createdAt).toLocaleDateString()}
-                        </span>
+                      <div className="mt-1.5 shrink-0">
+                        <div className={`w-2.5 h-2.5 rounded-full ${!notif.isRead ? 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.4)]' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
                       </div>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2 font-medium">
-                        {notif.body}
-                      </p>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-[11px] font-black text-midnight dark:text-white uppercase tracking-wider mb-1.5">
+                          {notif.title || 'System Alert'}
+                        </h4>
+                        <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                          {notif.body}
+                        </p>
+                      </div>
                     </div>
                   ))
                 ) : (
-                  <div className="p-10 text-center text-slate-400 dark:text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-widest">
+                  <div className="p-12 text-center text-slate-400 dark:text-slate-500 font-bold text-xs uppercase tracking-widest">
                     No Notifications
                   </div>
                 )}
               </div>
-              <div className="p-5 bg-slate-50 dark:bg-slate-800/40/80 dark:bg-slate-800/80 text-center border-t border-slate-100 dark:border-slate-800/60 dark:border-slate-800">
+              <div className="p-5 bg-slate-50/50 dark:bg-slate-800/20 text-center border-t border-slate-50 dark:border-slate-800/60">
                 <button
                   onClick={markAllRead}
-                  className="text-[10px] font-black text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest hover:text-primary-500 transition-colors"
+                  className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] hover:text-midnight dark:hover:text-white transition-colors"
                 >
-                  Mark all as read
+                  Security Logs System
                 </button>
               </div>
             </div>

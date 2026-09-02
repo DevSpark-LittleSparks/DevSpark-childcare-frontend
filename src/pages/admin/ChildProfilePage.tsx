@@ -134,7 +134,14 @@ const ChildViewPage = () => {
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    let finalValue = value;
+    if (name === 'fullName' || name === 'nameWithInitials' || name === 'parentFullName') {
+      finalValue = value.replace(/\b\w/g, char => char.toUpperCase());
+    }
+    if (name === 'parentContact') {
+      finalValue = '+94' + value.replace(/^\+94\s?/, '');
+    }
+    setFormData(prev => ({ ...prev, [name]: finalValue }));
   };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
