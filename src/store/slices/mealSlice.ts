@@ -32,6 +32,22 @@ export const publishMenu = createAsyncThunk(
     }
   },
 );
+export const fetchMealStudents = createAsyncThunk(
+  'meal/fetchStudents',
+  async (date: string, { rejectWithValue }) => {
+    try {
+      return await mealService.getStudentsForMeals(date);
+    } catch (error: unknown) {
+      // unknown දැම්මට පස්සේ, මේක Axios error එකක්ද කියලා තහවුරු කරගන්න ඕනේ
+      if (isAxiosError(error)) {
+        return rejectWithValue(error.response?.data?.message ?? 'Failed to load students');
+      }
+      return rejectWithValue('Failed to load students');
+    }
+  },
+);
+
+// (ඔයාගේ extraReducers ඇතුලේ මේකේ pending, fulfilled, rejected state ටික හදාගන්න අනිත් ඒවා වගේම[cite: 2])
 
 interface MealState {
   weeklyMenus: MealMenuResponse[];

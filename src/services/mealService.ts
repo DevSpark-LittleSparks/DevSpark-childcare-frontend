@@ -44,6 +44,14 @@ export const mealService = {
     });
     return res.data.data;
   },
+  // අලුත් ළමයි ගන්න Endpoint එක
+  getStudentsForMeals: async (date: string) => {
+    // Axios instance එක හරහා අර අපි Backend එකේ හදපු අලුත් API එකට කතා කරනවා
+    const res = await apiClient.get(`/meals/consumption/students`, {
+      params: { date },
+    });
+    return res.data.data;
+  },
 
   // 💡 THIS WAS MISSING! Fetches existing logs for the selected date to enable editing
   getConsumptionLogs: async (date: string): Promise<ConsumptionLogResponse[]> => {
