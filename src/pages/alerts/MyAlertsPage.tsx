@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Bell, AlertTriangle } from 'lucide-react';
 import { alertsApi } from '@/services/alertsApi';
 import { selectUser } from '@/features/auth/model/authSlice';
+import type { AlertItem } from '@/types/alerts.types';
 
 import '@/pages/billing/BillingPage.css';
 import './MyAlertsPage.css';
 
 export const MyAlertsPage = () => {
   const user = useSelector(selectUser);
-  const [alerts, setAlerts] = useState([]);
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadAlerts = () => {
@@ -27,8 +28,8 @@ export const MyAlertsPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid, user?.role]);
 
-  const handleOpen = (alert) => {
-    if (alert.isRead) return;
+  const handleOpen = (alert: AlertItem) => {
+    if (alert.isRead || !user?.uid) return;
     alertsApi
       .markAlertRead(alert.id, user.uid)
       .then(() => {

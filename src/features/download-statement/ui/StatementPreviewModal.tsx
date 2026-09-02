@@ -1,9 +1,16 @@
-import React from 'react';
 import { Download } from 'lucide-react';
 import { Modal } from '@/shared/ui/Modal/Modal';
 import { formatCurrency } from '@/shared/lib/formatCurrency';
 
-export const StatementPreviewModal = ({ isOpen, onClose, lastPayment, outstandingBalance, onDownload }) => {
+interface StatementPreviewModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  lastPayment: number;
+  outstandingBalance: number;
+  onDownload: () => void;
+}
+
+export const StatementPreviewModal = ({ isOpen, onClose, lastPayment, outstandingBalance, onDownload }: StatementPreviewModalProps) => {
   if (!isOpen) return null;
 
   return (

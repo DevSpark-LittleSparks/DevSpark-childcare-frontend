@@ -1,5 +1,13 @@
-import React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
+import type { PaymentMethod } from '@/types/billing.types';
+
+interface PaymentMethodsListProps {
+  paymentMethods: PaymentMethod[];
+  selectedMethodIndex: number | null;
+  onSelectMethod: (index: number) => void;
+  onRemoveMethod: (index: number) => void;
+  onAddMethodClick: () => void;
+}
 
 export const PaymentMethodsList = ({
   paymentMethods,
@@ -7,7 +15,7 @@ export const PaymentMethodsList = ({
   onSelectMethod,
   onRemoveMethod,
   onAddMethodClick
-}) => {
+}: PaymentMethodsListProps) => {
   return (
     <div className="section-container">
       <div className="section-header">

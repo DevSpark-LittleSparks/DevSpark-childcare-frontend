@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { CardElement, useStripe, useElements, Elements } from '@stripe/react-stripe-js';
+import type { StripeCardElementOptions } from '@stripe/stripe-js';
 import { stripePromise } from '@/utils/stripeConfig';
 import { apiClient } from '@/services/axiosInstance';
+import { getErrorMessage } from '@/shared/lib/getErrorMessage';
 
-const CARD_ELEMENT_OPTIONS = {
+const CARD_ELEMENT_OPTIONS: StripeCardElementOptions = {
   style: {
     base: {
       fontSize: '16px',
@@ -15,8 +17,14 @@ const CARD_ELEMENT_OPTIONS = {
   },
 };
 
+interface AddMethodFormProps {
+  parentId: string;
+  onCancel: () => void;
+  onSuccess: (savedCard: unknown) => void;
+}
+
 // 1. Rename your form content to an isolated inner component
-const AddMethodFormContent = ({ parentId, onCancel, onSuccess }) => {
+const AddMethodFormContent = ({ parentId, onCancel, onSuccess }: AddMethodFormProps) => {
   const stripe = useStripe();
   const elements = useElements();
   const [cardholderName, setCardholderName] = useState('');
@@ -24,21 +32,22 @@ const AddMethodFormContent = ({ parentId, onCancel, onSuccess }) => {
   const [formError, setFormError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!stripe || !elements || !cardholderName.trim()) return;
+    const cardElement = elements?.getElement(CardElement);
+    if (!stripe || !elements || !cardElement || !cardholderName.trim()) return;
 
     setFormError('');
     setIsSubmitting(true);
     try {
       const { error: stripeError, paymentMethod } = await stripe.createPaymentMethod({
         type: 'card',
-        card: elements.getElement(CardElement),
+        card: cardElement,
         billing_details: { name: cardholderName.trim() },
       });
 
       if (stripeError) {
-        setFormError(stripeError.message);
+        setFormError(stripeError.message ?? 'Unable to save card. Please try again.');
         return;
       }
 
@@ -50,7 +59,7 @@ const AddMethodFormContent = ({ parentId, onCancel, onSuccess }) => {
 
       onSuccess(data.data);
     } catch (err) {
-      setFormError(err?.response?.data?.message || 'Unable to save card. Please try again.');
+      setFormError(getErrorMessage(err, 'Unable to save card. Please try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -106,7 +115,7 @@ const AddMethodFormContent = ({ parentId, onCancel, onSuccess }) => {
 };
 
 // 2. Export the component natively wrapped in Elements
-export const AddMethodForm = (props) => {
+export const AddMethodForm = (props: AddMethodFormProps) => {
   return (
     <Elements stripe={stripePromise}>
       <AddMethodFormContent {...props} />

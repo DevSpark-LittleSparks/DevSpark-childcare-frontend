@@ -1,7 +1,10 @@
-import React from 'react';
 import { CheckCircle2 } from 'lucide-react';
 
-export const Toast = ({ message }) => {
+interface ToastProps {
+  message: string;
+}
+
+export const Toast = ({ message }: ToastProps) => {
   if (!message) return null;
 
   return (

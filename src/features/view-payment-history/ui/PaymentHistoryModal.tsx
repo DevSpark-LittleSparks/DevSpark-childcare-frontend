@@ -1,9 +1,16 @@
-import React from 'react';
 import { Download } from 'lucide-react';
 import { Modal } from '@/shared/ui/Modal/Modal';
 import { formatCurrency } from '@/shared/lib/formatCurrency';
+import type { Invoice } from '@/types/billing.types';
 
-export const PaymentHistoryModal = ({ isOpen, onClose, invoices, onDownloadReceipt }) => {
+interface PaymentHistoryModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  invoices: Invoice[];
+  onDownloadReceipt: (invoiceId: string) => void;
+}
+
+export const PaymentHistoryModal = ({ isOpen, onClose, invoices, onDownloadReceipt }: PaymentHistoryModalProps) => {
   if (!isOpen) return null;
 
   return (
@@ -38,7 +45,7 @@ export const PaymentHistoryModal = ({ isOpen, onClose, invoices, onDownloadRecei
           ))}
           {invoices.filter(inv => inv.status === 'Paid').length === 0 && (
             <tr>
-              <td colSpan="4" style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>No payment history found.</td>
+              <td colSpan={4} style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>No payment history found.</td>
             </tr>
           )}
         </tbody>

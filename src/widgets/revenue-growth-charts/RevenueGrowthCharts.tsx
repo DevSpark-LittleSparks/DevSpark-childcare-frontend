@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -9,24 +9,35 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  type TooltipContentProps,
 } from 'recharts';
 import { ArrowUpRight } from 'lucide-react';
 import { formatCurrency } from '@/shared/lib/formatCurrency';
+import type { MonthlyRevenueEntry, YearlyRevenueEntry } from '@/types/billing.types';
 import './RevenueGrowthCharts.css';
 
 const CHART_COLOR = '#06b6d4';
 const GRID_COLOR = '#e5e7eb';
 const AXIS_COLOR = '#6b7280';
 
-const RevenueTooltip = ({ active, payload, label }) => {
+const RevenueTooltip = ({ active, payload, label }: Partial<TooltipContentProps<number, string>>) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="revenue-tooltip">
       <p className="revenue-tooltip-label">{label}</p>
-      <p className="revenue-tooltip-value">{formatCurrency(payload[0].value)}</p>
+      <p className="revenue-tooltip-value">{formatCurrency(Number(payload[0].value))}</p>
     </div>
   );
 };
+
+interface RevenueGrowthChartsProps {
+  monthlyRevenue: MonthlyRevenueEntry[];
+  yearlyRevenue: YearlyRevenueEntry[];
+  isLoading: boolean;
+  error: string | null;
+  onViewAnalysis?: () => void;
+  chartHeight?: number;
+}
 
 export const RevenueGrowthCharts = ({
   monthlyRevenue,
@@ -35,9 +46,13 @@ export const RevenueGrowthCharts = ({
   error,
   onViewAnalysis,
   chartHeight = 320,
-}) => {
-  const [view, setView] = useState('monthly');
-  const data = view === 'monthly' ? monthlyRevenue : yearlyRevenue;
+}: RevenueGrowthChartsProps) => {
+  const [view, setView] = useState<'monthly' | 'yearly'>('monthly');
+  // Recharts infers one concrete row shape per chart from its `data` prop -
+  // merge both shapes so the same chart can render either series depending
+  // on `view`, instead of the row type flip-flopping under it.
+  const data: Array<{ month?: string; year?: number; revenue: number }> =
+    view === 'monthly' ? monthlyRevenue : yearlyRevenue;
   const dataKey = view === 'monthly' ? 'month' : 'year';
 
   return (

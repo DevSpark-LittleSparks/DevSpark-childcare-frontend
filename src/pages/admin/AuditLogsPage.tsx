@@ -1,4 +1,3 @@
-import React from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
 import { useRevenueGrowth } from '@/entities/revenue/model/useRevenueGrowth';
@@ -10,12 +9,12 @@ import { formatCurrency } from '@/shared/lib/formatCurrency';
 import '@/pages/billing/BillingPage.css';
 import '@/pages/billing/RevenueAnalysisPage.css';
 
-const percentChange = (current, previous) => {
+const percentChange = (current: number, previous: number | undefined): number | null => {
   if (!previous) return null;
   return ((current - previous) / previous) * 100;
 };
 
-const GrowthBadge = ({ value }) => {
+const GrowthBadge = ({ value }: { value: number | null }) => {
   if (value === null) return <p className="card-subtitle">No prior period to compare</p>;
   const isPositive = value >= 0;
   return (

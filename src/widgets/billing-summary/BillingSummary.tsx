@@ -1,7 +1,11 @@
-import React from 'react';
 import { formatCurrency } from '@/shared/lib/formatCurrency';
 
-export const BillingSummary = ({ outstandingBalance, lastPayment }) => {
+interface BillingSummaryProps {
+  outstandingBalance: number;
+  lastPayment: number;
+}
+
+export const BillingSummary = ({ outstandingBalance, lastPayment }: BillingSummaryProps) => {
   return (
     <div className="summary-cards">
       <div className="card">

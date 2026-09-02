@@ -1,17 +1,17 @@
-import React from 'react';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, type TooltipContentProps } from 'recharts';
 import { AlertTriangle } from 'lucide-react';
 import { formatCurrency } from '@/shared/lib/formatCurrency';
+import type { PaymentStatusEntry } from '@/types/billing.types';
 import './PaymentStatusOverview.css';
 
-const STATUS_COLORS = {
+const STATUS_COLORS: Record<string, string> = {
   Paid: '#059669',
   Pending: '#d97706',
 };
 
-const StatusTooltip = ({ active, payload }) => {
+const StatusTooltip = ({ active, payload }: Partial<TooltipContentProps<number, string>>) => {
   if (!active || !payload?.length) return null;
-  const { status, count, amount } = payload[0].payload;
+  const { status, count, amount } = payload[0].payload as PaymentStatusEntry;
   return (
     <div className="status-tooltip">
       <p className="status-tooltip-label">{status}</p>
@@ -21,7 +21,13 @@ const StatusTooltip = ({ active, payload }) => {
   );
 };
 
-export const PaymentStatusOverview = ({ statusOverview, isLoading, error }) => {
+interface PaymentStatusOverviewProps {
+  statusOverview: PaymentStatusEntry[];
+  isLoading: boolean;
+  error: string | null;
+}
+
+export const PaymentStatusOverview = ({ statusOverview, isLoading, error }: PaymentStatusOverviewProps) => {
   const totalCount = statusOverview.reduce((sum, entry) => sum + entry.count, 0);
   const pending = statusOverview.find((entry) => entry.status === 'Pending');
 

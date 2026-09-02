@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Send, Megaphone, AlertTriangle } from 'lucide-react';
 import { alertsApi } from '@/services/alertsApi';
+import { getErrorMessage } from '@/shared/lib/getErrorMessage';
+import type { AlertRecipient, AlertPriority, SentAlert } from '@/types/alerts.types';
 
 import '@/pages/billing/BillingPage.css';
 
@@ -9,26 +11,26 @@ const ALERT_PRESETS = [
   { value: 'EMERGENCY_ALERT', label: 'Emergency Alert', title: 'Emergency Alert', priority: 'HIGH' },
   { value: 'GENERAL', label: 'General Announcement', title: 'Announcement', priority: 'NORMAL' },
   { value: 'CUSTOM', label: 'Custom', title: '', priority: 'NORMAL' },
-];
+] as const satisfies readonly { value: string; label: string; title: string; priority: AlertPriority }[];
 
 const AUDIENCES = [
   { value: 'TEACHER', label: 'All Staff' },
   { value: 'PARENT', label: 'All Parents' },
   { value: 'ALL', label: 'Everyone' },
   { value: 'INDIVIDUAL', label: 'Individual User' },
-];
+] as const;
 
 export const AlertsPage = () => {
-  const [preset, setPreset] = useState('PARENT_MEETING');
-  const [title, setTitle] = useState(ALERT_PRESETS[0].title);
+  const [preset, setPreset] = useState<string>('PARENT_MEETING');
+  const [title, setTitle] = useState<string>(ALERT_PRESETS[0].title);
   const [body, setBody] = useState('');
-  const [priority, setPriority] = useState(ALERT_PRESETS[0].priority);
-  const [audience, setAudience] = useState('PARENT');
-  const [recipients, setRecipients] = useState([]);
+  const [priority, setPriority] = useState<AlertPriority>(ALERT_PRESETS[0].priority);
+  const [audience, setAudience] = useState<(typeof AUDIENCES)[number]['value']>('PARENT');
+  const [recipients, setRecipients] = useState<AlertRecipient[]>([]);
   const [recipientId, setRecipientId] = useState('');
   const [isLoadingRecipients, setIsLoadingRecipients] = useState(false);
 
-  const [sentAlerts, setSentAlerts] = useState([]);
+  const [sentAlerts, setSentAlerts] = useState<SentAlert[]>([]);
   const [isLoadingSent, setIsLoadingSent] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [formError, setFormError] = useState('');
@@ -57,7 +59,7 @@ export const AlertsPage = () => {
       .finally(() => setIsLoadingRecipients(false));
   }, [audience, recipients.length]);
 
-  const handlePresetChange = (value) => {
+  const handlePresetChange = (value: string) => {
     setPreset(value);
     const chosen = ALERT_PRESETS.find((p) => p.value === value);
     if (chosen) {
@@ -66,7 +68,7 @@ export const AlertsPage = () => {
     }
   };
 
-  const handleSend = async (e) => {
+  const handleSend = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormError('');
     setSuccessMessage('');
@@ -101,7 +103,7 @@ export const AlertsPage = () => {
       setRecipientId('');
       loadSentAlerts();
     } catch (err) {
-      setFormError(err?.response?.data?.message || 'Unable to send alert. Please try again.');
+      setFormError(getErrorMessage(err, 'Unable to send alert. Please try again.'));
     } finally {
       setIsSending(false);
     }
@@ -155,7 +157,7 @@ export const AlertsPage = () => {
 
           <div className="form-group">
             <label>Priority</label>
-            <select className="form-control" value={priority} onChange={(e) => setPriority(e.target.value)}>
+            <select className="form-control" value={priority} onChange={(e) => setPriority(e.target.value as AlertPriority)}>
               <option value="NORMAL">Normal</option>
               <option value="HIGH">High</option>
             </select>
@@ -163,7 +165,7 @@ export const AlertsPage = () => {
 
           <div className="form-group">
             <label>Send To</label>
-            <select className="form-control" value={audience} onChange={(e) => { setAudience(e.target.value); setRecipientId(''); }}>
+            <select className="form-control" value={audience} onChange={(e) => { setAudience(e.target.value as (typeof AUDIENCES)[number]['value']); setRecipientId(''); }}>
               {AUDIENCES.map((a) => (
                 <option key={a.value} value={a.value}>{a.label}</option>
               ))}

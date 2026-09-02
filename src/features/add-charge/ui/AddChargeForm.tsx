@@ -1,19 +1,31 @@
-import React, { useState } from 'react';
+import { useState, type FormEvent } from 'react';
+import { getErrorMessage } from '@/shared/lib/getErrorMessage';
 
 const CHARGE_TYPES = [
   { value: 'REGISTRATION_FEE', label: 'Registration Fee' },
   { value: 'FACILITY_FEE', label: 'Facility Fee' },
   { value: 'OTHER', label: 'Other' },
-];
+] as const;
 
-export const AddChargeForm = ({ onCancel, onSubmit }) => {
-  const [chargeType, setChargeType] = useState('REGISTRATION_FEE');
+interface AddChargeFormValues {
+  chargeType: (typeof CHARGE_TYPES)[number]['value'];
+  description?: string;
+  amount: number;
+}
+
+interface AddChargeFormProps {
+  onCancel: () => void;
+  onSubmit: (values: AddChargeFormValues) => Promise<void>;
+}
+
+export const AddChargeForm = ({ onCancel, onSubmit }: AddChargeFormProps) => {
+  const [chargeType, setChargeType] = useState<AddChargeFormValues['chargeType']>('REGISTRATION_FEE');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const numericAmount = Number(amount);
     if (!numericAmount || numericAmount <= 0) {
@@ -34,7 +46,7 @@ export const AddChargeForm = ({ onCancel, onSubmit }) => {
         amount: numericAmount,
       });
     } catch (err) {
-      setFormError(err?.response?.data?.message || 'Unable to add charge. Please try again.');
+      setFormError(getErrorMessage(err, 'Unable to add charge. Please try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -47,7 +59,7 @@ export const AddChargeForm = ({ onCancel, onSubmit }) => {
         <select
           className="form-control"
           value={chargeType}
-          onChange={(e) => setChargeType(e.target.value)}
+          onChange={(e) => setChargeType(e.target.value as AddChargeFormValues['chargeType'])}
         >
           {CHARGE_TYPES.map((type) => (
             <option key={type.value} value={type.value}>{type.label}</option>

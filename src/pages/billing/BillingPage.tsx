@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Download, MessageSquare, ReceiptText } from 'lucide-react';
@@ -9,6 +9,8 @@ import { useInvoices } from '@/entities/invoice/model/useInvoices';
 import { usePaymentMethods } from '@/entities/payment-method/model/usePaymentMethods';
 import { apiClient } from '@/services/axiosInstance';
 import { stripePromise } from '@/utils/stripeConfig';
+import { getErrorMessage } from '@/shared/lib/getErrorMessage';
+import type { Invoice } from '@/types/billing.types';
 
 import { BillingSummary } from '@/widgets/billing-summary/BillingSummary';
 import { RecentInvoices } from '@/widgets/recent-invoices/RecentInvoices';
@@ -41,18 +43,18 @@ export const BillingPage = () => {
   const [isChargeModalOpen, setIsChargeModalOpen] = useState(false);
   const [isStatementModalOpen, setIsStatementModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
-  const [invoiceToPay, setInvoiceToPay] = useState(null);
+  const [invoiceToPay, setInvoiceToPay] = useState<Invoice | null>(null);
   const [isPaying, setIsPaying] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
-  const showToast = (message) => {
+  const showToast = (message: string) => {
     setToastMessage(message);
     setTimeout(() => {
       setToastMessage('');
     }, 3000);
   };
 
-  const executePayment = async (invoice) => {
+  const executePayment = async (invoice: Invoice) => {
     const selectedMethod = selectedMethodIndex !== null ? paymentMethods[selectedMethodIndex] : null;
     if (!selectedMethod) {
       setInvoiceToPay(null);
@@ -71,6 +73,10 @@ export const BillingPage = () => {
 
       if (result.requiresAction) {
         const stripe = await stripePromise;
+        if (!stripe) {
+          showToast('Payment failed: Stripe failed to load.');
+          return;
+        }
         const { error, paymentIntent } = await stripe.confirmCardPayment(result.clientSecret);
         if (error) {
           showToast(`Payment failed: ${error.message}`);
@@ -87,14 +93,22 @@ export const BillingPage = () => {
       await refetchInvoices();
       showToast(`Payment for ${invoice.id} successful!`);
     } catch (err) {
-      showToast(err?.response?.data?.message || 'Payment failed. Please try again.');
+      showToast(getErrorMessage(err, 'Payment failed. Please try again.'));
     } finally {
       setIsPaying(false);
       setInvoiceToPay(null);
     }
   };
 
-  const handleAddCharge = async ({ chargeType, description, amount }) => {
+  const handleAddCharge = async ({
+    chargeType,
+    description,
+    amount,
+  }: {
+    chargeType: string;
+    description?: string;
+    amount: number;
+  }) => {
     const { data } = await apiClient.post('/api/v1/payments/additional-charge', {
       parentId,
       chargeType,
@@ -118,7 +132,7 @@ export const BillingPage = () => {
     showToast('Payment method securely added via Stripe!');
   };
 
-  const handleRemoveMethod = async (indexToRemove) => {
+  const handleRemoveMethod = async (indexToRemove: number) => {
     const method = paymentMethods[indexToRemove];
     if (!method) return;
     await removeMethod(method.cardDetailsId);

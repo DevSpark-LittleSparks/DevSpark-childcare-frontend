@@ -1,8 +1,17 @@
-import React from 'react';
 import { Modal } from '@/shared/ui/Modal/Modal';
 import { formatCurrency } from '@/shared/lib/formatCurrency';
+import type { Invoice, PaymentMethod } from '@/types/billing.types';
 
-export const ConfirmPaymentModal = ({ isOpen, onClose, invoice, paymentMethod, onConfirm, isSubmitting }) => {
+interface ConfirmPaymentModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  invoice: Invoice | null;
+  paymentMethod: PaymentMethod | null;
+  onConfirm: (invoice: Invoice) => void;
+  isSubmitting: boolean;
+}
+
+export const ConfirmPaymentModal = ({ isOpen, onClose, invoice, paymentMethod, onConfirm, isSubmitting }: ConfirmPaymentModalProps) => {
   if (!isOpen || !invoice) return null;
 
   return (

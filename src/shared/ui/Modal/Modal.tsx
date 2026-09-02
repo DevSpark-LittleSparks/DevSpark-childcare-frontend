@@ -1,7 +1,16 @@
-import React from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { X } from 'lucide-react';
 
-export const Modal = ({ isOpen, onClose, title, children, maxWidth = '400px', bodyStyle = {} }) => {
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: ReactNode;
+  children: ReactNode;
+  maxWidth?: string;
+  bodyStyle?: CSSProperties;
+}
+
+export const Modal = ({ isOpen, onClose, title, children, maxWidth = '400px', bodyStyle = {} }: ModalProps) => {
   if (!isOpen) return null;
 
   return (

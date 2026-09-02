@@ -1,7 +1,13 @@
-import React from 'react';
 import { formatCurrency } from '@/shared/lib/formatCurrency';
+import type { Invoice } from '@/types/billing.types';
 
-export const RecentInvoices = ({ invoices, onPayNow, onViewHistory }) => {
+interface RecentInvoicesProps {
+  invoices: Invoice[];
+  onPayNow: (invoice: Invoice) => void;
+  onViewHistory: () => void;
+}
+
+export const RecentInvoices = ({ invoices, onPayNow, onViewHistory }: RecentInvoicesProps) => {
   return (
     <div className="section-container">
       <div className="section-header">
