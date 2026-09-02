@@ -491,6 +491,8 @@ const StudentTable = ({
 
   return (
     <div className="bg-white dark:bg-[#0f172a]/70 backdrop-blur-md border border-white/80 rounded-3xl overflow-hidden shadow-sm">
+      <div className="overflow-x-auto">
+        <div className="min-w-[800px]">
 
       {/* Section header */}
       <div className="px-7 py-4 border-b border-slate-100 dark:border-slate-800/60 dark:border-slate-800/60 flex items-center justify-between bg-white dark:bg-[#0f172a]/40">
@@ -598,7 +600,10 @@ const StudentTable = ({
               </button>
             </div>
           </div>
-        )})}
+          );
+        })}
+      </div>
+      </div>
       </div>
     </div>
   );

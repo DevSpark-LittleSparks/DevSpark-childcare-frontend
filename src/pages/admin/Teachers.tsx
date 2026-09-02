@@ -278,8 +278,9 @@ const Teachers = () => {
         ) : (
         <>
         <div className="bg-white dark:bg-[#0f172a]/70 backdrop-blur-md border border-white/80 rounded-3xl overflow-hidden shadow-sm">
-          <table className="w-full text-left">
-            <thead>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left min-w-[800px]">
+              <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/60">
                 <th className="px-8 py-5 w-20">
                   <button onClick={toggleSelectAll} className="text-slate-400 dark:text-slate-500 dark:text-slate-400 hover:text-primary-500 transition-colors">
@@ -368,6 +369,7 @@ const Teachers = () => {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
         
         {/* Pagination Controls */}

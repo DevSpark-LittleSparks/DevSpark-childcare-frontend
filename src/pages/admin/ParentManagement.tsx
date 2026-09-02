@@ -231,8 +231,9 @@ const ParentManagement = () => {
         ) : (
         <>
         <div className="bg-white dark:bg-[#0f172a]/70 backdrop-blur-md border border-white/80 rounded-3xl overflow-hidden shadow-sm">
-          <table className="w-full text-left">
-            <thead>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left min-w-[800px]">
+              <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/60">
                 <th className="px-8 py-5 w-20 text-center">
                    <button onClick={() => {
@@ -328,6 +329,7 @@ const ParentManagement = () => {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
         
         {/* Pagination Controls */}
