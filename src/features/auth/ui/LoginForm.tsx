@@ -7,6 +7,7 @@ import { Button } from "../../../components/common/Button";
 import { Input } from "../../../components/common/Input";
 import { Card } from "../../../components/common/Card";
 import { Spinner } from "../../../components/common/Spinner";
+import { apiClient } from "../../../services/axiosInstance";
 
 // App store and Firebase
 import { useAppDispatch, useAppSelector, RootState } from "../../../store";

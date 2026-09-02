@@ -16,7 +16,7 @@ export const FirebaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
       if (fbUser) {
         try {
           // 2. Fetch latest profile info from OUR backend
-          const res = await apiClient.get('/auth/me');
+          const res = await apiClient.get('/api/v1/auth/me');
 
           if (res.data.success) {
             const profile = res.data.data;
